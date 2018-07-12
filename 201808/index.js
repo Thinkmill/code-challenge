@@ -11,16 +11,17 @@ const {
 
 class COUP {
 	constructor() {
-		// yes globals; sue me!
+		// yes globals(sorta); sue me!
 		this.HISTORY = [];
 		this.DISCARDPILE = [];
 		this.BOTS = {};
 		this.PLAYER = {};
 		this.DECK = [];
 		this.TURN = 0;
+		this.TIMEOUT = 100;
 	}
 
-	Play() {
+	async Play() {
 		console.log(
 			`\n\n` +
 			`   ██████${Style.yellow('╗')}  ██████${Style.yellow('╗')}  ██${Style.yellow('╗')}   ██${Style.yellow('╗')} ██████${Style.yellow('╗')}\n` +
@@ -38,7 +39,7 @@ class COUP {
 		this.ElectStarter();
 
 		// this is the game loop
-		this.Turn();
+		return await this.Turn();
 	}
 
 	GetBots( player ) {
@@ -185,7 +186,11 @@ class COUP {
 
 		this.DISCARDPILE.push( lost );
 
-		console.log(`💔  ${ this.GetAvatar( player ) } has lost the ${ Style.yellow( lost ) }`);
+		let lives = 0;
+		if( this.PLAYER[ player ].card1 ) lives ++;
+		if( this.PLAYER[ player ].card2 ) lives ++;
+
+		console.log(`${ lives > 0 ? '💔' : '☠️' }  ${ this.GetAvatar( player ) } has lost the ${ Style.yellow( lost ) }`);
 	}
 
 
@@ -376,6 +381,8 @@ class COUP {
 			return;
 		}
 
+		let disgarded;
+
 		switch( action ) {
 			case 'taking-1':
 				this.PLAYER[ player ].coins ++;
@@ -386,28 +393,23 @@ class COUP {
 				break;
 
 			case 'couping':
-				if( this.PLAYER[ player ].coins < 7 ) {
-					this.Penalty( player, `did't having enough coins for a coup` );
+				this.PLAYER[ player ].coins -= 7;
+				disgarded = this.BOTS[ target ].OnCardLoss({
+					history: this.HISTORY,
+					myCards: this.GetPlayerCards( target ),
+					myCoins: this.PLAYER[ target ].coins,
+					otherPlayers: this.GetPlayerObjects( this.WhoIsLeft(), target ),
+					discardedCards: this.DISCARDPILE,
+				});
+
+				if( this.PLAYER[ target ].card1 === disgarded && disgarded ) {
+					this.LosePlayerCard( target, disgarded );
+				}
+				else if( this.PLAYER[ target ].card2 === disgarded && disgarded ) {
+					this.LosePlayerCard( target, disgarded );
 				}
 				else {
-					this.PLAYER[ player ].coins -= 7;
-					const disgarded = this.BOTS[ target ].OnCardLoss({
-						history: this.HISTORY,
-						myCards: this.GetPlayerCards( target ),
-						myCoins: this.PLAYER[ target ].coins,
-						otherPlayers: this.GetPlayerObjects( this.WhoIsLeft(), target ),
-						discardedCards: this.DISCARDPILE,
-					});
-
-					if( this.PLAYER[ target ].card1 === disgarded && disgarded ) {
-						this.LosePlayerCard( target, disgarded );
-					}
-					else if( this.PLAYER[ target ].card2 === disgarded && disgarded ) {
-						this.LosePlayerCard( target, disgarded );
-					}
-					else {
-						this.Penalty( target, `did't give up a valid card` );
-					}
+					this.Penalty( target, `did't give up a valid card` );
 				}
 				break;
 
@@ -416,14 +418,9 @@ class COUP {
 				break;
 
 			case 'assassination':
-				if( this.PLAYER[ player ].coins < 3 ) {
-					this.Penalty( player, `did't have enough coins for an assassination` );
-					break;
-				}
-
 				this.PLAYER[ player ].coins -= 3;
 
-				const disgarded = this.BOTS[ target ].OnCardLoss({
+				disgarded = this.BOTS[ target ].OnCardLoss({
 					history: this.HISTORY,
 					myCards: this.GetPlayerCards( target ),
 					myCoins: this.PLAYER[ target ].coins,
@@ -496,6 +493,8 @@ class COUP {
 		const playerAvatar = this.GetAvatar( player );
 		const targetAvatar = this.GetAvatar( against );
 
+		let skipAction = false;
+
 		switch( action ) {
 			case 'taking-1':
 				this.HISTORY.push({
@@ -521,6 +520,11 @@ class COUP {
 					to: against,
 				});
 				console.log(`🃏  ${ playerAvatar } coups ${ targetAvatar }`);
+
+				if( this.PLAYER[ player ].coins < 7 ) {
+					this.Penalty( player, `did't having enough coins for a coup` );
+					skipAction = true;
+				}
 				break;
 			case 'taking-3':
 				this.HISTORY.push({
@@ -538,6 +542,11 @@ class COUP {
 					to: against,
 				});
 				console.log(`🃏  ${ playerAvatar } assassinates ${ targetAvatar }`);
+
+				if( this.PLAYER[ player ].coins < 3 ) {
+					this.Penalty( player, `did't have enough coins for an assassination` );
+					skipAction = true;
+				}
 				break;
 			case 'stealing':
 				this.HISTORY.push({
@@ -565,22 +574,49 @@ class COUP {
 				return;
 		}
 
-		this.RunChallenges({ player, action, target: against });
+		if( !skipAction ) this.RunChallenges({ player, action, target: against });
 
 		if( this.WhoIsLeft().length > 1 ) {
-			await this.Wait( 50 );
-			this.Turn();
+			await this.Wait( this.TIMEOUT );
+			return this.Turn();
 		}
 		else {
-			console.log(`\nThe winner is ${ this.GetAvatar( this.WhoIsLeft()[ 0 ] ) }\n`);
+			const winner = this.WhoIsLeft()[ 0 ];
+			console.log(`\nThe winner is ${ this.GetAvatar( winner ) }\n`);
+			return winner;
 		}
 	}
 }
 
 
 if( process.argv.includes('play') ) {
-	const game = new COUP();
-	game.Play();
+	(async () => {
+		const game = new COUP();
+		await game.Play();
+	})();
+}
+
+if( process.argv.includes('loop') ) {
+	let game;
+	const winners = {};
+
+	(async () => {
+		let output = '';
+		console.log = text => { output += text };
+		console.info(`Game round started`);
+		let round = 1;
+		for( const _ of Array(100) ) {
+			process.stdout.write(`${ Style.yellow('.') }`);
+			game = new COUP();
+			game.TIMEOUT = 0;
+			const winner = await game.Play();
+			if( !winners[ winner ] ) winners[ winner ] = 0;
+			winners[ winner ] ++;
+			round ++;
+		}
+		console.info( winners );
+		console.info();
+	})();
 }
 
 
