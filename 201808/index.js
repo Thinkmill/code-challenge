@@ -329,9 +329,10 @@ class COUP {
 
 
 	RunChallenges({ action, player, target }) {
-		if( action === 'taking-3' || action === 'assassination' || action === 'stealing' || action === 'swapping' ) {
+		if( action === 'foreign-aid' || action === 'taking-3' || action === 'assassination' || action === 'stealing' || action === 'swapping' ) {
 			const cards = {
 				'taking-3': 'duke',
+				'foreign-aid': 'duke',
 				'assassination': 'assassin',
 				'stealing': 'captain',
 				'swapping': 'ambassador',
@@ -343,9 +344,8 @@ class COUP {
 			}
 		}
 
-		if( action === 'foreign-aid' || action === 'assassination' || action === 'stealing' ) {
+		if( action === 'assassination' || action === 'stealing' ) {
 			const cards = {
-				'foreign-aid': 'duke',
 				'assassination': 'contessa',
 				'stealing': [ 'captain', 'ambassador' ],
 			};

@@ -27,10 +27,7 @@ const OnChallengeActionRound = ({ history, myCards, myCoins, otherPlayers, disca
 };
 
 const OnCounterAction = ({ history, myCards, myCoins, otherPlayers, discardedCards, action, byWhom }) => {
-	if( action === 'foreign-aid' ) {
-		return [ false, 'duke' ][ Math.floor( Math.random() * 2 ) ];
-	}
-	else if( action === 'assassination' ) {
+	if( action === 'assassination' ) {
 		return [ false, 'contessa' ][ Math.floor( Math.random() * 2 ) ];
 	}
 	else if( action === 'stealing' ) {
