@@ -113,10 +113,10 @@ You get to require 4 arrays from the engine at `index.js` inside your bot:
 
 ### `<CounterAction>`
 
-- 'foreign-aid' -> ['duke', false],
-- 'assassination' -> ['contessa', false],
-- 'stealing' -> ['captain', 'ambassador', false],
-- 'taking-3' -> ['duke', false],
+- `foreign-aid` -> [`duke`, `false`],
+- `assassination` -> [`contessa`, `false`],
+- `stealing` -> [`captain`, `ambassador`, `false`],
+- `taking-3` -> [`duke`, `false`],
 
 ### Functions to export
 
