@@ -5,11 +5,19 @@ const Fs = require('fs');
 
 
 const GetPlayer = ( path = '.' ) => {
-	return Fs
+	const allPlayer = Fs
 		.readdirSync( path )
 		.map( name => Path.join( path, name ) )
 		.filter( item => Fs.lstatSync( item ).isDirectory() )
 		.filter( folder => !folder.startsWith('.') );
+
+	if( allPlayer.length < 2 ) {
+		console.error(`\n🛑  We need at least two player to play this game!\n`);
+		process.exit(1);
+	}
+	else {
+		return allPlayer;
+	}
 }
 
 const ALLPLAYER = GetPlayer();
