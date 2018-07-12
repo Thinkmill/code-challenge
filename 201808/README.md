@@ -42,7 +42,7 @@ Each bot lives inside a folder and is named after that folder name.
 └── test.js
 ```
 
-To run the game `cd` into the challenge `08-2018` folder and run:
+To run the game `cd` into the challenge `201808` folder and run:
 
 ```sh
 node index.js play
