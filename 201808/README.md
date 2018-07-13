@@ -2,9 +2,11 @@ August 2018 challenge
 =====================
 
 This months challenge consists of you writing a bot to compete against other bots in the game of [COUP](http://gamegrumps.wikia.com/wiki/Coup).
-We will have the first round of (1,000,000) games two weeks after the challenge has started.
-Then another one a week after that and a last one a week after that.
-The overall winner will be crowned and we have a discussion about the code we've written.
+We will have the three rounds of (1,000,000) games to find the winner (sum all scores). Between each round you have time to make adjustments to your bot.
+Dates:
+- First round: **on Monday the 30th July**
+- Second round: **on Monday the 6th August**.
+- Final round: **on Monday the 13th of August**.
 
 ## RULEZ
 
