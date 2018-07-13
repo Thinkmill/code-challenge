@@ -162,7 +162,17 @@ class COUP {
 	GetPlayerObjects( players, filter = '' ) {
 		return players
 			.filter( user => user !== filter )
-			.map( player => ({ name: player, coins: this.PLAYER[ player ].coins }) );
+			.map( player => {
+				let cards = 0;
+				if( this.PLAYER[ player ].card1 ) cards ++;
+				if( this.PLAYER[ player ].card2 ) cards ++;
+
+				return {
+					name: player,
+					coins: this.PLAYER[ player ].coins,
+					cards,
+				};
+			});
 	}
 
 
@@ -651,8 +661,8 @@ if( process.argv.includes('loop') ) {
 	(async () => {
 		let log = '';
 		console.log = text => { log += `${ Style.strip( text ) }\n` };
-		console.info(`Game round started`);
-		console.info('\n\n🎉   WINNERS  🎉\n');
+		console.info(`\nGame round started`);
+		console.info('\n🎉   WINNERS  🎉\n');
 		DisplayScore( winners, false );
 		let round = 1;
 		const rounds = 1000;

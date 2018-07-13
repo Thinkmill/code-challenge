@@ -638,6 +638,45 @@ const TEST = {
 		) status = Style.green('PASS');
 		console.info(`${ status }  ChallengeRound stops after first challenge`);
 	},
+	'taking-1': () => {
+		const game = new COUP;
+
+		const player = MakePlayer();
+		player.bot1.card1 = 'captain';
+		player.bot2.card1 = 'duke';
+		player.bot2.card2 = 'contessa';
+		player.bot3.card1 = 'duke';
+
+		const bots = MakeBots();
+		let args;
+		bots.bot1.OnTurn = obj => {
+			args = obj;
+			game.WhoIsLeft = () => ['bot1'];
+			return { action: 'taking-1', against: 'bot1' }
+		};
+
+		game.HISTORY = [];
+		game.DISCARDPILE = [];
+		game.BOTS = bots;
+		game.PLAYER = player;
+		game.DECK = [];
+		game.TURN = 2;
+
+		game.Turn();
+
+		let status = Style.red('FAIL');
+		if(
+			args.myCards[0] === 'captain' &&
+			args.myCoins === 0 &&
+			args.otherPlayers[0].name === 'bot2' &&
+			args.otherPlayers[0].coins === 0 &&
+			args.otherPlayers[0].cards === 2 &&
+			args.otherPlayers[1].name === 'bot3' &&
+			args.otherPlayers[1].coins === 0 &&
+			args.otherPlayers[1].cards === 1
+		) status = Style.green('PASS');
+		console.info(`${ status }  otherPlayers argument is passed correctly`);
+	},
 	// 'TODO': () => {
 	// 	const game = new COUP;
 
