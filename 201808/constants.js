@@ -15,6 +15,10 @@ const GetPlayer = ( path = '.' ) => {
 		console.error(`\n🛑  We need at least two player to play this game!\n`);
 		process.exit(1);
 	}
+	else if( allPlayer.length > 6 ) {
+		console.error(`\n🛑  Only 6 can play this game at the same time!\n`);
+		process.exit(1);
+	}
 	else {
 		return allPlayer;
 	}

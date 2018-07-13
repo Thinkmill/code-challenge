@@ -1,6 +1,7 @@
 'use strict';
 
 const { Style } = require('./helper.js');
+const Fs = require('fs');
 const {
 	ALLPLAYER,
 	CARDS,
@@ -16,7 +17,7 @@ class COUP {
 		this.DISCARDPILE = [];
 		this.BOTS = {};
 		this.PLAYER = {};
-		this.DECK = [];
+		this.DECK = DECK.slice( 0 );
 		this.TURN = 0;
 		this.TIMEOUT = 100;
 	}
@@ -80,8 +81,9 @@ class COUP {
 	}
 
 
-	ShuffleCards( CARDS ) {
-		return CARDS
+	ShuffleCards() {
+		this.DECK
+			.filter( item => item !== undefined )
 			.map( item => [ Math.random(), item ] )
 			.sort( ( a, b ) => a[ 0 ] - b[ 0 ] )
 			.map( item => item[ 1 ] );
@@ -89,7 +91,7 @@ class COUP {
 
 
 	HandOutCards() {
-		this.DECK = this.ShuffleCards( DECK );
+		this.ShuffleCards();
 
 		Object
 			.entries( this.PLAYER )
@@ -100,11 +102,23 @@ class COUP {
 	}
 
 
+	GetCardFromDeck() {
+		const newCard = this.DECK.pop();
+
+		if( !newCard && this.DECK.length > 0 ) {
+			return this.GetCardFromDeck();
+		}
+		else {
+			return newCard;
+		}
+	}
+
+
 	ExchangeCard( card ) {
 		this.DECK.push( card );
-		this.DECK = this.ShuffleCards( this.DECK );
+		this.ShuffleCards();
 
-		return this.DECK.pop();
+		return this.GetCardFromDeck();
 	}
 
 
@@ -455,8 +469,8 @@ class COUP {
 				if( this.PLAYER[ player ].card1 ) oldCards ++;
 				if( this.PLAYER[ player ].card2 ) oldCards ++;
 
-				const card1 = this.DECK.pop();
-				const card2 = this.DECK.pop();
+				const card1 = this.GetCardFromDeck();
+				const card2 = this.GetCardFromDeck();
 				const allCards = new Set([ card1, card2, this.PLAYER[ player ].card1, this.PLAYER[ player ].card2 ]);
 
 				const newCards = this.BOTS[ player ].OnSwappingCards({
@@ -473,7 +487,7 @@ class COUP {
 
 				Array
 					.from( new Set([ ...allCards ].filter( card => !new Set( newCards ).has( card ) ) ) )
-					.forEach( card => this.DECK.push( card ) );
+					.forEach( card => card ? this.DECK.push( card ) : null );
 				break;
 		}
 	}
@@ -596,17 +610,30 @@ if( process.argv.includes('play') ) {
 	})();
 }
 
+const DisplayScore = ( winners, clear = false ) => {
+	if( clear ) process.stdout.write(`\u001b[${ Object.keys( winners ).length }A\u001b[2K`);
+	Object
+		.keys( winners )
+		// .sort( ( a, b ) => winners[a] < winners[b] )
+		.forEach( player => process.stdout.write(`\u001b[2K${ Style.yellow( player ) } got ${ Style.red( winners[ player ] ) } wins\n`) );
+}
+
 if( process.argv.includes('loop') ) {
 	let game;
 	const winners = {};
+	ALLPLAYER.forEach( player => winners[ player ] = 0 );
 
 	(async () => {
-		let output = '';
-		console.log = text => { output += text };
+		let log = '';
+		console.log = text => { log += `${ Style.strip( text ) }\n` };
 		console.info(`Game round started`);
+		console.info('\n\n🎉  WINNERS  🎉\n');
+		DisplayScore( winners, false );
 		let round = 1;
-		for( const _ of Array(100) ) {
-			process.stdout.write(`${ Style.yellow('.') }`);
+		const rounds = 1000;
+
+		for( const _ of Array( rounds ) ) {
+			DisplayScore( winners, true );
 			game = new COUP();
 			game.TIMEOUT = 0;
 			const winner = await game.Play();
@@ -614,7 +641,8 @@ if( process.argv.includes('loop') ) {
 			winners[ winner ] ++;
 			round ++;
 		}
-		console.info( winners );
+
+		Fs.writeFileSync( 'round.log', log, { encoding: 'utf8' } );
 		console.info();
 	})();
 }
