@@ -122,6 +122,15 @@ class COUP {
 	}
 
 
+	StillAlive( player ) {
+		let cards = 0;
+		if( this.PLAYER[ player ].card1 ) cards ++;
+		if( this.PLAYER[ player ].card2 ) cards ++;
+
+		return cards > 0;
+	}
+
+
 	ElectStarter() {
 		this.TURN = Math.floor( Math.random() * Object.keys( this.PLAYER ).length );
 	}
@@ -432,8 +441,6 @@ class COUP {
 				break;
 
 			case 'assassination':
-				this.PLAYER[ player ].coins -= 3;
-
 				disgarded = this.BOTS[ target ].OnCardLoss({
 					history: this.HISTORY,
 					myCards: this.GetPlayerCards( target ),
@@ -505,7 +512,7 @@ class COUP {
 		});
 
 		const playerAvatar = this.GetAvatar( player );
-		const targetAvatar = this.GetAvatar( against );
+		const targetAvatar = against ? this.GetAvatar( against ) : against;
 
 		let skipAction = false;
 
@@ -539,6 +546,11 @@ class COUP {
 					this.Penalty( player, `did't having enough coins for a coup` );
 					skipAction = true;
 				}
+
+				if( !this.StillAlive( against ) ) {
+					this.Penalty( player, `tried to coup a dead player` );
+					skipAction = true;
+				}
 				break;
 			case 'taking-3':
 				this.HISTORY.push({
@@ -561,6 +573,13 @@ class COUP {
 					this.Penalty( player, `did't have enough coins for an assassination` );
 					skipAction = true;
 				}
+				else if( !this.StillAlive( against ) ) {
+					this.Penalty( player, `tried to assassinat a dead player` );
+					skipAction = true;
+				}
+				else {
+					this.PLAYER[ player ].coins -= 3;
+				}
 				break;
 			case 'stealing':
 				this.HISTORY.push({
@@ -569,6 +588,12 @@ class COUP {
 					from: player,
 					to: against,
 				});
+
+				if( !this.StillAlive( against ) ) {
+					this.Penalty( player, `tried to steal from a dead player` );
+					skipAction = true;
+				}
+
 				console.log(`🃏  ${ playerAvatar } steals from ${ targetAvatar }`);
 				break;
 			case 'swapping':
@@ -614,7 +639,7 @@ const DisplayScore = ( winners, clear = false ) => {
 	if( clear ) process.stdout.write(`\u001b[${ Object.keys( winners ).length }A\u001b[2K`);
 	Object
 		.keys( winners )
-		// .sort( ( a, b ) => winners[a] < winners[b] )
+		.sort( ( a, b ) => winners[a] < winners[b] )
 		.forEach( player => process.stdout.write(`\u001b[2K${ Style.yellow( player ) } got ${ Style.red( winners[ player ] ) } wins\n`) );
 }
 
@@ -627,7 +652,7 @@ if( process.argv.includes('loop') ) {
 		let log = '';
 		console.log = text => { log += `${ Style.strip( text ) }\n` };
 		console.info(`Game round started`);
-		console.info('\n\n🎉  WINNERS  🎉\n');
+		console.info('\n\n🎉   WINNERS  🎉\n');
 		DisplayScore( winners, false );
 		let round = 1;
 		const rounds = 1000;

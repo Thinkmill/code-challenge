@@ -6,7 +6,7 @@ const { COUP } = require('./index.js');
 // defaults
 const MakeBots = () => ({
 	bot1: {
-		OnTurn: () => {},
+		OnTurn: () => ({}),
 		OnChallengeActionRound: () => false,
 		OnCounterAction: () => false,
 		OnCounterActionRound: () => false,
@@ -14,7 +14,7 @@ const MakeBots = () => ({
 		OnCardLoss: () => {},
 	},
 	bot2: {
-		OnTurn: () => {},
+		OnTurn: () => ({}),
 		OnChallengeActionRound: () => false,
 		OnCounterAction: () => false,
 		OnCounterActionRound: () => false,
@@ -22,7 +22,7 @@ const MakeBots = () => ({
 		OnCardLoss: () => {},
 	},
 	bot3: {
-		OnTurn: () => {},
+		OnTurn: () => ({}),
 		OnChallengeActionRound: () => false,
 		OnCounterAction: () => false,
 		OnCounterActionRound: () => false,
@@ -51,38 +51,53 @@ const MakePlayer = () => ({
 console.log = () => {};
 
 const TEST = {
-	'taking-1': () => {
-		const game = new COUP;
-
-		game.HISTORY = [];
-		game.DISCARDPILE = [];
-		game.BOTS = MakeBots();
-		game.PLAYER = MakePlayer();
-		game.DECK = [];
-		game.TURN = 0;
-
-		game.RunActions({ player: 'bot1', action: 'taking-1', target: 'bot2' });
-
-		let status = Style.red('FAIL');
-		if(
-			game.PLAYER.bot1.coins === 1
-		) status = Style.green('PASS');
-		console.info(`${ status }  "taking-1" action`);
-	},
-	'foreign-aid': () => {
+	'taking-1': async () => {
 		const game = new COUP;
 
 		const player = MakePlayer();
 		player.bot1.card1 = 'duke';
+		player.bot2.card1 = 'duke';
+
+		const bots = MakeBots();
+		bots.bot1.OnTurn = () => ({ action: 'taking-1', against: 'bot1' });
 
 		game.HISTORY = [];
 		game.DISCARDPILE = [];
-		game.BOTS = MakeBots();
+		game.BOTS = bots;
 		game.PLAYER = player;
 		game.DECK = [];
-		game.TURN = 0;
+		game.TURN = 2;
+		game.WhoIsLeft = () => ['bot1'];
 
-		game.RunActions({ player: 'bot1', action: 'foreign-aid', target: 'bot2' });
+		await game.Turn();
+
+		let status = Style.red('FAIL');
+		if(
+			game.PLAYER.bot1.coins === 1 &&
+			game.PLAYER.bot1.card1 === 'duke' &&
+			game.PLAYER.bot2.card1 === 'duke'
+		) status = Style.green('PASS');
+		console.info(`${ status }  "taking-1" action`);
+	},
+	'foreign-aid': async () => {
+		const game = new COUP;
+
+		const player = MakePlayer();
+		player.bot1.card1 = 'duke';
+		player.bot2.card1 = 'duke';
+
+		const bots = MakeBots();
+		bots.bot1.OnTurn = () => ({ action: 'foreign-aid', against: 'bot2' });
+
+		game.HISTORY = [];
+		game.DISCARDPILE = [];
+		game.BOTS = bots;
+		game.PLAYER = player;
+		game.DECK = [];
+		game.TURN = 2;
+		game.WhoIsLeft = () => ['bot1'];
+
+		await game.Turn();
 
 		let status = Style.red('FAIL');
 		if(
@@ -90,7 +105,7 @@ const TEST = {
 		) status = Style.green('PASS');
 		console.info(`${ Style.red( status ) }  "foreign-aid" action`);
 	},
-	'couping': () => {
+	'couping': async () => {
 		const game = new COUP;
 
 		const player = MakePlayer();
@@ -98,14 +113,17 @@ const TEST = {
 		player.bot1.coins = 8;
 		player.bot2.card1 = 'duke';
 
+		const bots = MakeBots();
+		bots.bot1.OnTurn = () => ({ action: 'couping', against: 'bot2' });
+
 		game.HISTORY = [];
 		game.DISCARDPILE = [];
-		game.BOTS = MakeBots();
+		game.BOTS = bots;
 		game.PLAYER = player;
 		game.DECK = [];
-		game.TURN = 0;
+		game.TURN = 2;
 
-		game.RunActions({ player: 'bot1', action: 'couping', target: 'bot2' });
+		await game.Turn();
 
 		let status = Style.red('FAIL');
 		if(
@@ -114,17 +132,25 @@ const TEST = {
 		) status = Style.green('PASS');
 		console.info(`${ status }  "couping" action`);
 	},
-	'taking-3': () => {
+	'taking-3': async () => {
 		const game = new COUP;
+
+		const player = MakePlayer();
+		player.bot1.card1 = 'duke';
+		player.bot2.card1 = 'duke';
+
+		const bots = MakeBots();
+		bots.bot1.OnTurn = () => ({ action: 'taking-3', against: 'bot2' });
 
 		game.HISTORY = [];
 		game.DISCARDPILE = [];
-		game.BOTS = MakeBots();
-		game.PLAYER = MakePlayer();
+		game.BOTS = bots;
+		game.PLAYER = player;
 		game.DECK = [];
-		game.TURN = 0;
+		game.TURN = 2;
+		game.WhoIsLeft = () => ['bot1'];
 
-		game.RunActions({ player: 'bot1', action: 'taking-3', target: 'bot2' });
+		await game.Turn();
 
 		let status = Style.red('FAIL');
 		if(
@@ -132,15 +158,17 @@ const TEST = {
 		) status = Style.green('PASS');
 		console.info(`${ status }  "taking-3" action`);
 	},
-	'assassination': () => {
+	'assassination1': async () => {
 		const game = new COUP;
 
 		const player = MakePlayer();
 		player.bot1.coins = 4;
+		player.bot1.card1 = 'duke';
 		player.bot2.card1 = 'duke';
 		player.bot2.card2 = 'captain';
 
 		const bots = MakeBots();
+		bots.bot1.OnTurn = () => ({ action: 'assassination', against: 'bot2' });
 		bots.bot2.OnCardLoss = () => 'captain';
 
 		game.HISTORY = [];
@@ -148,9 +176,10 @@ const TEST = {
 		game.BOTS = bots;
 		game.PLAYER = player;
 		game.DECK = [];
-		game.TURN = 0;
+		game.TURN = 2;
+		game.WhoIsLeft = () => ['bot1'];
 
-		game.RunActions({ player: 'bot1', action: 'assassination', target: 'bot2' });
+		await game.Turn();
 
 		let status = Style.red('FAIL');
 		if(
@@ -160,21 +189,59 @@ const TEST = {
 		) status = Style.green('PASS');
 		console.info(`${ status }  "assassination" action`);
 	},
-	'stealing1': () => {
+	'assassination2': async () => {
+		const game = new COUP;
+
+		const player = MakePlayer();
+		player.bot1.coins = 3;
+		player.bot1.card1 = 'duke';
+		player.bot2.card1 = 'duke';
+		player.bot2.card2 = 'captain';
+
+		const bots = MakeBots();
+		bots.bot1.OnTurn = () => ({ action: 'assassination', against: 'bot2' });
+		bots.bot2.OnCounterAction = () => 'contessa';
+
+		game.HISTORY = [];
+		game.DISCARDPILE = [];
+		game.BOTS = bots;
+		game.PLAYER = player;
+		game.DECK = [];
+		game.TURN = 2;
+		game.WhoIsLeft = () => ['bot1'];
+
+		await game.Turn();
+
+		let status = Style.red('FAIL');
+		if(
+			game.PLAYER.bot1.card1 === 'duke' &&
+			game.PLAYER.bot1.coins === 0 &&
+			game.PLAYER.bot2.card1 === 'duke' &&
+			game.PLAYER.bot2.card2 === 'captain'
+		) status = Style.green('PASS');
+		console.info(`${ status }  "assassination" action with successful counter action`);
+	},
+	'stealing1': async () => {
 		const game = new COUP;
 
 		const player = MakePlayer();
 		player.bot1.coins = 1;
+		player.bot1.card1 = 'duke';
 		player.bot2.coins = 5;
+		player.bot2.card1 = 'duke';
+
+		const bots = MakeBots();
+		bots.bot1.OnTurn = () => ({ action: 'stealing', against: 'bot2' });
 
 		game.HISTORY = [];
 		game.DISCARDPILE = [];
-		game.BOTS = MakeBots();
+		game.BOTS = bots;
 		game.PLAYER = player;
 		game.DECK = [];
-		game.TURN = 0;
+		game.TURN = 2;
+		game.WhoIsLeft = () => ['bot1'];
 
-		game.RunActions({ player: 'bot1', action: 'stealing', target: 'bot2' });
+		await game.Turn();
 
 		let status = Style.red('FAIL');
 		if(
@@ -183,21 +250,27 @@ const TEST = {
 		) status = Style.green('PASS');
 		console.info(`${ status }  "stealing" action`);
 	},
-	'stealing2': () => {
+	'stealing2': async () => {
 		const game = new COUP;
 
 		const player = MakePlayer();
 		player.bot1.coins = 1;
+		player.bot1.card1 = 'duke';
 		player.bot2.coins = 1;
+		player.bot2.card1 = 'duke';
+
+		const bots = MakeBots();
+		bots.bot1.OnTurn = () => ({ action: 'stealing', against: 'bot2' });
 
 		game.HISTORY = [];
 		game.DISCARDPILE = [];
-		game.BOTS = MakeBots();
+		game.BOTS = bots;
 		game.PLAYER = player;
 		game.DECK = [];
-		game.TURN = 0;
+		game.TURN = 2;
+		game.WhoIsLeft = () => ['bot1'];
 
-		game.RunActions({ player: 'bot1', action: 'stealing', target: 'bot2' });
+		await game.Turn();
 
 		let status = Style.red('FAIL');
 		if(
@@ -206,21 +279,27 @@ const TEST = {
 		) status = Style.green('PASS');
 		console.info(`${ status }  "stealing" action from poor bots`);
 	},
-	'stealing3': () => {
+	'stealing3': async () => {
 		const game = new COUP;
 
 		const player = MakePlayer();
 		player.bot1.coins = 1;
+		player.bot1.card1 = 'duke';
 		player.bot2.coins = 0;
+		player.bot2.card1 = 'duke';
+
+		const bots = MakeBots();
+		bots.bot1.OnTurn = () => ({ action: 'stealing', against: 'bot2' });
 
 		game.HISTORY = [];
 		game.DISCARDPILE = [];
-		game.BOTS = MakeBots();
+		game.BOTS = bots;
 		game.PLAYER = player;
 		game.DECK = [];
-		game.TURN = 0;
+		game.TURN = 2;
+		game.WhoIsLeft = () => ['bot1'];
 
-		game.RunActions({ player: 'bot1', action: 'stealing', target: 'bot2' });
+		await game.Turn();
 
 		let status = Style.red('FAIL');
 		if(
@@ -229,14 +308,16 @@ const TEST = {
 		) status = Style.green('PASS');
 		console.info(`${ status }  "stealing" action from broke bots`);
 	},
-	'swapping1': () => {
+	'swapping1': async () => {
 		const game = new COUP;
 
 		const player = MakePlayer();
 		player.bot1.card1 = 'assassin';
 		player.bot1.card2 = 'contessa';
+		player.bot2.card1 = 'duke';
 
 		const bots = MakeBots();
+		bots.bot1.OnTurn = () => ({ action: 'swapping', against: 'bot2' });
 		bots.bot1.OnSwappingCards = ({ newCards }) => newCards;
 
 		game.HISTORY = [];
@@ -244,9 +325,10 @@ const TEST = {
 		game.BOTS = bots;
 		game.PLAYER = player;
 		game.DECK = ['duke', 'captain'];
-		game.TURN = 0;
+		game.TURN = 2;
+		game.WhoIsLeft = () => ['bot1'];
 
-		game.RunActions({ player: 'bot1', action: 'swapping', target: 'bot2' });
+		await game.Turn();
 
 		let status = Style.red('FAIL');
 		if(
@@ -255,14 +337,16 @@ const TEST = {
 		) status = Style.green('PASS');
 		console.info(`${ status }  "swapping" action`);
 	},
-	'swapping2': () => {
+	'swapping2': async () => {
 		const game = new COUP;
 
 		const player = MakePlayer();
 		player.bot1.card1 = 'assassin';
 		player.bot1.card2 = void(0);
+		player.bot2.card1 = 'duke';
 
 		const bots = MakeBots();
+		bots.bot1.OnTurn = () => ({ action: 'swapping', against: 'bot2' });
 		bots.bot1.OnSwappingCards = ({ newCards }) => newCards;
 
 		game.HISTORY = [];
@@ -270,9 +354,10 @@ const TEST = {
 		game.BOTS = bots;
 		game.PLAYER = player;
 		game.DECK = ['duke', 'captain'];
-		game.TURN = 0;
+		game.TURN = 2;
+		game.WhoIsLeft = () => ['bot1'];
 
-		game.RunActions({ player: 'bot1', action: 'swapping', target: 'bot2' });
+		await game.Turn();
 
 		let status = Style.red('FAIL');
 		if(
@@ -553,6 +638,40 @@ const TEST = {
 		) status = Style.green('PASS');
 		console.info(`${ status }  ChallengeRound stops after first challenge`);
 	},
+	// 'TODO': () => {
+	// 	const game = new COUP;
+
+	// 	const bots = MakeBots();
+	// 	let OnChallengeActionRound;
+	// 	bots.bot2.OnChallengeActionRound = param => {
+	// 		OnChallengeActionRound = param;
+	// 		return false;
+	// 	};
+	// 	let OnCounterAction;
+	// 	bots.bot2.OnCounterAction = param => {
+	// 		OnCounterAction = param;
+	// 		return false;
+	// 	};
+
+	// 	const player = MakePlayer();
+	// 	player.bot1.card1 = 'duke';
+	// 	player.bot2.card1 = 'duke';
+
+	// 	game.HISTORY = [];
+	// 	game.DISCARDPILE = [];
+	// 	game.BOTS = bots;
+	// 	game.PLAYER = player;
+	// 	game.DECK = [];
+	// 	game.TURN = 0;
+
+	// 	game.RunChallenges({ player: 'bot1', action: 'stealing', target: 'bot2' });
+
+	// 	let status = Style.red('FAIL');
+	// 	if(
+	// 		true === true
+	// 	) status = Style.green('PASS');
+	// 	console.info(`${ status }  TODO`);
+	// },
 };
 
 
@@ -564,7 +683,21 @@ console.info(`
     ██║    ███████╗ ███████║    ██║    ██║ ██║ ╚████║ ╚██████╔╝
     ╚═╝    ╚══════╝ ╚══════╝    ╚═╝    ╚═╝ ╚═╝  ╚═══╝  ╚═════╝
 `);
+
 Object
 	.entries( TEST )
-	.forEach( ([ name, test ]) => test() );
-console.info();
+	.forEach( async ([ name, test ]) => await test() );
+
+
+const ExitHandler = ( exiting, error ) => {
+	if( error && error !== 1 ) {
+		console.error( error );
+	}
+
+	console.info();
+	process.exit( 0 ); //now exit with a smile :)
+};
+
+process.on( 'exit', ExitHandler );
+process.on( 'SIGINT', ExitHandler );
+process.on( 'uncaughtException', ExitHandler );
