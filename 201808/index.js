@@ -610,7 +610,7 @@ class COUP {
 					from: player,
 				});
 				this.Penalty( player, `of issuing an invalid action: "${ Style.yellow( action ) }", allowed: ${ Style.yellow( ACTIONS.join(', ') ) }` );
-				return;
+				skipAction = true;
 		}
 
 		if( !skipAction ) this.RunChallenges({ player, action, target: against });
