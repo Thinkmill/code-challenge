@@ -156,7 +156,7 @@ Each function is passed one parameter object that can be deconstructed into the 
 | `history`        | The history array. More below |
 | `myCards`        | An array of your cards |
 | `myCoins`        | The number of coins you have |
-| `otherPlayers`   | An array of objects of each player, format: `[{ name: <Player>, coins: <Integer> }, { name: <Player>, coins: <Integer> }]` |
+| `otherPlayers`   | An array of objects of each player, format: `[{ name: <Player>, coins: <Integer>, cards: <Integer> }, { name: <Player>, coins: <Integer>, cards: <Integer> }]` |
 | `discardedCards` | An array of all cards that have been discarded so far (from penalties, coups or assassinations) |
 | `action`         | The action that was taken `<Action>` |
 | `byWhom`         | Who did the action `<Player>` |

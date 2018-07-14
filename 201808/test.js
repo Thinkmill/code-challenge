@@ -638,7 +638,7 @@ const TEST = {
 		) status = Style.green('PASS');
 		console.info(`${ status }  ChallengeRound stops after first challenge`);
 	},
-	'taking-1': () => {
+	'otherPlayers': () => {
 		const game = new COUP;
 
 		const player = MakePlayer();
