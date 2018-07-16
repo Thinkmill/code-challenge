@@ -19,6 +19,7 @@ class COUP {
 		this.PLAYER = {};
 		this.DECK = DECK.slice( 0 );
 		this.TURN = 0;
+		this.ROUNDS = 0;
 		this.TIMEOUT = 100;
 	}
 
@@ -119,6 +120,36 @@ class COUP {
 		this.ShuffleCards();
 
 		return this.GetCardFromDeck();
+	}
+
+
+	SwapCards({ newCards, player }) {
+		let oldCards = [];
+		if( this.PLAYER[ player ].card1 ) oldCards.push( this.PLAYER[ player ].card1 );
+		if( this.PLAYER[ player ].card2 ) oldCards.push( this.PLAYER[ player ].card2 );
+
+		let allCards = oldCards.slice( 0 );
+		if( newCards[ 0 ] ) allCards.push( newCards[ 0 ] );
+		if( newCards[ 1 ] ) allCards.push( newCards[ 1 ] );
+
+		newCards = newCards.slice( 0, oldCards.length );
+
+		this.PLAYER[ player ].card1 = newCards[ 0 ];
+		this.PLAYER[ player ].card2 = newCards[ 1 ];
+
+		allCards
+			.filter( card => {
+				if( card && card === newCards[ 0 ] ) {
+					newCards[ 0 ] = void(0);
+					return false;
+				}
+				if( card && card === newCards[ 1 ] ) {
+					newCards[ 1 ] = void(0);
+					return false;
+				}
+				return true;
+			})
+			.map( card => this.DECK.push( card ) );
 	}
 
 
@@ -523,13 +554,8 @@ class COUP {
 				break;
 
 			case 'swapping':
-				let oldCards = 0;
-				if( this.PLAYER[ player ].card1 ) oldCards ++;
-				if( this.PLAYER[ player ].card2 ) oldCards ++;
-
 				const card1 = this.GetCardFromDeck();
 				const card2 = this.GetCardFromDeck();
-				const allCards = new Set([ card1, card2, this.PLAYER[ player ].card1, this.PLAYER[ player ].card2 ]);
 
 				const newCards = this.BOTS[ player ].OnSwappingCards({
 					history: this.HISTORY,
@@ -538,14 +564,9 @@ class COUP {
 					otherPlayers: this.GetPlayerObjects( this.WhoIsLeft(), player ),
 					discardedCards: this.DISCARDPILE,
 					newCards: [ card1, card2 ],
-				}).slice( 0, oldCards );
+				});
 
-				this.PLAYER[ player ].card1 = newCards[ 0 ];
-				this.PLAYER[ player ].card2 = newCards[ 1 ];
-
-				Array
-					.from( new Set([ ...allCards ].filter( card => !new Set( newCards ).has( card ) ) ) )
-					.forEach( card => card ? this.DECK.push( card ) : null );
+				this.SwapCards({ newCards, player });
 				break;
 		}
 	}
@@ -666,11 +687,16 @@ class COUP {
 
 		if( !skipAction ) this.RunChallenges({ player, action, target: against });
 
-		if( this.WhoIsLeft().length > 1 ) {
+		if( this.WhoIsLeft().length > 1 && this.ROUNDS < 1000 ) {
+			this.ROUNDS ++;
 			if( this.TIMEOUT > 0 ) {
 				await this.Wait( this.TIMEOUT );
 			}
 			return this.Turn();
+		}
+		else if( this.ROUNDS >= 1000 ) {
+			console.error('The game was stopped because of an infinite loop');
+			return 'stale-mate';
 		}
 		else {
 			const winner = this.WhoIsLeft()[ 0 ];
@@ -703,7 +729,7 @@ if( process.argv.includes('loop') ) {
 
 	(async () => {
 		let log = '';
-		console.log = text => { /*log += `${ Style.strip( text ) }\n`*/ };
+		console.log = text => { log += `${ text }\n` };
 		console.info(`\nGame round started`);
 		console.info('\n🎉   WINNERS  🎉\n');
 		DisplayScore( winners, false );
@@ -715,12 +741,17 @@ if( process.argv.includes('loop') ) {
 			game = new COUP();
 			game.TIMEOUT = 0;
 			const winner = await game.Play();
+			if( !winner ) {
+				console.error( log );
+				console.error( JSON.stringify( game.HISTORY, null, 2 ) );
+				break;
+			}
 			if( !winners[ winner ] ) winners[ winner ] = 0;
 			winners[ winner ] ++;
 			round ++;
+			log = '';
 		}
 
-		Fs.writeFileSync( 'round.log', log, { encoding: 'utf8' } );
 		console.info();
 	})();
 }

@@ -727,7 +727,7 @@ const TEST = {
 		let status = Style.red('FAIL');
 		if(
 			game.PLAYER.bot1.card1 !== void(0) &&
-			game.PLAYER.bot1.card2 === 'duke' &&
+			game.PLAYER.bot1.card2 !== void(0) &&
 			game.PLAYER.bot2.card1 === void(0)
 		) status = Style.green('PASS');
 		console.info(`${ status }  ${ Style.yellow('swapping') } with unsuccessful challenge`);
@@ -916,6 +916,50 @@ const TEST = {
 			runs === 1
 		) status = Style.green('PASS');
 		console.info(`${ status }  an unsuccessful counter action round yields punishment`);
+	},
+	'SwapCards1': () => {
+		const game = new COUP;
+
+		const player = MakePlayer();
+		player.bot1.card1 = 'duke';
+		player.bot1.card2 = 'contessa';
+
+		game.PLAYER = player;
+		game.DECK = ['duke'];
+
+		game.SwapCards({ newCards: ['captain', 'assassin'], player: 'bot1' });
+
+		let status = Style.red('FAIL');
+		if(
+			game.PLAYER.bot1.card1 === 'captain' &&
+			game.PLAYER.bot1.card2 === 'assassin' &&
+			game.DECK[ 0 ] === 'duke' &&
+			game.DECK[ 1 ] === 'duke' &&
+			game.DECK[ 2 ] === 'contessa'
+		) status = Style.green('PASS');
+		console.info(`${ status }  SwapCards merges cards correctly`);
+	},
+	'SwapCards2': () => {
+		const game = new COUP;
+
+		const player = MakePlayer();
+		player.bot1.card1 = void(0);
+		player.bot1.card2 = 'contessa';
+
+		game.PLAYER = player;
+		game.DECK = ['duke'];
+
+		game.SwapCards({ newCards: ['captain', 'assassin'], player: 'bot1' });
+
+		let status = Style.red('FAIL');
+		if(
+			game.PLAYER.bot1.card1 === 'captain' &&
+			game.PLAYER.bot1.card2 === void(0) &&
+			game.DECK[ 0 ] === 'duke' &&
+			game.DECK[ 1 ] === 'contessa' &&
+			game.DECK[ 2 ] === 'assassin'
+		) status = Style.green('PASS');
+		console.info(`${ status }  SwapCards merges cards correctly even with one card`);
 	},
 };
 
