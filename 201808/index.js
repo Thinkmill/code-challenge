@@ -82,7 +82,7 @@ class COUP {
 
 
 	ShuffleCards() {
-		this.DECK
+		this.DECK = this.DECK
 			.filter( item => item !== undefined )
 			.map( item => [ Math.random(), item ] )
 			.sort( ( a, b ) => a[ 0 ] - b[ 0 ] )
@@ -703,12 +703,12 @@ if( process.argv.includes('loop') ) {
 
 	(async () => {
 		let log = '';
-		console.log = text => { log += `${ Style.strip( text ) }\n` };
+		console.log = text => { /*log += `${ Style.strip( text ) }\n`*/ };
 		console.info(`\nGame round started`);
 		console.info('\n🎉   WINNERS  🎉\n');
 		DisplayScore( winners, false );
 		let round = 1;
-		const rounds = 1000;
+		const rounds = 1000000;
 
 		for( const _ of Array( rounds ) ) {
 			DisplayScore( winners, true );
