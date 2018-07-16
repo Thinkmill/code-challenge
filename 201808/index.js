@@ -72,6 +72,8 @@ class COUP {
 
 
 	MakePlayer( player ) {
+		player = this.ShufflePlayer( player );
+
 		player.forEach( player => {
 			this.PLAYER[ player ] = {
 				card1: void(0),
@@ -84,6 +86,15 @@ class COUP {
 
 	ShuffleCards() {
 		this.DECK = this.DECK
+			.filter( item => item !== undefined )
+			.map( item => [ Math.random(), item ] )
+			.sort( ( a, b ) => a[ 0 ] - b[ 0 ] )
+			.map( item => item[ 1 ] );
+	}
+
+
+	ShufflePlayer( player ) {
+		return player
 			.filter( item => item !== undefined )
 			.map( item => [ Math.random(), item ] )
 			.sort( ( a, b ) => a[ 0 ] - b[ 0 ] )
@@ -306,6 +317,7 @@ class COUP {
 			action,
 			byWhom: player,
 			toWhom: target,
+			card,
 		}) ) {
 			let lying = false;
 			if( this.PLAYER[ target ].card1 !== card && this.PLAYER[ target ].card2 !== card ) {
@@ -724,7 +736,7 @@ const DisplayScore = ( winners, clear = false ) => {
 
 if( process.argv.includes('loop') ) {
 	let game;
-	const winners = {};
+	const winners = { 'stale-mate': 0 };
 	ALLPLAYER.forEach( player => winners[ player ] = 0 );
 
 	(async () => {

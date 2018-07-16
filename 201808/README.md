@@ -136,7 +136,7 @@ You get to require 4 arrays from the engine at `constants.js` inside your bot:
 	- returns: `<CounterAction>`
 - `OnCounterActionRound`
 	- Called when a bot did a counter action and everyone get's to decided whether they want to challenge that counter action
-	- parameters: `{ history, myCards, myCoins, otherPlayers, discardedCards, action, byWhom, toWhom }`
+	- parameters: `{ history, myCards, myCoins, otherPlayers, discardedCards, action, byWhom, toWhom, card }`
 	- returns: `<Boolean>`
 - `OnSwappingCards`
 	- Called when you played your ambassador and now need to decide which cards you want to keep
@@ -161,6 +161,7 @@ Each function is passed one parameter object that can be deconstructed into the 
 | `action`         | The action that was taken `<Action>` |
 | `byWhom`         | Who did the action `<Player>` |
 | `toWhom`         | To whom is the action directed `<Player>` |
+| `card`           | A string of the counter action taken by the previous bot
 | `newCards`       | An array of cards for the ambassador swap `Array(<Card>)` |
 
 ### The history array
