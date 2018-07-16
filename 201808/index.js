@@ -667,7 +667,9 @@ class COUP {
 		if( !skipAction ) this.RunChallenges({ player, action, target: against });
 
 		if( this.WhoIsLeft().length > 1 ) {
-			await this.Wait( this.TIMEOUT );
+			if( this.TIMEOUT > 0 ) {
+				await this.Wait( this.TIMEOUT );
+			}
 			return this.Turn();
 		}
 		else {
