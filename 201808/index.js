@@ -182,12 +182,20 @@ class COUP {
 
 
 	GetAvatar( player ) {
-		return `[${ Style.yellow( player ) } ` +
-			// `${ this.PLAYER[ player ].card1 ? `${ Style.red( this.PLAYER[ player ].card1.substring( 0, 2 ) ) } ` : '' }` +
-			// `${ this.PLAYER[ player ].card2 ? `${ Style.red( this.PLAYER[ player ].card2.substring( 0, 2 ) ) } ` : '' }` +
-			`${ this.PLAYER[ player ].card1 ? Style.red('♥') : '' }` +
-			`${ this.PLAYER[ player ].card2 ? Style.red('♥') : '' }` +
-			` ${ Style.yellow(`💰 ${ this.PLAYER[ player ].coins }`) }]`;
+		if( !player ) {
+			return player;
+		}
+		else if( !ALLPLAYER.includes( player ) ) {
+			return `[${ Style.yellow(`${ player }`)} -not found-]`;
+		}
+		else {
+			return `[${ Style.yellow( player ) } ` +
+				// `${ this.PLAYER[ player ].card1 ? `${ Style.red( this.PLAYER[ player ].card1.substring( 0, 2 ) ) } ` : '' }` +
+				// `${ this.PLAYER[ player ].card2 ? `${ Style.red( this.PLAYER[ player ].card2.substring( 0, 2 ) ) } ` : '' }` +
+				`${ this.PLAYER[ player ].card1 ? Style.red('♥') : '' }` +
+				`${ this.PLAYER[ player ].card2 ? Style.red('♥') : '' }` +
+				` ${ Style.yellow(`💰 ${ this.PLAYER[ player ].coins }`) }]`;
+		}
 	}
 
 
@@ -230,10 +238,20 @@ class COUP {
 	Penalty( player, reason ) {
 		let penalty = '';
 
-		if( this.PLAYER[ player ].card1 ) {
+		const lostCard = this.BOTS[ player ].OnCardLoss({
+			history: this.HISTORY,
+			myCards: this.GetPlayerCards( player ),
+			myCoins: this.PLAYER[ player ].coins,
+			otherPlayers: this.GetPlayerObjects( this.WhoIsLeft(), player ),
+			discardedCards: this.DISCARDPILE,
+		});
+
+		const _validCard = [ this.PLAYER[ player ].card1, this.PLAYER[ player ].card2 ].includes( lostCard ) && lostCard;
+
+		if( _validCard && this.PLAYER[ player ].card1 === lostCard || !_validCard && this.PLAYER[ player ].card1 ) {
 			penalty = this.PLAYER[ player ].card1;
 		}
-		else if( this.PLAYER[ player ].card2 ) {
+		else if( _validCard && this.PLAYER[ player ].card2 === lostCard || !_validCard && this.PLAYER[ player ].card2 ) {
 			penalty = this.PLAYER[ player ].card2;
 		}
 
@@ -399,7 +417,7 @@ class COUP {
 
 
 	RunActions({ player, action, target }) {
-		if( !this.PLAYER[ target ] ) {
+		if( !this.PLAYER[ target ] && !['taking-3', 'swapping', 'foreign-aid'].includes( action ) ) {
 			this.Penalty( player, `did't give a valid (${ target }) player` );
 			return true;
 		}
@@ -522,7 +540,7 @@ class COUP {
 		});
 
 		const playerAvatar = this.GetAvatar( player );
-		const targetAvatar = against ? this.GetAvatar( against ) : against;
+		const targetAvatar = this.GetAvatar( against );
 
 		let skipAction = false;
 
