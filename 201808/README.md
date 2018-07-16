@@ -229,12 +229,12 @@ A counter action:
 The challenge algorithm:
 
 ```
-if( foreign-aid, taking-3, assassination, stealing, swapping )
+if( assassination, stealing, swapping )
 	ChallengeRound via all bot.OnChallengeActionRound
 		? false = continue
 		: true = stop
 
-if( assassination, stealing )
+if( foreign-aid, assassination, stealing )
 	CounterAction via bot.OnCounterAction
 		? false = continue
 		: true = CounterChallengeRound via bot.OnCounterActionRound

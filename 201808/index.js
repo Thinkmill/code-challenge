@@ -343,29 +343,54 @@ class COUP {
 	}
 
 
-	CounterAction({ player, card, action, target }) {
+	CounterAction({ player, action, target }) {
 		const actions = {
 			'foreign-aid': ['duke', false],
 			'assassination': ['contessa', false],
 			'stealing': ['captain', 'ambassador', false],
 		};
 
-		const counterAction = this.BOTS[ player ].OnCounterAction({
-			history: this.HISTORY,
-			myCards: this.GetPlayerCards( player ),
-			myCoins: this.PLAYER[ player ].coins,
-			otherPlayers: this.GetPlayerObjects( this.WhoIsLeft(), player ),
-			discardedCards: this.DISCARDPILE,
-			action,
-			byWhom: player,
-		});
+		let counterAction;
+		if( player ) {
+			counterAction = this.BOTS[ player ].OnCounterAction({
+				history: this.HISTORY,
+				myCards: this.GetPlayerCards( player ),
+				myCoins: this.PLAYER[ player ].coins,
+				otherPlayers: this.GetPlayerObjects( this.WhoIsLeft(), player ),
+				discardedCards: this.DISCARDPILE,
+				action,
+				byWhom: target,
+			});
+		}
+		else {
+			Object
+				.keys( this.PLAYER )
+				.filter( user => user !== target && ( this.PLAYER[ user ].card1 || this.PLAYER[ user ].card2 ) )
+				.some( user => {
+					const _hasBeenChallenged = this.BOTS[ user ].OnCounterAction({
+						history: this.HISTORY,
+						myCards: this.GetPlayerCards( user ),
+						myCoins: this.PLAYER[ user ].coins,
+						otherPlayers: this.GetPlayerObjects( this.WhoIsLeft(), user ),
+						discardedCards: this.DISCARDPILE,
+						action,
+						byWhom: target,
+					});
 
-		if( !actions[ action ].includes( counterAction ) && counterAction !== false ) {
-			this.Penalty( player, `did't give a valid counter action (${ counterAction }) for ${ action }` );
-			return true;
+					if( _hasBeenChallenged ) {
+						counterAction = _hasBeenChallenged;
+						player = user;
+						return true;
+					}
+				});
 		}
 
 		if( counterAction ) {
+			if( !actions[ action ].includes( counterAction ) ) {
+				this.Penalty( player, `did't give a valid counter action ${ Style.yellow( counterAction ) } for ${ Style.yellow( action ) }` );
+				return true;
+			}
+
 			this.HISTORY.push({
 				type: 'counter-action',
 				action,
@@ -385,7 +410,7 @@ class COUP {
 
 
 	RunChallenges({ action, player, target }) {
-		if( action === 'foreign-aid' || action === 'taking-3' || action === 'assassination' || action === 'stealing' || action === 'swapping' ) {
+		if( action === 'taking-3' || action === 'assassination' || action === 'stealing' || action === 'swapping' ) {
 			const cards = {
 				'taking-3': 'duke',
 				'foreign-aid': 'duke',
@@ -400,13 +425,11 @@ class COUP {
 			}
 		}
 
-		if( action === 'assassination' || action === 'stealing' ) {
-			const cards = {
-				'assassination': 'contessa',
-				'stealing': [ 'captain', 'ambassador' ],
-			};
+		if( action === 'foreign-aid' || action === 'assassination' || action === 'stealing' ) {
+			let targetPlayer = target;
+			if( action === 'foreign-aid' ) targetPlayer = void(0);
 
-			const _hasBeenChallenged = this.CounterAction({ player: target, card: cards[ action ], action, target: player });
+			const _hasBeenChallenged = this.CounterAction({ player: targetPlayer, action, target: player });
 			if( _hasBeenChallenged && _hasBeenChallenged !== 'done' ) {
 				return;
 			}
