@@ -1,7 +1,7 @@
 'use strict';
 
 const {
-	ALLPLAYER,
+	ALLBOTS,
 	CARDS,
 	DECK,
 	ACTIONS,

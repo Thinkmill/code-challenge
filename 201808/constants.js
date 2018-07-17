@@ -11,15 +11,8 @@ const GetPlayer = ( path = '.' ) => {
 		.filter( item => Fs.lstatSync( item ).isDirectory() )
 		.filter( folder => !folder.startsWith('.') );
 
-	// shuffle
-	// slice
-
 	if( allPlayer.length < 2 ) {
 		console.error(`\n🛑  We need at least two player to play this game!\n`);
-		process.exit(1);
-	}
-	else if( allPlayer.length > 6 ) {
-		console.error(`\n🛑  Only 6 can play this game at the same time!\n`);
 		process.exit(1);
 	}
 	else {
@@ -27,7 +20,7 @@ const GetPlayer = ( path = '.' ) => {
 	}
 };
 
-const ALLPLAYER = GetPlayer();
+const ALLBOTS = GetPlayer();
 
 const CARDS = [ 'duke', 'assassin', 'captain', 'ambassador', 'contessa' ];
 
@@ -51,7 +44,7 @@ const ACTIONS = [
 
 
 module.exports = exports = {
-	ALLPLAYER,
+	ALLBOTS,
 	CARDS,
 	DECK,
 	ACTIONS,

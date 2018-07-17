@@ -23,6 +23,15 @@ Dates:
 1. Do not output to `stdout`
 1. At the beginning of each round you add PRs to the repo (we only merge on the day the round begins)
 
+## Scoring
+
+Each game is a zero-sum-game in terms of score. The score is determined by the number of players (can't be more than 6 per game) and winners
+(there are instances where the game can stall in a stale-mate with multiple winners).
+Each game will take a max of 6 bots that are randomly elected. Those who win get positive score, those who lose will get negative score.
+
+- Score for losers: -1/(players-1)
+- Score for winners: ∑losers/winners
+
 ## How to run the game?
 
 The game comes with a simple "dumb" bot that just randomizes it's answers without checking much whether the actions are appropriate.
@@ -50,6 +59,18 @@ To run the game `cd` into the challenge `201808` folder and run:
 node index.js play
 ```
 
+To run 1000 games:
+
+```sh
+node index.js loop
+```
+
+To run n number of games:
+
+```sh
+node index.js loop -r [number]
+```
+
 To run the test suit:
 
 ```sh
@@ -67,7 +88,7 @@ node test.js
 
 You get to require 4 arrays from the engine at `constants.js` inside your bot:
 
-- `ALLPLAYER` An array of all players in the game `<Player>`
+- `ALLBOTS` An array of all players in the game `<Player>`
 - `CARDS` An array of all 5 card types `<Card>`
 - `DECK` An array of all cards in the deck (3 of each)
 - `ACTIONS` An array of all actions `<Action>`

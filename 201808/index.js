@@ -3,7 +3,7 @@
 const { Style } = require('./helper.js');
 const Fs = require('fs');
 const {
-	ALLPLAYER,
+	ALLBOTS,
 	CARDS,
 	DECK,
 	ACTIONS,
@@ -20,9 +20,10 @@ class COUP {
 		this.DECK = DECK.slice( 0 );
 		this.TURN = 0;
 		this.ROUNDS = 0;
+		this.ALLPLAYER = [];
 	}
 
-	Play() {
+	Play( allPlayer ) {
 		console.log(
 			`\n\n` +
 			`   ██████${Style.yellow('╗')}  ██████${Style.yellow('╗')}  ██${Style.yellow('╗')}   ██${Style.yellow('╗')} ██████${Style.yellow('╗')}\n` +
@@ -34,8 +35,10 @@ class COUP {
 			`\n`
 		);
 
-		this.GetBots( ALLPLAYER );
-		this.MakePlayers( ALLPLAYER );
+		this.ALLPLAYER = allPlayer;
+
+		this.GetBots();
+		this.MakePlayers();
 		this.HandOutCards();
 		this.ElectStarter();
 
@@ -45,7 +48,7 @@ class COUP {
 
 	GetBots( player ) {
 		try {
-			player.forEach( player => {
+			this.ALLPLAYER.forEach( player => {
 				const bot = require(`./${ player }/index.js`);
 				this.BOTS[ player ] = new bot();
 
@@ -72,7 +75,7 @@ class COUP {
 
 
 	MakePlayers( players ) {
-		players = this.ShufflePlayer( players );
+		players = this.ShufflePlayer( this.ALLPLAYER );
 
 		players.forEach( player => {
 			this.PLAYER[ player ] = {
@@ -229,7 +232,7 @@ class COUP {
 		if( !player ) {
 			return player;
 		}
-		else if( !ALLPLAYER.includes( player ) ) {
+		else if( !this.ALLPLAYER.includes( player ) ) {
 			return `[${ Style.yellow(`${ player }`)} -not found-]`;
 		}
 		else {
@@ -706,79 +709,123 @@ class COUP {
 		}
 		else if( this.ROUNDS >= 1000 ) {
 			console.log('The game was stopped because of an infinite loop');
-			return 'stale-mate';
+			return this.WhoIsLeft();
 		}
 		else {
 			const winner = this.WhoIsLeft()[ 0 ];
 			console.log(`\nThe winner is ${ this.GetAvatar( winner ) }\n`);
-			return winner;
+			return [ winner ];
 		}
 	}
+}
+
+
+class LOOP {
+	constructor() {
+		this.WINNERS = {};
+		this.SCORE = {};
+		this.LOG = '';
+		this.ROUND = 0;
+		this.ROUNDS = this.GetRounds();
+
+		ALLBOTS.forEach( player => {
+			this.WINNERS[ player ] = 0;
+			this.SCORE[ player ] = 0;
+		});
+	}
+
+	GetScore( winners, allPlayer ) {
+		const winnerCount = winners.length;
+		const loserCount = allPlayer.length - winnerCount;
+		const loserScore = -1 / ( allPlayer.length - 1 );
+		const winnerScore = ( loserScore * loserCount ) / winnerCount * -1;
+
+		allPlayer.forEach( player => {
+			if( winners.includes( player ) ) {
+				this.SCORE[ player ] += winnerScore;
+			}
+			else {
+				this.SCORE[ player ] += loserScore;
+			}
+		});
+
+		winners.forEach( player => {
+			this.WINNERS[ player ] ++;
+		});
+	}
+
+	DisplayScore( clear = false ) {
+		if( clear ) process.stdout.write(`\u001b[${ Object.keys( this.SCORE ).length }A\u001b[2K`);
+
+		Object
+			.keys( this.SCORE )
+			.sort( ( a, b ) => this.SCORE[b] - this.SCORE[a] )
+			.forEach( player => {
+				const percentage = ( this.ROUND > 0 ) ? `${ ( ( this.WINNERS[ player ] * 100 ) / this.ROUND ).toFixed( 3 ) }%` : '-';
+				process.stdout.write(
+					`\u001b[2K${ Style.gray( percentage.padEnd(7) ) } ` +
+					`${ Style.red( String( this.SCORE[ player ].toFixed( 2 ) ).padEnd( Math.round( Math.log10( this.ROUNDS ) + 6 ) ) ) } ` +
+					`${ Style.yellow( player ) } got ${ Style.red( this.WINNERS[ player ] ) } wins\n`
+				);
+			});
+	}
+
+	GetRounds() {
+		const rIdx = process.argv.indexOf('-r');
+		if( rIdx > 0 && process.argv.length > rIdx && Number.parseInt( process.argv[rIdx + 1] ) > 0 ) {
+			return Number.parseInt( process.argv[rIdx + 1] );
+		}
+		return 1000;
+	}
+
+	Run() {
+		console.log = text => { this.LOG += `${ text }\n` };
+		console.info(`\nGame round started`);
+		console.info('\n🎉   WINNERS  🎉\n');
+
+		this.DisplayScore( false );
+
+		for( const _ of Array( this.ROUNDS ) ) {
+			this.DisplayScore( true );
+
+			const game = new COUP();
+			const winners = game.Play( GetPlayer( ALLBOTS ) );
+
+			if( !winners ) {
+				console.error( this.LOG );
+				console.error( JSON.stringify( game.HISTORY, null, 2 ) );
+				break;
+			}
+
+			this.GetScore( winners, game.ALLPLAYER );
+
+			this.ROUND ++;
+			this.LOG = '';
+		}
+
+		console.info();
+	}
+};
+
+const GetPlayer = ( allPlayer ) => {
+	return allPlayer
+		.filter( item => item !== undefined )
+		.map( item => [ Math.random(), item ] )
+		.sort( ( a, b ) => a[ 0 ] - b[ 0 ] )
+		.map( item => item[ 1 ] )
+		.slice( 0, 6 );
 }
 
 
 if( process.argv.includes('play') ) {
-	new COUP().Play();
-}
-
-const DisplayScore = ( winners, clear = false, round ) => {
-	if( clear ) process.stdout.write(`\u001b[${ Object.keys( winners ).length }A\u001b[2K`);
-	Object
-		.keys( winners )
-		.sort( ( a, b ) => winners[a] < winners[b] )
-		.forEach( player => {
-			const percentage = ( round > 0 ) ? ( ( winners[ player ] * 100 ) / round ).toFixed( 3 ) : '-';
-			process.stdout.write(`\u001b[2K${ Style.gray(`(${ percentage.padEnd(7) }%)`) } ${ Style.yellow( player ) } got ${ Style.red( winners[ player ] ) } wins\n`);
-		});
-}
-
-const GetRounds = () => {
-	const rIdx = process.argv.indexOf('-r');
-	if( rIdx > 0 && process.argv.length > rIdx && Number.parseInt( process.argv[rIdx + 1] ) > 0 ) {
-		return Number.parseInt( process.argv[rIdx + 1] );
-	}
-	return 1000;
+	new COUP().Play( GetPlayer( ALLBOTS ) );
 }
 
 if( process.argv.includes('loop') ) {
-	const winners = { 'stale-mate': 0 };
-	ALLPLAYER.forEach( player => winners[ player ] = 0 );
-
-	let log = '';
-	console.log = text => { log += `${ text }\n` };
-	console.info(`\nGame round started`);
-	console.info('\n🎉   WINNERS  🎉\n');
-
-	let round = 1;
-	const rounds = GetRounds();
-
-	DisplayScore( winners, false, round );
-
-	for( const _ of Array( rounds ) ) {
-		DisplayScore( winners, true, round );
-
-		const game = new COUP();
-		const winner = game.Play();
-
-		if( !winner ) {
-			console.error( log );
-			console.error( JSON.stringify( game.HISTORY, null, 2 ) );
-			break;
-		}
-		if( !winners[ winner ] ) winners[ winner ] = 0;
-		winners[ winner ] ++;
-		round ++;
-		log = '';
-	}
-
-	console.info();
+	new LOOP().Run();
 }
 
 
 module.exports = exports = {
-	ALLPLAYER,
-	CARDS,
-	DECK,
-	ACTIONS,
 	COUP,
 };
