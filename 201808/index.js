@@ -20,10 +20,9 @@ class COUP {
 		this.DECK = DECK.slice( 0 );
 		this.TURN = 0;
 		this.ROUNDS = 0;
-		this.TIMEOUT = 100;
 	}
 
-	async Play() {
+	Play() {
 		console.log(
 			`\n\n` +
 			`   ██████${Style.yellow('╗')}  ██████${Style.yellow('╗')}  ██${Style.yellow('╗')}   ██${Style.yellow('╗')} ██████${Style.yellow('╗')}\n` +
@@ -41,7 +40,7 @@ class COUP {
 		this.ElectStarter();
 
 		// this is the game loop
-		return await this.Turn();
+		return this.Turn();
 	}
 
 	GetBots( player ) {
@@ -584,7 +583,7 @@ class COUP {
 	}
 
 
-	async Turn() {
+	Turn() {
 		const player = Object.keys( this.PLAYER )[ this.GetWhosNext() ];
 
 		const { action, against } = this.BOTS[ player ].OnTurn({
@@ -701,9 +700,6 @@ class COUP {
 
 		if( this.WhoIsLeft().length > 1 && this.ROUNDS < 1000 ) {
 			this.ROUNDS ++;
-			if( this.TIMEOUT > 0 ) {
-				await this.Wait( this.TIMEOUT );
-			}
 			return this.Turn();
 		}
 		else if( this.ROUNDS >= 1000 ) {
@@ -720,10 +716,7 @@ class COUP {
 
 
 if( process.argv.includes('play') ) {
-	(async () => {
-		const game = new COUP();
-		await game.Play();
-	})();
+	new COUP().Play();
 }
 
 const DisplayScore = ( winners, clear = false ) => {
@@ -735,37 +728,36 @@ const DisplayScore = ( winners, clear = false ) => {
 }
 
 if( process.argv.includes('loop') ) {
-	let game;
 	const winners = { 'stale-mate': 0 };
 	ALLPLAYER.forEach( player => winners[ player ] = 0 );
 
-	(async () => {
-		let log = '';
-		console.log = text => { log += `${ text }\n` };
-		console.info(`\nGame round started`);
-		console.info('\n🎉   WINNERS  🎉\n');
-		DisplayScore( winners, false );
-		let round = 1;
-		const rounds = 1000000;
+	let log = '';
+	console.log = text => { log += `${ text }\n` };
+	console.info(`\nGame round started`);
+	console.info('\n🎉   WINNERS  🎉\n');
+	DisplayScore( winners, false );
 
-		for( const _ of Array( rounds ) ) {
-			DisplayScore( winners, true );
-			game = new COUP();
-			game.TIMEOUT = 0;
-			const winner = await game.Play();
-			if( !winner ) {
-				console.error( log );
-				console.error( JSON.stringify( game.HISTORY, null, 2 ) );
-				break;
-			}
-			if( !winners[ winner ] ) winners[ winner ] = 0;
-			winners[ winner ] ++;
-			round ++;
-			log = '';
+	let round = 1;
+	const rounds = 1000000;
+
+	for( const _ of Array( rounds ) ) {
+		DisplayScore( winners, true );
+
+		const game = new COUP();
+		const winner = game.Play();
+
+		if( !winner ) {
+			console.error( log );
+			console.error( JSON.stringify( game.HISTORY, null, 2 ) );
+			break;
 		}
+		if( !winners[ winner ] ) winners[ winner ] = 0;
+		winners[ winner ] ++;
+		round ++;
+		log = '';
+	}
 
-		console.info();
-	})();
+	console.info();
 }
 
 
