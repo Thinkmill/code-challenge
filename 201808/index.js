@@ -705,7 +705,7 @@ class COUP {
 			return this.Turn();
 		}
 		else if( this.ROUNDS >= 1000 ) {
-			console.error('The game was stopped because of an infinite loop');
+			console.log('The game was stopped because of an infinite loop');
 			return 'stale-mate';
 		}
 		else {
