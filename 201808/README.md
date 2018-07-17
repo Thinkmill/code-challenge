@@ -61,7 +61,7 @@ node test.js
 
 - Create a folder in the root (next to the fake bot)
 - Pick the name of the folder from the player list below
-- Include an `index.js` file that exports below functions
+- Include an `index.js` file that exports below class
 - Run as many test rounds as you want to
 - Create PR on the day of each round
 
@@ -120,7 +120,9 @@ You get to require 4 arrays from the engine at `constants.js` inside your bot:
 - `stealing` -> [`captain`, `ambassador`, `false`],
 - `taking-3` -> [`duke`, `false`],
 
-### Functions to export
+### Class to export
+
+The class you have to export from your bot needs to include the below methods:
 
 - `OnTurn`
 	- Called when it is your turn to decide what you may want to do
