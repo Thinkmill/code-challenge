@@ -20,10 +20,9 @@ class COUP {
 		this.DECK = DECK.slice( 0 );
 		this.TURN = 0;
 		this.ROUNDS = 0;
-		this.TIMEOUT = 100;
 	}
 
-	async Play() {
+	Play() {
 		console.log(
 			`\n\n` +
 			`   ██████${Style.yellow('╗')}  ██████${Style.yellow('╗')}  ██${Style.yellow('╗')}   ██${Style.yellow('╗')} ██████${Style.yellow('╗')}\n` +
@@ -41,7 +40,7 @@ class COUP {
 		this.ElectStarter();
 
 		// this is the game loop
-		return await this.Turn();
+		return this.Turn();
 	}
 
 	GetBots( player ) {
@@ -486,7 +485,7 @@ class COUP {
 
 
 	RunActions({ player, action, target }) {
-		if( !this.PLAYER[ target ] && !['taking-3', 'swapping', 'foreign-aid'].includes( action ) ) {
+		if( !this.PLAYER[ target ] && !['taking-1', 'taking-3', 'swapping', 'foreign-aid'].includes( action ) ) {
 			this.Penalty( player, `did't give a valid (${ target }) player` );
 			return true;
 		}
@@ -586,7 +585,7 @@ class COUP {
 	}
 
 
-	async Turn() {
+	Turn() {
 		const player = Object.keys( this.PLAYER )[ this.GetWhosNext() ];
 
 		const { action, against } = this.BOTS[ player ].OnTurn({
@@ -703,9 +702,6 @@ class COUP {
 
 		if( this.WhoIsLeft().length > 1 && this.ROUNDS < 1000 ) {
 			this.ROUNDS ++;
-			if( this.TIMEOUT > 0 ) {
-				await this.Wait( this.TIMEOUT );
-			}
 			return this.Turn();
 		}
 		else if( this.ROUNDS >= 1000 ) {
@@ -722,52 +718,60 @@ class COUP {
 
 
 if( process.argv.includes('play') ) {
-	(async () => {
-		const game = new COUP();
-		await game.Play();
-	})();
+	new COUP().Play();
 }
 
-const DisplayScore = ( winners, clear = false ) => {
+const DisplayScore = ( winners, clear = false, round ) => {
 	if( clear ) process.stdout.write(`\u001b[${ Object.keys( winners ).length }A\u001b[2K`);
 	Object
 		.keys( winners )
 		.sort( ( a, b ) => winners[a] < winners[b] )
-		.forEach( player => process.stdout.write(`\u001b[2K${ Style.yellow( player ) } got ${ Style.red( winners[ player ] ) } wins\n`) );
+		.forEach( player => {
+			const percentage = (round > 0) ? ((winners[ player ] * 100) / round).toFixed(3) : '-';
+			process.stdout.write(`\u001b[2K${ Style.yellow( player ) } got ${ Style.red( winners[ player ] ) } wins (${percentage}%)\n`)
+		});
+}
+
+const GetRounds = () => {
+	const rIdx = process.argv.indexOf('-r');
+	if (rIdx > 0 && process.argv.length > rIdx && Number.parseInt(process.argv[rIdx + 1]) > 0) {
+		return Number.parseInt(process.argv[rIdx + 1]);
+	}
+	return 1000;
 }
 
 if( process.argv.includes('loop') ) {
-	let game;
 	const winners = { 'stale-mate': 0 };
 	ALLPLAYER.forEach( player => winners[ player ] = 0 );
 
-	(async () => {
-		let log = '';
-		console.log = text => { log += `${ text }\n` };
-		console.info(`\nGame round started`);
-		console.info('\n🎉   WINNERS  🎉\n');
-		DisplayScore( winners, false );
-		let round = 1;
-		const rounds = 1000000;
+	let log = '';
+	console.log = text => { log += `${ text }\n` };
+	console.info(`\nGame round started`);
+	console.info('\n🎉   WINNERS  🎉\n');
 
-		for( const _ of Array( rounds ) ) {
-			DisplayScore( winners, true );
-			game = new COUP();
-			game.TIMEOUT = 0;
-			const winner = await game.Play();
-			if( !winner ) {
-				console.error( log );
-				console.error( JSON.stringify( game.HISTORY, null, 2 ) );
-				break;
-			}
-			if( !winners[ winner ] ) winners[ winner ] = 0;
-			winners[ winner ] ++;
-			round ++;
-			log = '';
+	let round = 1;
+	const rounds = GetRounds();
+
+	DisplayScore( winners, false, round );
+
+	for( const _ of Array( rounds ) ) {
+		DisplayScore( winners, true, round );
+
+		const game = new COUP();
+		const winner = game.Play();
+
+		if( !winner ) {
+			console.error( log );
+			console.error( JSON.stringify( game.HISTORY, null, 2 ) );
+			break;
 		}
+		if( !winners[ winner ] ) winners[ winner ] = 0;
+		winners[ winner ] ++;
+		round ++;
+		log = '';
+	}
 
-		console.info();
-	})();
+	console.info();
 }
 
 
