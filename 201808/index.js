@@ -483,7 +483,7 @@ class COUP {
 
 
 	RunActions({ player, action, target }) {
-		if( !this.PLAYER[ target ] && !['taking-3', 'swapping', 'foreign-aid'].includes( action ) ) {
+		if( !this.PLAYER[ target ] && !['taking-1', 'taking-3', 'swapping', 'foreign-aid'].includes( action ) ) {
 			this.Penalty( player, `did't give a valid (${ target }) player` );
 			return true;
 		}
