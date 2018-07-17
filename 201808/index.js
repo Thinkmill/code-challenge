@@ -283,11 +283,11 @@ class COUP {
 		let penalty = '';
 
 		const lostCard = this.BOTS[ player ].OnCardLoss({
-			history: this.HISTORY,
+			history: this.HISTORY.slice( 0 ),
 			myCards: this.GetPlayerCards( player ),
 			myCoins: this.PLAYER[ player ].coins,
 			otherPlayers: this.GetPlayerObjects( this.WhoIsLeft(), player ),
-			discardedCards: this.DISCARDPILE,
+			discardedCards: this.DISCARDPILE.slice( 0 ),
 		});
 
 		const _validCard = [ this.PLAYER[ player ].card1, this.PLAYER[ player ].card2 ].includes( lostCard ) && lostCard;
@@ -311,11 +311,11 @@ class COUP {
 		};
 
 		if( this.BOTS[ player ][ challengeTypes[ type ] ]({
-			history: this.HISTORY,
+			history: this.HISTORY.slice( 0 ),
 			myCards: this.GetPlayerCards( player ),
 			myCoins: this.PLAYER[ player ].coins,
 			otherPlayers: this.GetPlayerObjects( this.WhoIsLeft(), player ),
-			discardedCards: this.DISCARDPILE,
+			discardedCards: this.DISCARDPILE.slice( 0 ),
 			action,
 			byWhom: player,
 			toWhom: target,
@@ -398,11 +398,11 @@ class COUP {
 		let counterAction;
 		if( player ) {
 			counterAction = this.BOTS[ player ].OnCounterAction({
-				history: this.HISTORY,
+				history: this.HISTORY.slice( 0 ),
 				myCards: this.GetPlayerCards( player ),
 				myCoins: this.PLAYER[ player ].coins,
 				otherPlayers: this.GetPlayerObjects( this.WhoIsLeft(), player ),
-				discardedCards: this.DISCARDPILE,
+				discardedCards: this.DISCARDPILE.slice( 0 ),
 				action,
 				byWhom: target,
 			});
@@ -413,11 +413,11 @@ class COUP {
 				.filter( user => user !== target && ( this.PLAYER[ user ].card1 || this.PLAYER[ user ].card2 ) )
 				.some( user => {
 					const _hasBeenChallenged = this.BOTS[ user ].OnCounterAction({
-						history: this.HISTORY,
+						history: this.HISTORY.slice( 0 ),
 						myCards: this.GetPlayerCards( user ),
 						myCoins: this.PLAYER[ user ].coins,
 						otherPlayers: this.GetPlayerObjects( this.WhoIsLeft(), user ),
-						discardedCards: this.DISCARDPILE,
+						discardedCards: this.DISCARDPILE.slice( 0 ),
 						action,
 						byWhom: target,
 					});
@@ -514,11 +514,11 @@ class COUP {
 			case 'couping':
 				this.PLAYER[ player ].coins -= 7;
 				disgarded = this.BOTS[ target ].OnCardLoss({
-					history: this.HISTORY,
+					history: this.HISTORY.slice( 0 ),
 					myCards: this.GetPlayerCards( target ),
 					myCoins: this.PLAYER[ target ].coins,
 					otherPlayers: this.GetPlayerObjects( this.WhoIsLeft(), target ),
-					discardedCards: this.DISCARDPILE,
+					discardedCards: this.DISCARDPILE.slice( 0 ),
 				});
 
 				if( this.PLAYER[ target ].card1 === disgarded && disgarded ) {
@@ -538,11 +538,11 @@ class COUP {
 
 			case 'assassination':
 				disgarded = this.BOTS[ target ].OnCardLoss({
-					history: this.HISTORY,
+					history: this.HISTORY.slice( 0 ),
 					myCards: this.GetPlayerCards( target ),
 					myCoins: this.PLAYER[ target ].coins,
 					otherPlayers: this.GetPlayerObjects( this.WhoIsLeft(), target ),
-					discardedCards: this.DISCARDPILE,
+					discardedCards: this.DISCARDPILE.slice( 0 ),
 				});
 
 				if( this.PLAYER[ target ].card1 === disgarded && disgarded ) {
@@ -571,12 +571,12 @@ class COUP {
 				const newCards = [ this.GetCardFromDeck(), this.GetCardFromDeck() ];
 
 				const chosenCards = this.BOTS[ player ].OnSwappingCards({
-					history: this.HISTORY,
+					history: this.HISTORY.slice( 0 ),
 					myCards: this.GetPlayerCards( player ),
 					myCoins: this.PLAYER[ player ].coins,
 					otherPlayers: this.GetPlayerObjects( this.WhoIsLeft(), player ),
-					discardedCards: this.DISCARDPILE,
-					newCards,
+					discardedCards: this.DISCARDPILE.slice( 0 ),
+					newCards: newCards.slice( 0 ),
 				});
 
 				this.SwapCards({ chosenCards, player, newCards });
@@ -589,11 +589,11 @@ class COUP {
 		const player = Object.keys( this.PLAYER )[ this.GetWhosNext() ];
 
 		const { action, against } = this.BOTS[ player ].OnTurn({
-			history: this.HISTORY,
+			history: this.HISTORY.slice( 0 ),
 			myCards: this.GetPlayerCards( player ),
 			myCoins: this.PLAYER[ player ].coins,
 			otherPlayers: this.GetPlayerObjects( this.WhoIsLeft(), player ),
-			discardedCards: this.DISCARDPILE,
+			discardedCards: this.DISCARDPILE.slice( 0 ),
 		});
 
 		const playerAvatar = this.GetAvatar( player );
