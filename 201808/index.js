@@ -727,6 +727,14 @@ const DisplayScore = ( winners, clear = false ) => {
 		.forEach( player => process.stdout.write(`\u001b[2K${ Style.yellow( player ) } got ${ Style.red( winners[ player ] ) } wins\n`) );
 }
 
+const GetRounds = () => {
+	const rIdx = process.argv.indexOf('-r');
+	if (rIdx > 0 && process.argv.length > rIdx && Number.parseInt(process.argv[rIdx + 1]) > 0) {
+		return Number.parseInt(process.argv[rIdx + 1]);
+	}
+	return 1000;
+}
+
 if( process.argv.includes('loop') ) {
 	const winners = { 'stale-mate': 0 };
 	ALLPLAYER.forEach( player => winners[ player ] = 0 );
@@ -738,7 +746,7 @@ if( process.argv.includes('loop') ) {
 	DisplayScore( winners, false );
 
 	let round = 1;
-	const rounds = 1000000;
+	const rounds = GetRounds();
 
 	for( const _ of Array( rounds ) ) {
 		DisplayScore( winners, true );
