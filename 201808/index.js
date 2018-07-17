@@ -719,12 +719,15 @@ if( process.argv.includes('play') ) {
 	new COUP().Play();
 }
 
-const DisplayScore = ( winners, clear = false ) => {
+const DisplayScore = ( winners, clear = false, round ) => {
 	if( clear ) process.stdout.write(`\u001b[${ Object.keys( winners ).length }A\u001b[2K`);
 	Object
 		.keys( winners )
 		.sort( ( a, b ) => winners[a] < winners[b] )
-		.forEach( player => process.stdout.write(`\u001b[2K${ Style.yellow( player ) } got ${ Style.red( winners[ player ] ) } wins\n`) );
+		.forEach( player => {
+			const percentage = (round > 0) ? ((winners[ player ] * 100) / round).toFixed(3) : '-';
+			process.stdout.write(`\u001b[2K${ Style.yellow( player ) } got ${ Style.red( winners[ player ] ) } wins (${percentage}%)\n`)
+		});
 }
 
 const GetRounds = () => {
@@ -743,13 +746,14 @@ if( process.argv.includes('loop') ) {
 	console.log = text => { log += `${ text }\n` };
 	console.info(`\nGame round started`);
 	console.info('\n🎉   WINNERS  🎉\n');
-	DisplayScore( winners, false );
 
 	let round = 1;
 	const rounds = GetRounds();
 
+	DisplayScore( winners, false, round );
+
 	for( const _ of Array( rounds ) ) {
-		DisplayScore( winners, true );
+		DisplayScore( winners, true, round );
 
 		const game = new COUP();
 		const winner = game.Play();
