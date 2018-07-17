@@ -35,7 +35,7 @@ class COUP {
 		);
 
 		this.GetBots( ALLPLAYER );
-		this.MakePlayer( ALLPLAYER );
+		this.MakePlayers( ALLPLAYER );
 		this.HandOutCards();
 		this.ElectStarter();
 
@@ -71,10 +71,10 @@ class COUP {
 	}
 
 
-	MakePlayer( player ) {
-		player = this.ShufflePlayer( player );
+	MakePlayers( players ) {
+		players = this.ShufflePlayer( players );
 
-		player.forEach( player => {
+		players.forEach( player => {
 			this.PLAYER[ player ] = {
 				card1: void(0),
 				card2: void(0),
@@ -727,15 +727,15 @@ const DisplayScore = ( winners, clear = false, round ) => {
 		.keys( winners )
 		.sort( ( a, b ) => winners[a] < winners[b] )
 		.forEach( player => {
-			const percentage = (round > 0) ? ((winners[ player ] * 100) / round).toFixed(3) : '-';
-			process.stdout.write(`\u001b[2K${ Style.yellow( player ) } got ${ Style.red( winners[ player ] ) } wins (${percentage}%)\n`)
+			const percentage = ( round > 0 ) ? ( ( winners[ player ] * 100 ) / round ).toFixed( 3 ) : '-';
+			process.stdout.write(`\u001b[2K${ Style.gray(`(${ percentage.padEnd(7) }%)`) } ${ Style.yellow( player ) } got ${ Style.red( winners[ player ] ) } wins\n`);
 		});
 }
 
 const GetRounds = () => {
 	const rIdx = process.argv.indexOf('-r');
-	if (rIdx > 0 && process.argv.length > rIdx && Number.parseInt(process.argv[rIdx + 1]) > 0) {
-		return Number.parseInt(process.argv[rIdx + 1]);
+	if( rIdx > 0 && process.argv.length > rIdx && Number.parseInt( process.argv[rIdx + 1] ) > 0 ) {
+		return Number.parseInt( process.argv[rIdx + 1] );
 	}
 	return 1000;
 }
