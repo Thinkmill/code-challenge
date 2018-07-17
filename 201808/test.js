@@ -927,12 +927,12 @@ const TEST = {
 		game.PLAYER = player;
 		game.DECK = ['duke'];
 
-		game.SwapCards({ newCards: ['captain', 'assassin'], player: 'bot1' });
+		game.SwapCards({ chosenCards: ['assassin', 'captain'], player: 'bot1', newCards: ['captain', 'assassin'] });
 
 		let status = Style.red('FAIL');
 		if(
-			game.PLAYER.bot1.card1 === 'captain' &&
-			game.PLAYER.bot1.card2 === 'assassin' &&
+			game.PLAYER.bot1.card1 === 'assassin' &&
+			game.PLAYER.bot1.card2 === 'captain' &&
 			game.DECK[ 0 ] === 'duke' &&
 			game.DECK[ 1 ] === 'duke' &&
 			game.DECK[ 2 ] === 'contessa'
@@ -947,19 +947,41 @@ const TEST = {
 		player.bot1.card2 = 'contessa';
 
 		game.PLAYER = player;
-		game.DECK = ['duke'];
+		game.DECK = ['ambassador'];
 
-		game.SwapCards({ newCards: ['captain', 'assassin'], player: 'bot1' });
+		game.SwapCards({ chosenCards: ['ambassador', 'captain'], player: 'bot1', newCards: ['captain', 'duke'] });
 
 		let status = Style.red('FAIL');
 		if(
 			game.PLAYER.bot1.card1 === 'captain' &&
 			game.PLAYER.bot1.card2 === void(0) &&
-			game.DECK[ 0 ] === 'duke' &&
+			game.DECK[ 0 ] === 'ambassador' &&
 			game.DECK[ 1 ] === 'contessa' &&
-			game.DECK[ 2 ] === 'assassin'
+			game.DECK[ 2 ] === 'duke'
 		) status = Style.green('PASS');
 		console.info(`${ status }  SwapCards merges cards correctly even with one card`);
+	},
+	'SwapCards3': () => {
+		const game = new COUP;
+
+		const player = MakePlayer();
+		player.bot1.card1 = 'contessa';
+		player.bot1.card2 = void(0);
+
+		game.PLAYER = player;
+		game.DECK = [];
+
+		game.SwapCards({ chosenCards: ['ambassador', 'ambassador'], player: 'bot1', newCards: ['captain', 'duke'] });
+
+		let status = Style.red('FAIL');
+		if(
+			game.PLAYER.bot1.card1 === void(0) &&
+			game.PLAYER.bot1.card2 === void(0) &&
+			game.DECK[ 0 ] === 'contessa' &&
+			game.DECK[ 1 ] === 'captain' &&
+			game.DECK[ 2 ] === 'duke'
+		) status = Style.green('PASS');
+		console.info(`${ status }  SwapCards merges cards correctly even when given cards are invalid`);
 	},
 };
 

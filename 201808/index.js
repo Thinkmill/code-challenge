@@ -47,7 +47,8 @@ class COUP {
 	GetBots( player ) {
 		try {
 			player.forEach( player => {
-				this.BOTS[ player ] = require(`./${ player }/index.js`);
+				const bot = require(`./${ player }/index.js`);
+				this.BOTS[ player ] = new bot();
 
 				if(
 					!this.BOTS[ player ].OnTurn ||
@@ -134,7 +135,7 @@ class COUP {
 	}
 
 
-	SwapCards({ newCards, player }) {
+	SwapCards({ chosenCards = [], newCards, player }) {
 		let oldCards = [];
 		if( this.PLAYER[ player ].card1 ) oldCards.push( this.PLAYER[ player ].card1 );
 		if( this.PLAYER[ player ].card2 ) oldCards.push( this.PLAYER[ player ].card2 );
@@ -143,19 +144,21 @@ class COUP {
 		if( newCards[ 0 ] ) allCards.push( newCards[ 0 ] );
 		if( newCards[ 1 ] ) allCards.push( newCards[ 1 ] );
 
-		newCards = newCards.slice( 0, oldCards.length );
+		chosenCards = chosenCards
+			.filter( card => allCards.includes( card ) )
+			.slice( 0, oldCards.length );
 
-		this.PLAYER[ player ].card1 = newCards[ 0 ];
-		this.PLAYER[ player ].card2 = newCards[ 1 ];
+		this.PLAYER[ player ].card1 = chosenCards[ 0 ];
+		this.PLAYER[ player ].card2 = chosenCards[ 1 ];
 
 		allCards
 			.filter( card => {
-				if( card && card === newCards[ 0 ] ) {
-					newCards[ 0 ] = void(0);
+				if( card && card === chosenCards[ 0 ] ) {
+					chosenCards[ 0 ] = void(0);
 					return false;
 				}
-				if( card && card === newCards[ 1 ] ) {
-					newCards[ 1 ] = void(0);
+				if( card && card === chosenCards[ 1 ] ) {
+					chosenCards[ 1 ] = void(0);
 					return false;
 				}
 				return true;
@@ -566,19 +569,18 @@ class COUP {
 				break;
 
 			case 'swapping':
-				const card1 = this.GetCardFromDeck();
-				const card2 = this.GetCardFromDeck();
+				const newCards = [ this.GetCardFromDeck(), this.GetCardFromDeck() ];
 
-				const newCards = this.BOTS[ player ].OnSwappingCards({
+				const chosenCards = this.BOTS[ player ].OnSwappingCards({
 					history: this.HISTORY,
 					myCards: this.GetPlayerCards( player ),
 					myCoins: this.PLAYER[ player ].coins,
 					otherPlayers: this.GetPlayerObjects( this.WhoIsLeft(), player ),
 					discardedCards: this.DISCARDPILE,
-					newCards: [ card1, card2 ],
+					newCards,
 				});
 
-				this.SwapCards({ newCards, player });
+				this.SwapCards({ chosenCards, player, newCards });
 				break;
 		}
 	}

@@ -11,6 +11,9 @@ const GetPlayer = ( path = '.' ) => {
 		.filter( item => Fs.lstatSync( item ).isDirectory() )
 		.filter( folder => !folder.startsWith('.') );
 
+	// shuffle
+	// slice
+
 	if( allPlayer.length < 2 ) {
 		console.error(`\n🛑  We need at least two player to play this game!\n`);
 		process.exit(1);
@@ -22,7 +25,7 @@ const GetPlayer = ( path = '.' ) => {
 	else {
 		return allPlayer;
 	}
-}
+};
 
 const ALLPLAYER = GetPlayer();
 
@@ -32,7 +35,7 @@ const GetStack = ( cards = CARDS ) => {
 	let STACK = [];
 	cards.forEach( card => STACK = [ ...STACK, ...new Array(3).fill( card ) ] );
 	return STACK;
-}
+};
 
 const DECK = GetStack();
 
