@@ -504,7 +504,7 @@ class COUP {
 			return true;
 		}
 
-		if( this.PLAYER[ player ].coins > 10 ) {
+		if( this.PLAYER[ player ].coins > 10 && action !== 'couping' ) {
 			this.Penalty( player, `had too much coins and needed to coup` );
 			return;
 		}
