@@ -10,7 +10,7 @@ const {
 
 class BOT {
 	OnTurn({ history, myCards, myCoins, otherPlayers, discardedCards }) {
-		let action = ACTIONS[ Math.floor( Math.random() * ACTIONS.length ) ];
+		let action = ACTIONS()[ Math.floor( Math.random() * ACTIONS().length ) ];
 		const against = otherPlayers[ Math.floor( Math.random() * otherPlayers.length ) ].name;
 
 		if( myCoins > 10 ) {

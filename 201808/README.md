@@ -86,12 +86,12 @@ node test.js
 - Run as many test rounds as you want to
 - Create PR on the day of each round
 
-You get to require 4 arrays from the engine at `constants.js` inside your bot:
+You get to require 4 functions from the engine at `constants.js` inside your bot:
 
-- `ALLBOTS` An array of all players in the game `<Player>`
-- `CARDS` An array of all 5 card types `<Card>`
-- `DECK` An array of all cards in the deck (3 of each)
-- `ACTIONS` An array of all actions `<Action>`
+- `ALLBOTS()` Returns an array of all players in the game `<Player>`
+- `CARDS()` Returns an array of all 5 card types `<Card>`
+- `DECK()` Returns an array of all cards in the deck (3 of each)
+- `ACTIONS()` Returns an array of all actions `<Action>`
 
 ### `<Player>`
 

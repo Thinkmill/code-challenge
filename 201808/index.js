@@ -10,10 +10,10 @@ let {
 } = require('./constants.js');
 
 // making clones so the bots don't break them
-ALLBOTS = [...ALLBOTS];
-CARDS = [...CARDS];
-DECK = [...DECK];
-ACTIONS = [...ACTIONS];
+ALLBOTS = ALLBOTS();
+CARDS = CARDS();
+DECK = DECK();
+ACTIONS = ACTIONS();
 
 
 class COUP {

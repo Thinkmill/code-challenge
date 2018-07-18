@@ -20,19 +20,19 @@ const GetPlayer = ( path = '.' ) => {
 	}
 };
 
-const ALLBOTS = GetPlayer();
+const ALLBOTS = GetPlayer;
 
-const CARDS = [ 'duke', 'assassin', 'captain', 'ambassador', 'contessa' ];
+const CARDS = () => [ 'duke', 'assassin', 'captain', 'ambassador', 'contessa' ];
 
-const GetStack = ( cards = CARDS ) => {
+const GetStack = ( cards = CARDS() ) => {
 	let STACK = [];
 	cards.forEach( card => STACK = [ ...STACK, ...new Array(3).fill( card ) ] );
 	return STACK;
 };
 
-const DECK = GetStack();
+const DECK = GetStack;
 
-const ACTIONS = [
+const ACTIONS = () => [
 	'taking-1',
 	'foreign-aid',
 	'couping',
