@@ -2,12 +2,18 @@
 
 const { Style } = require('./helper.js');
 const Fs = require('fs');
-const {
+let {
 	ALLBOTS,
 	CARDS,
 	DECK,
 	ACTIONS,
 } = require('./constants.js');
+
+// making clones so the bots don't break them
+ALLBOTS = [...ALLBOTS];
+CARDS = [...CARDS];
+DECK = [...DECK];
+ACTIONS = [...ACTIONS];
 
 
 class COUP {
@@ -725,6 +731,7 @@ class LOOP {
 		this.WINNERS = {};
 		this.SCORE = {};
 		this.LOG = '';
+		this.ERRORLOG = '';
 		this.ROUND = 0;
 		this.ROUNDS = this.GetRounds();
 
@@ -757,7 +764,7 @@ class LOOP {
 	DisplayScore( clear = false ) {
 		if( clear ) process.stdout.write(`\u001b[${ Object.keys( this.SCORE ).length + 1 }A\u001b[2K`);
 
-		const done = String( Math.floor( this.ROUND/this.ROUNDS * 100 ) );
+		const done = String( Math.floor( this.ROUND/this.ROUNDS * 100 ) + 1 );
 		process.stdout.write(`\u001b[2K${ done.padEnd(3) }% done\n`)
 		Object
 			.keys( this.SCORE )
@@ -786,7 +793,7 @@ class LOOP {
 		let game = new COUP();
 		const winners = game.Play( GetPlayer( ALLBOTS ) );
 
-		if( !winners || this.LOG !== '' ) {
+		if( !winners || this.ERRORLOG !== '' ) {
 			console.info( this.LOG );
 			console.info( JSON.stringify( game.HISTORY, null, 2 ) );
 			this.ROUND = this.ROUNDS;
@@ -800,6 +807,10 @@ class LOOP {
 		this.LOG = '';
 
 		if( this.ROUND < this.ROUNDS ) {
+			// We run on next tick so the GC can get to work.
+			// Otherwise it will work up a large memory footprint
+			// when running over 100,000 games
+			// (cause loops won't let the GC run efficiently)
 			process.nextTick( () => this.Play() );
 		}
 		else {
@@ -808,8 +819,8 @@ class LOOP {
 	}
 
 	Run() {
-		console.log = text => { /*this.LOG += `${ text }\n`*/ };
-		console.error = text => { this.LOG += `${ text }\n` };
+		console.log = text => { this.LOG += `${ text }\n` };
+		console.error = text => { this.ERRORLOG += `${ text }\n` };
 		console.info(`\nGame round started`);
 		console.info('\n🎉   WINNERS  🎉\n');
 
