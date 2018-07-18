@@ -63,7 +63,7 @@ class COUP {
 					const missing = ['OnTurn', 'OnChallengeActionRound', 'OnCounterAction', 'OnCounterActionRound', 'OnSwappingCards', 'OnCardLoss']
 						.filter( method => !Object.keys( this.BOTS[ player ] ).includes( method ) );
 
-					throw( Style.red(`🚨  The bot ${ Style.yellow( player ) } is missing ${ missing.length > 1 ? 'methods' : 'a method' }: ${ Style.yellow( missing.join(', ') ) }!\n`) );
+					throw(`🚨  ${ Style.red('The bot ') }${ Style.yellow( player ) }${ Style.red(` is missing ${ missing.length > 1 ? 'methods' : 'a method' }: `) }${ Style.yellow( missing.join(', ') ) }!\n`);
 				}
 			});
 		}
@@ -236,12 +236,12 @@ class COUP {
 			return `[${ Style.yellow(`${ player }`)} -not found-]`;
 		}
 		else {
-			return `[${ Style.yellow( player ) } ` +
+			return Style.yellow(`[${ player } `) +
 				// `${ this.PLAYER[ player ].card1 ? `${ Style.red( this.PLAYER[ player ].card1.substring( 0, 2 ) ) } ` : '' }` +
 				// `${ this.PLAYER[ player ].card2 ? `${ Style.red( this.PLAYER[ player ].card2.substring( 0, 2 ) ) } ` : '' }` +
 				`${ this.PLAYER[ player ].card1 ? Style.red('♥') : '' }` +
 				`${ this.PLAYER[ player ].card2 ? Style.red('♥') : '' }` +
-				` ${ Style.yellow(`💰 ${ this.PLAYER[ player ].coins }`) }]`;
+				` ${ Style.yellow(`💰 ${ this.PLAYER[ player ].coins }]`) }`;
 		}
 	}
 
@@ -755,8 +755,10 @@ class LOOP {
 	}
 
 	DisplayScore( clear = false ) {
-		if( clear ) process.stdout.write(`\u001b[${ Object.keys( this.SCORE ).length }A\u001b[2K`);
+		if( clear ) process.stdout.write(`\u001b[${ Object.keys( this.SCORE ).length + 1 }A\u001b[2K`);
 
+		const done = String( Math.floor( this.ROUND/this.ROUNDS * 100 ) );
+		process.stdout.write(`\u001b[2K${ done.padEnd(3) }% done\n`)
 		Object
 			.keys( this.SCORE )
 			.sort( ( a, b ) => this.SCORE[b] - this.SCORE[a] )
@@ -778,32 +780,42 @@ class LOOP {
 		return 1000;
 	}
 
+	Play() {
+		this.DisplayScore( true );
+
+		let game = new COUP();
+		const winners = game.Play( GetPlayer( ALLBOTS ) );
+
+		if( !winners || this.LOG !== '' ) {
+			console.info( this.LOG );
+			console.info( JSON.stringify( game.HISTORY, null, 2 ) );
+			this.ROUND = this.ROUNDS;
+		}
+
+		this.GetScore( winners, game.ALLPLAYER );
+
+		game = null;
+
+		this.ROUND ++;
+		this.LOG = '';
+
+		if( this.ROUND < this.ROUNDS ) {
+			process.nextTick( () => this.Play() );
+		}
+		else {
+			console.info();
+		}
+	}
+
 	Run() {
-		console.log = text => { this.LOG += `${ text }\n` };
+		console.log = text => { /*this.LOG += `${ text }\n`*/ };
+		console.error = text => { this.LOG += `${ text }\n` };
 		console.info(`\nGame round started`);
 		console.info('\n🎉   WINNERS  🎉\n');
 
 		this.DisplayScore( false );
 
-		for( const _ of Array( this.ROUNDS ) ) {
-			this.DisplayScore( true );
-
-			const game = new COUP();
-			const winners = game.Play( GetPlayer( ALLBOTS ) );
-
-			if( !winners ) {
-				console.error( this.LOG );
-				console.error( JSON.stringify( game.HISTORY, null, 2 ) );
-				break;
-			}
-
-			this.GetScore( winners, game.ALLPLAYER );
-
-			this.ROUND ++;
-			this.LOG = '';
-		}
-
-		console.info();
+		this.Play();
 	}
 };
 
