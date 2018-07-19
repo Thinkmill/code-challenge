@@ -81,9 +81,13 @@ class BOT {
 
 	OnCounterActionRound({ history, myCards, myCoins, otherPlayers, discardedCards, action, byWhom, toWhom, card }) {
 		if( action === 'stealing' ) {
-			console.log({toWhom});
-			console.log({byWhom});
 			this.hasStealingBlocker.push( toWhom );
+		}
+		if( action === 'assassination' ) {
+			this.hasContessa.push( toWhom );
+		}
+		if( action === 'foreign-aid' ) {
+			this.hasDuke.push( toWhom );
 		}
 		return false;
 	}
