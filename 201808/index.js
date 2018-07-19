@@ -313,7 +313,7 @@ class COUP {
 	}
 
 
-	ResolveChallenge({ player, card, action, type, target }) {
+	ResolveChallenge({ player, byWhom, card, action, type, target }) {
 		const challengeTypes = {
 			'challenge-round': 'OnChallengeActionRound',
 			'counter-round': 'OnCounterActionRound',
@@ -326,7 +326,7 @@ class COUP {
 			otherPlayers: this.GetPlayerObjects( this.WhoIsLeft(), player ),
 			discardedCards: this.DISCARDPILE.slice( 0 ),
 			action,
-			byWhom: player,
+			byWhom: byWhom ? byWhom : player,
 			toWhom: target,
 			card,
 		}) ) {
@@ -382,14 +382,14 @@ class COUP {
 	}
 
 
-	ChallengeRound({ player, card, action, type }) {
+	ChallengeRound({ player, target, card, action, type }) {
 		let _hasBeenChallenged = false;
 
 		Object
 			.keys( this.PLAYER )
 			.filter( user => user !== player && ( this.PLAYER[ user ].card1 || this.PLAYER[ user ].card2 ) )
 			.some( user => {
-				_hasBeenChallenged = this.ResolveChallenge({ player: user, card, action, type, target: player });
+				_hasBeenChallenged = this.ResolveChallenge({ player: user, byWhom: target, card, action, type, target: player });
 				return _hasBeenChallenged === 'done' ? true : _hasBeenChallenged;
 			});
 
@@ -453,9 +453,9 @@ class COUP {
 				counter: counterAction,
 			});
 
-			console.log(`❓  ${ this.GetAvatar( target ) } was counter actioned by ${ this.GetAvatar( player ) }`);
+			console.log(`❓  ${ this.GetAvatar( target ) } was counter actioned by ${ this.GetAvatar( player ) } with ${ Style.yellow( counterAction ) }`);
 
-			const _hasBeenChallenged = this.ChallengeRound({ player, card: counterAction, action, type: 'counter-round' });
+			const _hasBeenChallenged = this.ChallengeRound({ player, target, card: counterAction, action, type: 'counter-round' });
 			return _hasBeenChallenged === 'done' ? true : !_hasBeenChallenged;
 		}
 
@@ -795,6 +795,7 @@ class LOOP {
 
 		if( !winners || this.ERRORLOG !== '' ) {
 			console.info( this.LOG );
+			console.info( this.ERRORLOG );
 			console.info( JSON.stringify( game.HISTORY, null, 2 ) );
 			this.ROUND = this.ROUNDS;
 		}
