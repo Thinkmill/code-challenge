@@ -10,8 +10,8 @@ const {
 
 class BOT {
 	OnTurn({ history, myCards, myCoins, otherPlayers, discardedCards }) {
-		let action;
-		let against;
+		let thisAction;
+		let thisAgainst;
 		let allActions = ACTIONS();
 		const actionCards = {
 			duke: ['foreign-aid'],
