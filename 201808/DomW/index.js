@@ -9,24 +9,39 @@ const {
 
 
 class BOT {
+	constructor() {
+		this.hasDuke = [];
+		this.hasStealingBlocker = [];
+		this.hasContessa = [];
+	}
+
 	OnTurn({ history, myCards, myCoins, otherPlayers, discardedCards }) {
-		let thisAction;
-		let thisAgainst;
+		let thisAction = [];
+		let thisAgainst = [];
 		let allActions = ACTIONS();
 		const actionCards = {
-			duke: ['foreign-aid'],
-			assassin: ['assassination'],
-			captain: ['stealing'],
-			ambassador: ['swapping'],
-			contessa: ['taking-1'],
+			duke: 'foreign-aid',
+			assassin: 'assassination',
+			captain: 'stealing',
+			ambassador: 'swapping',
+			contessa: 'taking-1',
 		};
 
-		allActions.forEach( item => {
-			//
+		myCards.forEach( action => {
+			thisAction.push( actionCards[ action ] );
 		});
 
-		let action = ACTIONS()[ Math.floor( Math.random() * ACTIONS().length ) ];
-		const against = otherPlayers[ Math.floor( Math.random() * otherPlayers.length ) ].name;
+		let action = thisAction[ Math.floor( Math.random() * thisAction.length ) ];
+		let against = otherPlayers[ Math.floor( Math.random() * otherPlayers.length ) ].name;
+
+		if( action === 'stealing' ) {
+			otherPlayers.some( player => {
+				if( player.coins >= 2 && !this.hasStealingBlocker.includes( player.name ) ) {
+					against = player.name;
+					return true;
+				}
+			});
+		}
 
 		if( myCoins > 10 ) {
 			action = 'couping';
@@ -39,20 +54,38 @@ class BOT {
 	}
 
 	OnChallengeActionRound({ history, myCards, myCoins, otherPlayers, discardedCards, action, byWhom, toWhom }) {
-		return [ true, false ][ Math.floor( Math.random() * 2 ) ];
+		return false;
 	}
 
 	OnCounterAction({ history, myCards, myCoins, otherPlayers, discardedCards, action, byWhom }) {
 		if( action === 'assassination' ) {
-			return [ false, 'contessa' ][ Math.floor( Math.random() * 2 ) ];
+			if( myCards.includes('contessa') ) {
+				return 'contessa';
+			}
+			else {
+				return false;
+			}
 		}
 		else if( action === 'stealing' ) {
-			return [ false, 'ambassador', 'captain' ][ Math.floor( Math.random() * 3 ) ];
+			if( myCards.includes('ambassador') ) {
+				return 'ambassador';
+			}
+			else if( myCards.includes('captain') ) {
+				return 'captain';
+			}
+			else {
+				return false;
+			}
 		}
 	}
 
 	OnCounterActionRound({ history, myCards, myCoins, otherPlayers, discardedCards, action, byWhom, toWhom, card }) {
-		return [ true, false ][ Math.floor( Math.random() * 2 ) ];
+		if( action === 'stealing' ) {
+			console.log({toWhom});
+			console.log({byWhom});
+			this.hasStealingBlocker.push( toWhom );
+		}
+		return false;
 	}
 
 	OnSwappingCards({ history, myCards, myCoins, otherPlayers, discardedCards, newCards }) {
