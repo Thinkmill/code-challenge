@@ -453,7 +453,7 @@ class COUP {
 				counter: counterAction,
 			});
 
-			console.log(`❓  ${ this.GetAvatar( target ) } was counter actioned by ${ this.GetAvatar( player ) }`);
+			console.log(`❓  ${ this.GetAvatar( target ) } was counter actioned by ${ this.GetAvatar( player ) } with ${ Style.yellow( counterAction ) }`);
 
 			const _hasBeenChallenged = this.ChallengeRound({ player, card: counterAction, action, type: 'counter-round' });
 			return _hasBeenChallenged === 'done' ? true : !_hasBeenChallenged;
