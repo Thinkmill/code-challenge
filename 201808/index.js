@@ -795,6 +795,7 @@ class LOOP {
 
 		if( !winners || this.ERRORLOG !== '' ) {
 			console.info( this.LOG );
+			console.info( this.ERRORLOG );
 			console.info( JSON.stringify( game.HISTORY, null, 2 ) );
 			this.ROUND = this.ROUNDS;
 		}
