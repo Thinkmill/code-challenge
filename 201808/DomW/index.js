@@ -31,17 +31,26 @@ class BOT {
 			thisAction.push( actionCards[ action ] );
 		});
 
-		let action = thisAction[ Math.floor( Math.random() * thisAction.length ) ];
-		let against = otherPlayers[ Math.floor( Math.random() * otherPlayers.length ) ].name;
+		if( thisAction.includes('taking-1') && thisAction.includes('foreign-aid') ) {
+			thisAction = thisAction.filter( action => action !== 'taking-1' );
+		}
 
-		if( action === 'stealing' ) {
+		let against;
+
+		if( thisAction.includes( 'stealing' ) ) {
 			otherPlayers.some( player => {
 				if( player.coins >= 2 && !this.hasStealingBlocker.includes( player.name ) ) {
 					against = player.name;
 					return true;
 				}
 			});
+			if( !against ) {
+				thisAction = thisAction.filter( action => action !== 'stealing' );
+			}
 		}
+
+		let action = thisAction[ Math.floor( Math.random() * thisAction.length ) ];
+		if( !against ) against = otherPlayers[ Math.floor( Math.random() * otherPlayers.length ) ].name;
 
 		if( myCoins > 10 ) {
 			action = 'couping';
@@ -80,6 +89,10 @@ class BOT {
 	}
 
 	OnCounterActionRound({ history, myCards, myCoins, otherPlayers, discardedCards, action, byWhom, toWhom, card }) {
+		console.log({action});
+		console.log({byWhom});
+		console.log({toWhom});
+		console.log({card});
 		if( action === 'stealing' ) {
 			this.hasStealingBlocker.push( toWhom );
 		}
