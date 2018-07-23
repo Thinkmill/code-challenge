@@ -318,18 +318,16 @@ class COUP {
 	}
 
 
-	ResolveChallenge({ challenger, byWhom, card, action, type, target, counterer }) {
+	ResolveChallenge({ challenger, byWhom, card, action, type, target, counterer, challengee }) {
 		const challengeTypes = {
 			'challenge-round': 'OnChallengeActionRound',
 			'counter-round': 'OnCounterActionRound',
 		};
 
-		const challengee = target; // FIXME: this doesn't seem right?
-
 		if( this.BOTS[ challenger ][ challengeTypes[ type ] ]({
 			...this.GetGameState(challenger),
 			action,
-			byWhom: byWhom ? byWhom : challenger,  // FIXME: should always be byWhom
+			byWhom,
 			toWhom: target,
 			counterer,
 			card,
@@ -338,10 +336,10 @@ class COUP {
 
 			this.HISTORY.push({
 				type,
-				challenger: challenger,
-				player: challengee,
-				action: action,  // should include card? here?
-				lying: lying,
+				challenger,
+				challengee,
+				action,
+				lying,
 			});
 
 			console.log(`❓  ${ this.GetAvatar( challengee ) } was challenged by ${ this.GetAvatar( challenger ) }`);
@@ -386,11 +384,13 @@ class COUP {
 	ChallengeRound({ player, target, card, action, type, counterer }) {
 		let _hasBeenChallenged = false;
 
+		const challengee = type === 'counter-round' ? counterer : player;
+
 		Object
 			.keys( this.PLAYER )
-			.filter( challenger => challenger !== player && ( this.PLAYER[ challenger ].card1 || this.PLAYER[ challenger ].card2 ) )
+			.filter( challenger => challenger !== challengee && ( this.PLAYER[ challenger ].card1 || this.PLAYER[ challenger ].card2 ) )
 			.some( challenger => {
-				_hasBeenChallenged = this.ResolveChallenge({ challenger, byWhom: target, card, action, type, target: player, counterer });
+				_hasBeenChallenged = this.ResolveChallenge({ challenger, byWhom: player, card, action, type, target, counterer, challengee });
 				return _hasBeenChallenged === 'done' ? true : _hasBeenChallenged;
 			});
 
@@ -405,28 +405,30 @@ class COUP {
 			'stealing': ['captain', 'ambassador', false],
 		};
 		const counter = {}
-		if( player ) {
-			counter.counterAction = this.BOTS[ player ].OnCounterAction({
-				...this.GetGameState(player),
+		if( action !== 'foreign-aid' ) {
+			counter.counterAction = this.BOTS[ target ].OnCounterAction({
+				...this.GetGameState(target),
 				action,
-				byWhom: target,
+				byWhom: player,
+				toWhom: target,
 			});
-			counter.counterer = player;
+			counter.counterer = target;
 		}
 		else {
+			// Foreign aid. everyone gets a go!
 			Object
 				.keys( this.PLAYER )
-				.filter( user => user !== target && ( this.PLAYER[ user ].card1 || this.PLAYER[ user ].card2 ) )
-				.some( user => {
-					const _hasBeenChallenged = this.BOTS[ user ].OnCounterAction({
-						...this.GetGameState(user),
+				.filter( counterer => counterer !== target && ( this.PLAYER[ counterer ].card1 || this.PLAYER[ counterer ].card2 ) )
+				.some( counterer => {
+					const _hasBeenChallenged = this.BOTS[ counterer ].OnCounterAction({
+						...this.GetGameState(counterer),
 						action,
-						byWhom: target,
+						byWhom: player,
+						toWhom: undefined,
 					});
-
 					if( _hasBeenChallenged ) {
 						counter.counterAction = _hasBeenChallenged;
-						counter.counterer = user;
+						counter.counterer = counterer;
 						return true;
 					}
 				});
@@ -441,14 +443,13 @@ class COUP {
 			this.HISTORY.push({
 				type: 'counter-action',
 				action,
-				from: counter.counterer,
+				from: player,
 				to: target,
 				counter: counter.counterAction,
+				counterer: counter.counterer,
 			});
-
-			console.log(`❓  ${ this.GetAvatar( target ) } was counter actioned by ${ this.GetAvatar( counter.counterer ) } with ${ Style.yellow( counter.counterAction ) }`);
-			//                                               FIXME: this looks like a bug
-			const _hasBeenChallenged = this.ChallengeRound({ player: counter.counterer, target, card: counter.counterAction, action, type: 'counter-round', counterer: counter.counterer });
+			console.log(`❓  ${ this.GetAvatar( player ) } was counter actioned by ${ this.GetAvatar( counter.counterer ) } with ${ Style.yellow( counter.counterAction ) }`);
+			const _hasBeenChallenged = this.ChallengeRound({ player, target, card: counter.counterAction, action, type: 'counter-round', counterer: counter.counterer });
 			return _hasBeenChallenged === 'done' ? true : !_hasBeenChallenged;
 		}
 
@@ -472,10 +473,7 @@ class COUP {
 		}
 
 		if( action === 'foreign-aid' || action === 'assassination' || action === 'stealing' ) {
-			let targetPlayer = target;
-			if( action === 'foreign-aid' ) targetPlayer = void(0);
-
-			const _hasBeenChallenged = this.CounterAction({ player: targetPlayer, action, target: player });
+			const _hasBeenChallenged = this.CounterAction({ player, action, target });
 			if( _hasBeenChallenged && _hasBeenChallenged !== 'done' ) {
 				return;
 			}
