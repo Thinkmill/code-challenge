@@ -85,8 +85,8 @@ class COUP {
 
 		players.forEach( player => {
 			this.PLAYER[ player ] = {
-				card1: void(0),
-				card2: void(0),
+				card1: undefined,
+				card2: undefined,
 				coins: 0,
 			};
 		});
@@ -162,11 +162,11 @@ class COUP {
 		allCards
 			.filter( card => {
 				if( card && card === chosenCards[ 0 ] ) {
-					chosenCards[ 0 ] = void(0);
+					chosenCards[ 0 ] = undefined;
 					return false;
 				}
 				if( card && card === chosenCards[ 1 ] ) {
-					chosenCards[ 1 ] = void(0);
+					chosenCards[ 1 ] = undefined;
 					return false;
 				}
 				return true;
@@ -228,6 +228,7 @@ class COUP {
 			});
 	}
 
+
 	GetGameState( player ) {
 		return {
 			history: this.HISTORY.slice( 0 ),
@@ -237,6 +238,7 @@ class COUP {
 			discardedCards: this.DISCARDPILE.slice( 0 ),
 		}
 	}
+
 
 	Wait( time ) {
 		return new Promise( resolve => setTimeout( resolve, time ) );
@@ -274,11 +276,11 @@ class COUP {
 
 		if( this.PLAYER[ player ].card1 === card ) {
 			lost = this.PLAYER[ player ].card1;
-			this.PLAYER[ player ].card1 = void( 0 );
+			this.PLAYER[ player ].card1 = undefined;
 		}
 		else if( this.PLAYER[ player ].card2 === card ) {
 			lost = this.PLAYER[ player ].card2;
-			this.PLAYER[ player ].card2 = void( 0 );
+			this.PLAYER[ player ].card2 = undefined;
 		}
 
 		this.HISTORY.push({
