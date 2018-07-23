@@ -983,6 +983,186 @@ const TEST = {
 		) status = Style.green('PASS');
 		console.info(`${ status }  SwapCards merges cards correctly even when given cards are invalid`);
 	},
+	'checkParameters1': async () => {
+		const game = new COUP;
+
+		const player = MakePlayer();
+		player.bot1.card1 = 'assassin';
+		player.bot1.card2 = 'captain';
+		player.bot1.coins = 1;
+		player.bot2.card1 = 'captain';
+		player.bot2.coins = 3;
+		player.bot3.card1 = 'duke';
+
+		const bots = MakeBots();
+		let output;
+		bots.bot1.OnTurn = ( param ) => {
+			output = param;
+			return { action: 'foreign-aid' };
+		};
+
+		game.HISTORY = [];
+		game.DISCARDPILE = [];
+		game.BOTS = bots;
+		game.PLAYER = player;
+		game.DECK = ['contessa'];
+		game.TURN = 2;
+		game.WhoIsLeft = () => ['bot1'];
+
+		await game.Turn();
+
+		let status = Style.red('FAIL');
+		if(
+			game.PLAYER.bot1.card1 === 'assassin' &&
+			game.PLAYER.bot1.card2 === 'captain' &&
+			game.PLAYER.bot1.coins === 3 &&
+			game.PLAYER.bot2.card1 === 'captain' &&
+			game.PLAYER.bot2.coins === 3 &&
+			game.PLAYER.bot3.card1 === 'duke' &&
+			game.DECK.length === 1 &&
+			output.history.length === 0 &&
+			output.myCards[ 0 ] === 'assassin' &&
+			output.myCards[ 1 ] === 'captain' &&
+			output.myCoins === 1
+		) status = Style.green('PASS');
+		console.info(`${ status }  we get the right parameters passed in for OnTurn`);
+	},
+	'checkParameters2': async () => {
+		const game = new COUP;
+
+		const player = MakePlayer();
+		player.bot1.card1 = 'assassin';
+		player.bot1.card2 = 'captain';
+		player.bot1.coins = 1;
+		player.bot2.card1 = 'captain';
+		player.bot2.coins = 3;
+		player.bot3.card1 = 'duke';
+
+		const bots = MakeBots();
+		let output;
+		bots.bot1.OnTurn = () => ({ action: 'foreign-aid' });
+		bots.bot2.OnCounterAction = ( param ) => {
+			output = param;
+			return false;
+		};
+
+		game.HISTORY = [];
+		game.DISCARDPILE = [];
+		game.BOTS = bots;
+		game.PLAYER = player;
+		game.DECK = ['contessa'];
+		game.TURN = 2;
+		game.WhoIsLeft = () => ['bot1'];
+
+		await game.Turn();
+
+		let status = Style.red('FAIL');
+		if(
+			game.PLAYER.bot1.card1 === 'assassin' &&
+			game.PLAYER.bot1.card2 === 'captain' &&
+			game.PLAYER.bot1.coins === 3 &&
+			game.PLAYER.bot2.card1 === 'captain' &&
+			game.PLAYER.bot2.coins === 3 &&
+			game.PLAYER.bot3.card1 === 'duke' &&
+			game.DECK.length === 1 &&
+			output.action === 'foreign-aid' &&
+			output.byWhom === 'bot1'
+		) status = Style.green('PASS');
+		console.info(`${ status }  we get the right parameters passed in for OnCounterAction`);
+	},
+	'checkParameters3': async () => {
+		const game = new COUP;
+
+		const player = MakePlayer();
+		player.bot1.card1 = 'assassin';
+		player.bot1.card2 = 'captain';
+		player.bot1.coins = 1;
+		player.bot2.card1 = 'captain';
+		player.bot2.coins = 3;
+		player.bot3.card1 = 'duke';
+
+		const bots = MakeBots();
+		let output;
+		bots.bot1.OnTurn = () => ({ action: 'foreign-aid' });
+		bots.bot2.OnCounterAction = () => 'duke';
+		bots.bot3.OnCounterActionRound = ( param ) => {
+			output = param;
+			return false;
+		};
+
+		game.HISTORY = [];
+		game.DISCARDPILE = [];
+		game.BOTS = bots;
+		game.PLAYER = player;
+		game.DECK = ['contessa'];
+		game.TURN = 2;
+		game.WhoIsLeft = () => ['bot1'];
+
+		await game.Turn();
+
+		let status = Style.red('FAIL');
+		if(
+			game.PLAYER.bot1.card1 === 'assassin' &&
+			game.PLAYER.bot1.card2 === 'captain' &&
+			game.PLAYER.bot1.coins === 1 &&
+			game.PLAYER.bot2.card1 === 'captain' &&
+			game.PLAYER.bot2.coins === 3 &&
+			game.PLAYER.bot3.card1 === 'duke' &&
+			game.DECK.length === 1 &&
+			output.action === 'foreign-aid' &&
+			output.byWhom === 'bot1' &&
+			output.counterer === 'bot2' &&
+			output.card === 'duke'
+		) status = Style.green('PASS');
+		console.info(`${ status }  we get the right parameters passed in for OnCounterActionRound for duking`);
+	},
+	'checkParameters4': async () => {
+		const game = new COUP;
+
+		const player = MakePlayer();
+		player.bot1.card1 = 'assassin';
+		player.bot1.card2 = 'captain';
+		player.bot1.coins = 4;
+		player.bot2.card1 = 'captain';
+		player.bot2.coins = 3;
+		player.bot3.card1 = 'duke';
+
+		const bots = MakeBots();
+		let output;
+		bots.bot1.OnTurn = () => ({ action: 'assassination', against: 'bot2' });
+		bots.bot2.OnCounterAction = () => 'contessa';
+		bots.bot3.OnCounterActionRound = ( param ) => {
+			output = param;
+			return false;
+		};
+
+		game.HISTORY = [];
+		game.DISCARDPILE = [];
+		game.BOTS = bots;
+		game.PLAYER = player;
+		game.DECK = ['contessa'];
+		game.TURN = 2;
+		game.WhoIsLeft = () => ['bot1'];
+
+		await game.Turn();
+
+		let status = Style.red('FAIL');
+		if(
+			game.PLAYER.bot1.card1 === 'assassin' &&
+			game.PLAYER.bot1.card2 === 'captain' &&
+			game.PLAYER.bot1.coins === 1 &&
+			game.PLAYER.bot2.card1 === 'captain' &&
+			game.PLAYER.bot2.coins === 3 &&
+			game.PLAYER.bot3.card1 === 'duke' &&
+			game.DECK.length === 1 &&
+			output.action === 'assassination' &&
+			output.byWhom === 'bot1' &&
+			output.toWhom === 'bot2' &&
+			output.counterer === 'bot2' &&
+			output.card === 'contessa'
+		) status = Style.green('PASS');
+		console.info(`${ status }  we get the right parameters passed in for OnCounterActionRound for assassination`);
+	},
 };
 
 

@@ -159,7 +159,7 @@ The class you have to export from your bot needs to include the below methods:
 	- returns: `<CounterAction>`
 - `OnCounterActionRound`
 	- Called when a bot did a counter action and everyone get's to decided whether they want to challenge that counter action
-	- parameters: `{ history, myCards, myCoins, otherPlayers, discardedCards, action, byWhom, toWhom, card }`
+	- parameters: `{ history, myCards, myCoins, otherPlayers, discardedCards, action, byWhom, toWhom, card, counterer }`
 	- returns: `<Boolean>`
 - `OnSwappingCards`
 	- Called when you played your ambassador and now need to decide which cards you want to keep
@@ -186,6 +186,7 @@ Each function is passed one parameter object that can be deconstructed into the 
 | `toWhom`         | To whom is the action directed `<Player>` |
 | `card`           | A string of the counter action taken by the previous bot
 | `newCards`       | An array of cards for the ambassador swap `Array(<Card>)` |
+| `counterer`      | The player who countered an action |
 
 ### The history array
 

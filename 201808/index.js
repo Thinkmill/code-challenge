@@ -313,7 +313,7 @@ class COUP {
 	}
 
 
-	ResolveChallenge({ player, byWhom, card, action, type, target }) {
+	ResolveChallenge({ player, byWhom, card, action, type, target, counterer }) {
 		const challengeTypes = {
 			'challenge-round': 'OnChallengeActionRound',
 			'counter-round': 'OnCounterActionRound',
@@ -328,6 +328,7 @@ class COUP {
 			action,
 			byWhom: byWhom ? byWhom : player,
 			toWhom: target,
+			counterer,
 			card,
 		}) ) {
 			let lying = false;
@@ -382,14 +383,14 @@ class COUP {
 	}
 
 
-	ChallengeRound({ player, target, card, action, type }) {
+	ChallengeRound({ player, target, card, action, type, counterer }) {
 		let _hasBeenChallenged = false;
 
 		Object
 			.keys( this.PLAYER )
 			.filter( user => user !== player && ( this.PLAYER[ user ].card1 || this.PLAYER[ user ].card2 ) )
-			.some( user => {
-				_hasBeenChallenged = this.ResolveChallenge({ player: user, byWhom: target, card, action, type, target: player });
+			.some( challenger => {
+				_hasBeenChallenged = this.ResolveChallenge({ player: challenger, byWhom: target, card, action, type, target: player, counterer });
 				return _hasBeenChallenged === 'done' ? true : _hasBeenChallenged;
 			});
 
@@ -455,7 +456,7 @@ class COUP {
 
 			console.log(`❓  ${ this.GetAvatar( target ) } was counter actioned by ${ this.GetAvatar( player ) } with ${ Style.yellow( counterAction ) }`);
 
-			const _hasBeenChallenged = this.ChallengeRound({ player, target, card: counterAction, action, type: 'counter-round' });
+			const _hasBeenChallenged = this.ChallengeRound({ player, target, card: counterAction, action, type: 'counter-round', counterer: player });
 			return _hasBeenChallenged === 'done' ? true : !_hasBeenChallenged;
 		}
 
@@ -473,7 +474,7 @@ class COUP {
 				'swapping': 'ambassador',
 			};
 
-			const _hasBeenChallenged = this.ChallengeRound({ player, card: cards[ action ], action, type: 'challenge-round' });
+			const _hasBeenChallenged = this.ChallengeRound({ player, card: cards[ action ], action, type: 'challenge-round', target });
 			if( _hasBeenChallenged && _hasBeenChallenged !== 'done' ) {
 				return;
 			}
