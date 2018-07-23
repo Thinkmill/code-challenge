@@ -228,6 +228,15 @@ class COUP {
 			});
 	}
 
+	GetGameState( player ) {
+		return {
+			history: this.HISTORY.slice( 0 ),
+			myCards: this.GetPlayerCards( player ),
+			myCoins: this.PLAYER[ player ].coins,
+			otherPlayers: this.GetPlayerObjects( this.WhoIsLeft(), player ),
+			discardedCards: this.DISCARDPILE.slice( 0 ),
+		}
+	}
 
 	Wait( time ) {
 		return new Promise( resolve => setTimeout( resolve, time ) );
@@ -292,11 +301,7 @@ class COUP {
 		let penalty = '';
 
 		const lostCard = this.BOTS[ player ].OnCardLoss({
-			history: this.HISTORY.slice( 0 ),
-			myCards: this.GetPlayerCards( player ),
-			myCoins: this.PLAYER[ player ].coins,
-			otherPlayers: this.GetPlayerObjects( this.WhoIsLeft(), player ),
-			discardedCards: this.DISCARDPILE.slice( 0 ),
+			...this.GetGameState(player),
 		});
 
 		const _validCard = [ this.PLAYER[ player ].card1, this.PLAYER[ player ].card2 ].includes( lostCard ) && lostCard;
@@ -313,67 +318,60 @@ class COUP {
 	}
 
 
-	ResolveChallenge({ player, byWhom, card, action, type, target, counterer }) {
+	ResolveChallenge({ challenger, byWhom, card, action, type, target, counterer, challengee }) {
 		const challengeTypes = {
 			'challenge-round': 'OnChallengeActionRound',
 			'counter-round': 'OnCounterActionRound',
 		};
 
-		if( this.BOTS[ player ][ challengeTypes[ type ] ]({
-			history: this.HISTORY.slice( 0 ),
-			myCards: this.GetPlayerCards( player ),
-			myCoins: this.PLAYER[ player ].coins,
-			otherPlayers: this.GetPlayerObjects( this.WhoIsLeft(), player ),
-			discardedCards: this.DISCARDPILE.slice( 0 ),
+		if( this.BOTS[ challenger ][ challengeTypes[ type ] ]({
+			...this.GetGameState(challenger),
 			action,
-			byWhom: byWhom ? byWhom : player,
+			byWhom,
 			toWhom: target,
 			counterer,
 			card,
 		}) ) {
-			let lying = false;
-			if( this.PLAYER[ target ].card1 !== card && this.PLAYER[ target ].card2 !== card ) {
-				lying = true;
-			}
+			const lying = this.PLAYER[ challengee ].card1 !== card && this.PLAYER[ challengee ].card2 !== card;
 
 			this.HISTORY.push({
 				type,
-				challenger: player,
-				player: target,
-				action: action,
-				lying: lying,
+				challenger,
+				challengee,
+				action,
+				lying,
 			});
 
-			console.log(`❓  ${ this.GetAvatar( target ) } was challenged by ${ this.GetAvatar( player ) }`);
+			console.log(`❓  ${ this.GetAvatar( challengee ) } was challenged by ${ this.GetAvatar( challenger ) }`);
 
 			if( lying ) {
 				this.HISTORY.push({
 					type: 'penalty',
-					player: target,
+					player: challengee,
 				});
 
-				this.Penalty( target, 'of lying' );
+				this.Penalty( challengee, 'of lying' );
 
 				return true;
 			}
 			else {
 				this.HISTORY.push({
 					type: 'penalty',
-					from: player,
+					from: challenger,
 				});
 
-				this.Penalty( player, `of challenging ${ this.GetAvatar( target ) } unsuccessfully` );
+				this.Penalty( challenger, `of challenging ${ this.GetAvatar( challengee ) } unsuccessfully` );
 				const newCard = this.ExchangeCard( card );
 
-				if( this.PLAYER[ target ].card1 === card ) this.PLAYER[ target ].card1 = newCard;
-				else if( this.PLAYER[ target ].card2 === card ) this.PLAYER[ target ].card2 = newCard;
+				if( this.PLAYER[ challengee ].card1 === card ) this.PLAYER[ challengee ].card1 = newCard;
+				else if( this.PLAYER[ challengee ].card2 === card ) this.PLAYER[ challengee ].card2 = newCard;
 
 				this.HISTORY.push({
 					type: 'unsuccessful-challenge',
 					action: 'swap-1',
-					from: target,
+					from: challengee,
 				});
-				console.log(`↬  ${ this.GetAvatar( target ) } put the ${ Style.yellow( card ) } back in the deck and drew a new card`);
+				console.log(`↬  ${ this.GetAvatar( challengee ) } put the ${ Style.yellow( card ) } back in the deck and drew a new card`);
 
 				return 'done';
 			}
@@ -386,11 +384,13 @@ class COUP {
 	ChallengeRound({ player, target, card, action, type, counterer }) {
 		let _hasBeenChallenged = false;
 
+		const challengee = type === 'counter-round' ? counterer : player;
+
 		Object
 			.keys( this.PLAYER )
-			.filter( user => user !== player && ( this.PLAYER[ user ].card1 || this.PLAYER[ user ].card2 ) )
+			.filter( challenger => challenger !== challengee && ( this.PLAYER[ challenger ].card1 || this.PLAYER[ challenger ].card2 ) )
 			.some( challenger => {
-				_hasBeenChallenged = this.ResolveChallenge({ player: challenger, byWhom: target, card, action, type, target: player, counterer });
+				_hasBeenChallenged = this.ResolveChallenge({ challenger, byWhom: player, card, action, type, target, counterer, challengee });
 				return _hasBeenChallenged === 'done' ? true : _hasBeenChallenged;
 			});
 
@@ -404,45 +404,39 @@ class COUP {
 			'assassination': ['contessa', false],
 			'stealing': ['captain', 'ambassador', false],
 		};
-
-		let counterAction;
-		if( player ) {
-			counterAction = this.BOTS[ player ].OnCounterAction({
-				history: this.HISTORY.slice( 0 ),
-				myCards: this.GetPlayerCards( player ),
-				myCoins: this.PLAYER[ player ].coins,
-				otherPlayers: this.GetPlayerObjects( this.WhoIsLeft(), player ),
-				discardedCards: this.DISCARDPILE.slice( 0 ),
+		const counter = {}
+		if( action !== 'foreign-aid' ) {
+			counter.counterAction = this.BOTS[ target ].OnCounterAction({
+				...this.GetGameState(target),
 				action,
-				byWhom: target,
+				byWhom: player,
+				toWhom: target,
 			});
+			counter.counterer = target;
 		}
 		else {
+			// Foreign aid. everyone gets a go!
 			Object
 				.keys( this.PLAYER )
-				.filter( user => user !== target && ( this.PLAYER[ user ].card1 || this.PLAYER[ user ].card2 ) )
-				.some( user => {
-					const _hasBeenChallenged = this.BOTS[ user ].OnCounterAction({
-						history: this.HISTORY.slice( 0 ),
-						myCards: this.GetPlayerCards( user ),
-						myCoins: this.PLAYER[ user ].coins,
-						otherPlayers: this.GetPlayerObjects( this.WhoIsLeft(), user ),
-						discardedCards: this.DISCARDPILE.slice( 0 ),
+				.filter( counterer => counterer !== target && ( this.PLAYER[ counterer ].card1 || this.PLAYER[ counterer ].card2 ) )
+				.some( counterer => {
+					const _hasBeenChallenged = this.BOTS[ counterer ].OnCounterAction({
+						...this.GetGameState(counterer),
 						action,
-						byWhom: target,
+						byWhom: player,
+						toWhom: undefined,
 					});
-
 					if( _hasBeenChallenged ) {
-						counterAction = _hasBeenChallenged;
-						player = user;
+						counter.counterAction = _hasBeenChallenged;
+						counter.counterer = counterer;
 						return true;
 					}
 				});
 		}
 
-		if( counterAction ) {
-			if( !actions[ action ].includes( counterAction ) ) {
-				this.Penalty( player, `did't give a valid counter action ${ Style.yellow( counterAction ) } for ${ Style.yellow( action ) }` );
+		if( counter.counterAction ) {
+			if( !actions[ action ].includes( counter.counterAction ) ) {
+				this.Penalty( counter.counterer, `did't give a valid counter action ${ Style.yellow( counter.counterAction ) } for ${ Style.yellow( action ) }` );
 				return true;
 			}
 
@@ -451,12 +445,11 @@ class COUP {
 				action,
 				from: player,
 				to: target,
-				counter: counterAction,
+				counter: counter.counterAction,
+				counterer: counter.counterer,
 			});
-
-			console.log(`❓  ${ this.GetAvatar( target ) } was counter actioned by ${ this.GetAvatar( player ) } with ${ Style.yellow( counterAction ) }`);
-
-			const _hasBeenChallenged = this.ChallengeRound({ player, target, card: counterAction, action, type: 'counter-round', counterer: player });
+			console.log(`❓  ${ this.GetAvatar( player ) } was counter actioned by ${ this.GetAvatar( counter.counterer ) } with ${ Style.yellow( counter.counterAction ) }`);
+			const _hasBeenChallenged = this.ChallengeRound({ player, target, card: counter.counterAction, action, type: 'counter-round', counterer: counter.counterer });
 			return _hasBeenChallenged === 'done' ? true : !_hasBeenChallenged;
 		}
 
@@ -466,25 +459,21 @@ class COUP {
 
 	RunChallenges({ action, player, target }) {
 		if( action === 'taking-3' || action === 'assassination' || action === 'stealing' || action === 'swapping' ) {
-			const cards = {
+			const card = {
 				'taking-3': 'duke',
-				'foreign-aid': 'duke',
 				'assassination': 'assassin',
 				'stealing': 'captain',
 				'swapping': 'ambassador',
-			};
+			}[action];
 
-			const _hasBeenChallenged = this.ChallengeRound({ player, card: cards[ action ], action, type: 'challenge-round', target });
+			const _hasBeenChallenged = this.ChallengeRound({ player, card, action, type: 'challenge-round', target });
 			if( _hasBeenChallenged && _hasBeenChallenged !== 'done' ) {
 				return;
 			}
 		}
 
 		if( action === 'foreign-aid' || action === 'assassination' || action === 'stealing' ) {
-			let targetPlayer = target;
-			if( action === 'foreign-aid' ) targetPlayer = void(0);
-
-			const _hasBeenChallenged = this.CounterAction({ player: targetPlayer, action, target: player });
+			const _hasBeenChallenged = this.CounterAction({ player, action, target });
 			if( _hasBeenChallenged && _hasBeenChallenged !== 'done' ) {
 				return;
 			}
@@ -524,11 +513,7 @@ class COUP {
 			case 'couping':
 				this.PLAYER[ player ].coins -= 7;
 				disgarded = this.BOTS[ target ].OnCardLoss({
-					history: this.HISTORY.slice( 0 ),
-					myCards: this.GetPlayerCards( target ),
-					myCoins: this.PLAYER[ target ].coins,
-					otherPlayers: this.GetPlayerObjects( this.WhoIsLeft(), target ),
-					discardedCards: this.DISCARDPILE.slice( 0 ),
+					...this.GetGameState(target),
 				});
 
 				if( this.PLAYER[ target ].card1 === disgarded && disgarded ) {
@@ -548,11 +533,7 @@ class COUP {
 
 			case 'assassination':
 				disgarded = this.BOTS[ target ].OnCardLoss({
-					history: this.HISTORY.slice( 0 ),
-					myCards: this.GetPlayerCards( target ),
-					myCoins: this.PLAYER[ target ].coins,
-					otherPlayers: this.GetPlayerObjects( this.WhoIsLeft(), target ),
-					discardedCards: this.DISCARDPILE.slice( 0 ),
+					...this.GetGameState(target),
 				});
 
 				if( this.PLAYER[ target ].card1 === disgarded && disgarded ) {
@@ -581,11 +562,7 @@ class COUP {
 				const newCards = [ this.GetCardFromDeck(), this.GetCardFromDeck() ];
 
 				const chosenCards = this.BOTS[ player ].OnSwappingCards({
-					history: this.HISTORY.slice( 0 ),
-					myCards: this.GetPlayerCards( player ),
-					myCoins: this.PLAYER[ player ].coins,
-					otherPlayers: this.GetPlayerObjects( this.WhoIsLeft(), player ),
-					discardedCards: this.DISCARDPILE.slice( 0 ),
+					...this.GetGameState(player),
 					newCards: newCards.slice( 0 ),
 				});
 
@@ -599,11 +576,7 @@ class COUP {
 		const player = Object.keys( this.PLAYER )[ this.GetWhosNext() ];
 
 		const { action, against } = this.BOTS[ player ].OnTurn({
-			history: this.HISTORY.slice( 0 ),
-			myCards: this.GetPlayerCards( player ),
-			myCoins: this.PLAYER[ player ].coins,
-			otherPlayers: this.GetPlayerObjects( this.WhoIsLeft(), player ),
-			discardedCards: this.DISCARDPILE.slice( 0 ),
+			...this.GetGameState(player),
 		});
 
 		const playerAvatar = this.GetAvatar( player );
