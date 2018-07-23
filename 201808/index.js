@@ -405,14 +405,14 @@ class COUP {
 			'assassination': ['contessa', false],
 			'stealing': ['captain', 'ambassador', false],
 		};
-
-		let counterAction;
+		const counter = {}
 		if( player ) {
-			counterAction = this.BOTS[ player ].OnCounterAction({
+			counter.counterAction = this.BOTS[ player ].OnCounterAction({
 				...this.GetGameState(player),
 				action,
 				byWhom: target,
 			});
+			counter.counterer = player;
 		}
 		else {
 			Object
@@ -426,30 +426,30 @@ class COUP {
 					});
 
 					if( _hasBeenChallenged ) {
-						counterAction = _hasBeenChallenged;
-						player = user;
+						counter.counterAction = _hasBeenChallenged;
+						counter.counterer = user;
 						return true;
 					}
 				});
 		}
 
-		if( counterAction ) {
-			if( !actions[ action ].includes( counterAction ) ) {
-				this.Penalty( player, `did't give a valid counter action ${ Style.yellow( counterAction ) } for ${ Style.yellow( action ) }` );
+		if( counter.counterAction ) {
+			if( !actions[ action ].includes( counter.counterAction ) ) {
+				this.Penalty( counter.counterer, `did't give a valid counter action ${ Style.yellow( counter.counterAction ) } for ${ Style.yellow( action ) }` );
 				return true;
 			}
 
 			this.HISTORY.push({
 				type: 'counter-action',
 				action,
-				from: player,
+				from: counter.counterer,
 				to: target,
-				counter: counterAction,
+				counter: counter.counterAction,
 			});
 
-			console.log(`❓  ${ this.GetAvatar( target ) } was counter actioned by ${ this.GetAvatar( player ) } with ${ Style.yellow( counterAction ) }`);
-
-			const _hasBeenChallenged = this.ChallengeRound({ player, target, card: counterAction, action, type: 'counter-round', counterer: player });
+			console.log(`❓  ${ this.GetAvatar( target ) } was counter actioned by ${ this.GetAvatar( counter.counterer ) } with ${ Style.yellow( counter.counterAction ) }`);
+			//                                               FIXME: this looks like a bug
+			const _hasBeenChallenged = this.ChallengeRound({ player: counter.counterer, target, card: counter.counterAction, action, type: 'counter-round', counterer: counter.counterer });
 			return _hasBeenChallenged === 'done' ? true : !_hasBeenChallenged;
 		}
 
