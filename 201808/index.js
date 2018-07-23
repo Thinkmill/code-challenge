@@ -318,16 +318,16 @@ class COUP {
 	}
 
 
-	ResolveChallenge({ player, byWhom, card, action, type, target, counterer }) {
+	ResolveChallenge({ challenger, byWhom, card, action, type, target, counterer }) {
 		const challengeTypes = {
 			'challenge-round': 'OnChallengeActionRound',
 			'counter-round': 'OnCounterActionRound',
 		};
 
-		if( this.BOTS[ player ][ challengeTypes[ type ] ]({
-			...this.GetGameState(player),
+		if( this.BOTS[ challenger ][ challengeTypes[ type ] ]({
+			...this.GetGameState(challenger),
 			action,
-			byWhom: byWhom ? byWhom : player,
+			byWhom: byWhom ? byWhom : challenger,
 			toWhom: target,
 			counterer,
 			card,
@@ -339,13 +339,13 @@ class COUP {
 
 			this.HISTORY.push({
 				type,
-				challenger: player,
+				challenger: challenger,
 				player: target,
 				action: action,
 				lying: lying,
 			});
 
-			console.log(`❓  ${ this.GetAvatar( target ) } was challenged by ${ this.GetAvatar( player ) }`);
+			console.log(`❓  ${ this.GetAvatar( target ) } was challenged by ${ this.GetAvatar( challenger ) }`);
 
 			if( lying ) {
 				this.HISTORY.push({
@@ -360,10 +360,10 @@ class COUP {
 			else {
 				this.HISTORY.push({
 					type: 'penalty',
-					from: player,
+					from: challenger,
 				});
 
-				this.Penalty( player, `of challenging ${ this.GetAvatar( target ) } unsuccessfully` );
+				this.Penalty( challenger, `of challenging ${ this.GetAvatar( target ) } unsuccessfully` );
 				const newCard = this.ExchangeCard( card );
 
 				if( this.PLAYER[ target ].card1 === card ) this.PLAYER[ target ].card1 = newCard;
@@ -389,9 +389,9 @@ class COUP {
 
 		Object
 			.keys( this.PLAYER )
-			.filter( user => user !== player && ( this.PLAYER[ user ].card1 || this.PLAYER[ user ].card2 ) )
+			.filter( challenger => challenger !== player && ( this.PLAYER[ challenger ].card1 || this.PLAYER[ challenger ].card2 ) )
 			.some( challenger => {
-				_hasBeenChallenged = this.ResolveChallenge({ player: challenger, byWhom: target, card, action, type, target: player, counterer });
+				_hasBeenChallenged = this.ResolveChallenge({ challenger, byWhom: target, card, action, type, target: player, counterer });
 				return _hasBeenChallenged === 'done' ? true : _hasBeenChallenged;
 			});
 
@@ -459,15 +459,14 @@ class COUP {
 
 	RunChallenges({ action, player, target }) {
 		if( action === 'taking-3' || action === 'assassination' || action === 'stealing' || action === 'swapping' ) {
-			const cards = {
+			const card = {
 				'taking-3': 'duke',
-				'foreign-aid': 'duke',
 				'assassination': 'assassin',
 				'stealing': 'captain',
 				'swapping': 'ambassador',
-			};
+			}[action];
 
-			const _hasBeenChallenged = this.ChallengeRound({ player, card: cards[ action ], action, type: 'challenge-round', target });
+			const _hasBeenChallenged = this.ChallengeRound({ player, card, action, type: 'challenge-round', target });
 			if( _hasBeenChallenged && _hasBeenChallenged !== 'done' ) {
 				return;
 			}
