@@ -32,18 +32,18 @@ const MakeBots = () => ({
 });
 const MakePlayer = () => ({
 	bot1: {
-		card1: void(0),
-		card2: void(0),
+		card1: undefined,
+		card2: undefined,
 		coins: 0
 	},
 	bot2: {
-		card1: void(0),
-		card2: void(0),
+		card1: undefined,
+		card2: undefined,
 		coins: 0
 	},
 	bot3: {
-		card1: void(0),
-		card2: void(0),
+		card1: undefined,
+		card2: undefined,
 		coins: 0
 	},
 });
@@ -113,7 +113,7 @@ const TEST = {
 		if(
 			game.PLAYER.bot1.card1 === 'duke' &&
 			game.PLAYER.bot1.coins === 1 &&
-			game.PLAYER.bot2.card1 === void(0)
+			game.PLAYER.bot2.card1 === undefined
 		) status = Style.green('PASS');
 		console.info(`${ status }  ${ Style.yellow('couping') } action`);
 	},
@@ -177,7 +177,7 @@ const TEST = {
 		let status = Style.red('FAIL');
 		if(
 			game.PLAYER.bot1.coins === 0 &&
-			game.PLAYER.bot1.card1 === void(0) &&
+			game.PLAYER.bot1.card1 === undefined &&
 			game.PLAYER.bot2.card1 === 'duke'
 		) status = Style.green('PASS');
 		console.info(`${ status }  ${ Style.yellow('taking-3') } with successful challenge`);
@@ -209,7 +209,7 @@ const TEST = {
 		if(
 			game.PLAYER.bot1.coins === 3 &&
 			game.PLAYER.bot1.card1 === 'duke' &&
-			game.PLAYER.bot2.card1 === void(0)
+			game.PLAYER.bot2.card1 === undefined
 		) status = Style.green('PASS');
 		console.info(`${ status }  ${ Style.yellow('taking-3') } with unsuccessful challenge`);
 	},
@@ -247,7 +247,7 @@ const TEST = {
 			game.PLAYER.bot1.card1 === 'duke' &&
 			game.PLAYER.bot1.coins === 1 &&
 			game.PLAYER.bot2.card1 === 'duke' &&
-			game.PLAYER.bot2.card2 === void(0) &&
+			game.PLAYER.bot2.card2 === undefined &&
 			game.PLAYER.bot2.coins === 5
 		) status = Style.green('PASS');
 		console.info(`${ status }  ${ Style.yellow('assassination') } without challenge or counter action`);
@@ -279,7 +279,7 @@ const TEST = {
 
 		let status = Style.red('FAIL');
 		if(
-			game.PLAYER.bot1.card1 === void(0) &&
+			game.PLAYER.bot1.card1 === undefined &&
 			game.PLAYER.bot1.coins === 1 &&
 			game.PLAYER.bot2.card1 === 'duke' &&
 			game.PLAYER.bot2.card2 === 'captain' &&
@@ -315,10 +315,10 @@ const TEST = {
 
 		let status = Style.red('FAIL');
 		if(
-			game.PLAYER.bot1.card1 !== void(0) &&
+			game.PLAYER.bot1.card1 !== undefined &&
 			game.PLAYER.bot1.coins === 1 &&
-			game.PLAYER.bot2.card1 === void(0) &&
-			game.PLAYER.bot2.card2 === void(0) &&
+			game.PLAYER.bot2.card1 === undefined &&
+			game.PLAYER.bot2.card2 === undefined &&
 			game.PLAYER.bot2.coins === 5
 		) status = Style.green('PASS');
 		console.info(`${ status }  ${ Style.yellow('assassination') } with unsuccessful challenge`);
@@ -388,8 +388,8 @@ const TEST = {
 		if(
 			game.PLAYER.bot1.card1 === 'assassin' &&
 			game.PLAYER.bot1.coins === 1 &&
-			game.PLAYER.bot2.card1 === void(0) &&
-			game.PLAYER.bot2.card2 === void(0) &&
+			game.PLAYER.bot2.card1 === undefined &&
+			game.PLAYER.bot2.card2 === undefined &&
 			game.PLAYER.bot2.coins === 5
 		) status = Style.green('PASS');
 		console.info(`${ status }  ${ Style.yellow('assassination') } with counter action and successful counter challenge`);
@@ -422,10 +422,10 @@ const TEST = {
 
 		let status = Style.red('FAIL');
 		if(
-			game.PLAYER.bot1.card1 === void(0) &&
+			game.PLAYER.bot1.card1 === undefined &&
 			game.PLAYER.bot1.coins === 1 &&
 			game.PLAYER.bot2.card1 === 'duke' &&
-			game.PLAYER.bot2.card2 !== void(0) &&
+			game.PLAYER.bot2.card2 !== undefined &&
 			game.PLAYER.bot2.coins === 5
 		) status = Style.green('PASS');
 		console.info(`${ status }  ${ Style.yellow('assassination') } with counter action and unsuccessful counter challenge`);
@@ -493,7 +493,7 @@ const TEST = {
 		let status = Style.red('FAIL');
 		if(
 			game.PLAYER.bot1.coins === 1 &&
-			game.PLAYER.bot1.card1 === void(0) &&
+			game.PLAYER.bot1.card1 === undefined &&
 			game.PLAYER.bot2.coins === 5 &&
 			game.PLAYER.bot2.card1 === 'duke'
 		) status = Style.green('PASS');
@@ -526,9 +526,9 @@ const TEST = {
 		let status = Style.red('FAIL');
 		if(
 			game.PLAYER.bot1.coins === 3 &&
-			game.PLAYER.bot1.card1 !== void(0) &&
+			game.PLAYER.bot1.card1 !== undefined &&
 			game.PLAYER.bot2.coins === 3 &&
-			game.PLAYER.bot2.card1 === void(0)
+			game.PLAYER.bot2.card1 === undefined
 		) status = Style.green('PASS');
 		console.info(`${ status }  ${ Style.yellow('stealing') } with unsuccessful challenge`);
 	},
@@ -595,7 +595,7 @@ const TEST = {
 			game.PLAYER.bot1.coins === 3 &&
 			game.PLAYER.bot1.card1 === 'captain' &&
 			game.PLAYER.bot2.coins === 3 &&
-			game.PLAYER.bot2.card1 === void(0)
+			game.PLAYER.bot2.card1 === undefined
 		) status = Style.green('PASS');
 		console.info(`${ status }  ${ Style.yellow('stealing') } with counter action and successful counter challenge`);
 	},
@@ -627,9 +627,9 @@ const TEST = {
 		let status = Style.red('FAIL');
 		if(
 			game.PLAYER.bot1.coins === 1 &&
-			game.PLAYER.bot1.card1 === void(0) &&
+			game.PLAYER.bot1.card1 === undefined &&
 			game.PLAYER.bot2.coins === 5 &&
-			game.PLAYER.bot2.card1 !== void(0)
+			game.PLAYER.bot2.card1 !== undefined
 		) status = Style.green('PASS');
 		console.info(`${ status }  ${ Style.yellow('stealing') } with counter action and unsuccessful counter challenge`);
 	},
@@ -694,7 +694,7 @@ const TEST = {
 
 		let status = Style.red('FAIL');
 		if(
-			game.PLAYER.bot1.card1 === void(0) &&
+			game.PLAYER.bot1.card1 === undefined &&
 			game.PLAYER.bot1.card2 === 'contessa' &&
 			game.PLAYER.bot2.card1 === 'ambassador'
 		) status = Style.green('PASS');
@@ -726,9 +726,9 @@ const TEST = {
 
 		let status = Style.red('FAIL');
 		if(
-			game.PLAYER.bot1.card1 !== void(0) &&
-			game.PLAYER.bot1.card2 !== void(0) &&
-			game.PLAYER.bot2.card1 === void(0)
+			game.PLAYER.bot1.card1 !== undefined &&
+			game.PLAYER.bot1.card2 !== undefined &&
+			game.PLAYER.bot2.card1 === undefined
 		) status = Style.green('PASS');
 		console.info(`${ status }  ${ Style.yellow('swapping') } with unsuccessful challenge`);
 	},
@@ -828,7 +828,7 @@ const TEST = {
 			game.PLAYER.bot1.coins === 2 &&
 			game.PLAYER.bot1.card1 === 'duke' &&
 			game.PLAYER.bot2.card1 === 'duke' &&
-			game.PLAYER.bot3.card1 === void(0)
+			game.PLAYER.bot3.card1 === undefined
 		) status = Style.green('PASS');
 		console.info(`${ Style.red( status ) }  ${ Style.yellow('foreign-aid') } with counter action and successful counter challenge`);
 	},
@@ -860,9 +860,9 @@ const TEST = {
 		let status = Style.red('FAIL');
 		if(
 			game.PLAYER.bot1.coins === 0 &&
-			game.PLAYER.bot1.card1 === void(0) &&
+			game.PLAYER.bot1.card1 === undefined &&
 			game.PLAYER.bot2.card1 === 'duke' &&
-			game.PLAYER.bot3.card1 !== void(0)
+			game.PLAYER.bot3.card1 !== undefined
 		) status = Style.green('PASS');
 		console.info(`${ Style.red( status ) }  ${ Style.yellow('foreign-aid') } with counter action and unsuccessful counter challenge`);
 	},
@@ -906,10 +906,10 @@ const TEST = {
 
 		let status = Style.red('FAIL');
 		if(
-			game.PLAYER.bot1.card1 === void(0) &&
+			game.PLAYER.bot1.card1 === undefined &&
 			game.PLAYER.bot1.card2 === 'captain' &&
 			game.PLAYER.bot1.coins === 1 &&
-			game.PLAYER.bot2.card1 !== void(0) &&
+			game.PLAYER.bot2.card1 !== undefined &&
 			game.PLAYER.bot2.coins === 3 &&
 			game.PLAYER.bot3.card1 === 'duke' &&
 			game.DECK.length === 1 &&
@@ -943,7 +943,7 @@ const TEST = {
 		const game = new COUP;
 
 		const player = MakePlayer();
-		player.bot1.card1 = void(0);
+		player.bot1.card1 = undefined;
 		player.bot1.card2 = 'contessa';
 
 		game.PLAYER = player;
@@ -954,7 +954,7 @@ const TEST = {
 		let status = Style.red('FAIL');
 		if(
 			game.PLAYER.bot1.card1 === 'captain' &&
-			game.PLAYER.bot1.card2 === void(0) &&
+			game.PLAYER.bot1.card2 === undefined &&
 			game.DECK[ 0 ] === 'ambassador' &&
 			game.DECK[ 1 ] === 'contessa' &&
 			game.DECK[ 2 ] === 'duke'
@@ -966,7 +966,7 @@ const TEST = {
 
 		const player = MakePlayer();
 		player.bot1.card1 = 'contessa';
-		player.bot1.card2 = void(0);
+		player.bot1.card2 = undefined;
 
 		game.PLAYER = player;
 		game.DECK = [];
@@ -975,8 +975,8 @@ const TEST = {
 
 		let status = Style.red('FAIL');
 		if(
-			game.PLAYER.bot1.card1 === void(0) &&
-			game.PLAYER.bot1.card2 === void(0) &&
+			game.PLAYER.bot1.card1 === undefined &&
+			game.PLAYER.bot1.card2 === undefined &&
 			game.DECK[ 0 ] === 'contessa' &&
 			game.DECK[ 1 ] === 'captain' &&
 			game.DECK[ 2 ] === 'duke'

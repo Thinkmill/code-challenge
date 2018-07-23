@@ -215,6 +215,7 @@ Challenge outcome:
 {
 	type: 'challenge-round' || 'counter-round',
 	challenger: <Player>,
+	challengee: <Player>,
 	player: <Player>,
 	action: <Action>,
 	lying: <Boolean>,
