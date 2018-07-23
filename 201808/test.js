@@ -843,8 +843,20 @@ const TEST = {
 		player.bot3.card1 = 'duke';
 
 		const bots = MakeBots();
+		let runs = [];
 		bots.bot1.OnTurn = () => ({ action: 'foreign-aid', against: 'bo2' });
-		bots.bot3.OnCounterAction = () => 'duke';
+		bots.bot1.OnCounterAction = () => {
+			runs.push('bot1');
+			return 'duke';
+		};
+		bots.bot2.OnCounterAction = () => {
+			runs.push('bot2');
+			return 'duke';
+		};
+		bots.bot3.OnCounterAction = () => {
+			runs.push('bot3');
+			return 'duke';
+		};
 		bots.bot1.OnCounterActionRound = () => true;
 
 		game.HISTORY = [];
@@ -862,7 +874,10 @@ const TEST = {
 			game.PLAYER.bot1.coins === 0 &&
 			game.PLAYER.bot1.card1 === undefined &&
 			game.PLAYER.bot2.card1 === 'duke' &&
-			game.PLAYER.bot3.card1 !== undefined
+			game.PLAYER.bot3.card1 !== undefined &&
+			runs.length === 1 &&
+			!runs.includes('bot1') &&
+			!runs.includes('bot3')
 		) status = Style.green('PASS');
 		console.info(`${ Style.red( status ) }  ${ Style.yellow('foreign-aid') } with counter action and unsuccessful counter challenge`);
 	},
