@@ -324,6 +324,8 @@ class COUP {
 			'counter-round': 'OnCounterActionRound',
 		};
 
+		const challengee = target;
+
 		if( this.BOTS[ challenger ][ challengeTypes[ type ] ]({
 			...this.GetGameState(challenger),
 			action,
@@ -332,28 +334,25 @@ class COUP {
 			counterer,
 			card,
 		}) ) {
-			let lying = false;
-			if( this.PLAYER[ target ].card1 !== card && this.PLAYER[ target ].card2 !== card ) {
-				lying = true;
-			}
+			const lying = this.PLAYER[ challengee ].card1 !== card && this.PLAYER[ challengee ].card2 !== card;
 
 			this.HISTORY.push({
 				type,
 				challenger: challenger,
-				player: target,
+				player: challengee,
 				action: action,
 				lying: lying,
 			});
 
-			console.log(`❓  ${ this.GetAvatar( target ) } was challenged by ${ this.GetAvatar( challenger ) }`);
+			console.log(`❓  ${ this.GetAvatar( challengee ) } was challenged by ${ this.GetAvatar( challenger ) }`);
 
 			if( lying ) {
 				this.HISTORY.push({
 					type: 'penalty',
-					player: target,
+					player: challengee,
 				});
 
-				this.Penalty( target, 'of lying' );
+				this.Penalty( challengee, 'of lying' );
 
 				return true;
 			}
@@ -363,18 +362,18 @@ class COUP {
 					from: challenger,
 				});
 
-				this.Penalty( challenger, `of challenging ${ this.GetAvatar( target ) } unsuccessfully` );
+				this.Penalty( challenger, `of challenging ${ this.GetAvatar( challengee ) } unsuccessfully` );
 				const newCard = this.ExchangeCard( card );
 
-				if( this.PLAYER[ target ].card1 === card ) this.PLAYER[ target ].card1 = newCard;
-				else if( this.PLAYER[ target ].card2 === card ) this.PLAYER[ target ].card2 = newCard;
+				if( this.PLAYER[ challengee ].card1 === card ) this.PLAYER[ challengee ].card1 = newCard;
+				else if( this.PLAYER[ challengee ].card2 === card ) this.PLAYER[ challengee ].card2 = newCard;
 
 				this.HISTORY.push({
 					type: 'unsuccessful-challenge',
 					action: 'swap-1',
-					from: target,
+					from: challengee,
 				});
-				console.log(`↬  ${ this.GetAvatar( target ) } put the ${ Style.yellow( card ) } back in the deck and drew a new card`);
+				console.log(`↬  ${ this.GetAvatar( challengee ) } put the ${ Style.yellow( card ) } back in the deck and drew a new card`);
 
 				return 'done';
 			}
