@@ -1040,6 +1040,49 @@ const TEST = {
 
 		const bots = MakeBots();
 		let output;
+		bots.bot1.OnTurn = () =>({ action: 'stealing', against: 'bot2' });
+		bots.bot2.OnChallengeActionRound = ( param ) => {
+			output = param;
+			return false;
+		};
+
+		game.HISTORY = [];
+		game.DISCARDPILE = [];
+		game.BOTS = bots;
+		game.PLAYER = player;
+		game.DECK = ['contessa'];
+		game.TURN = 2;
+		game.WhoIsLeft = () => ['bot1'];
+
+		await game.Turn();
+
+		let status = Style.red('FAIL');
+		if(
+			game.PLAYER.bot1.card1 === 'assassin' &&
+			game.PLAYER.bot1.card2 === 'captain' &&
+			game.PLAYER.bot1.coins === 3 &&
+			game.PLAYER.bot2.card1 === 'captain' &&
+			game.PLAYER.bot2.coins === 1 &&
+			game.PLAYER.bot3.card1 === 'duke' &&
+			game.DECK.length === 1 &&
+			output.myCards[ 0 ] === 'captain' &&
+			output.myCoins === 3
+		) status = Style.green('PASS');
+		console.info(`${ status }  we get the right parameters passed in for OnChallengeActionRound`);
+	},
+	'checkParameters3': async () => {
+		const game = new COUP;
+
+		const player = MakePlayer();
+		player.bot1.card1 = 'assassin';
+		player.bot1.card2 = 'captain';
+		player.bot1.coins = 1;
+		player.bot2.card1 = 'captain';
+		player.bot2.coins = 3;
+		player.bot3.card1 = 'duke';
+
+		const bots = MakeBots();
+		let output;
 		bots.bot1.OnTurn = () => ({ action: 'foreign-aid' });
 		bots.bot2.OnCounterAction = ( param ) => {
 			output = param;
@@ -1070,7 +1113,7 @@ const TEST = {
 		) status = Style.green('PASS');
 		console.info(`${ status }  we get the right parameters passed in for OnCounterAction`);
 	},
-	'checkParameters3': async () => {
+	'checkParameters4': async () => {
 		const game = new COUP;
 
 		const player = MakePlayer();
@@ -1116,7 +1159,7 @@ const TEST = {
 		) status = Style.green('PASS');
 		console.info(`${ status }  we get the right parameters passed in for OnCounterActionRound for duking`);
 	},
-	'checkParameters4': async () => {
+	'checkParameters5': async () => {
 		const game = new COUP;
 
 		const player = MakePlayer();
