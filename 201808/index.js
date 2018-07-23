@@ -190,7 +190,7 @@ class COUP {
 
 
 	GetWhosNext() {
-		this.TURN++;
+		this.TURN ++;
 
 		if( this.TURN > Object.keys( this.PLAYER ).length - 1 ) {
 			this.TURN = 0;
@@ -302,9 +302,16 @@ class COUP {
 	Penalty( player, reason ) {
 		let penalty = '';
 
-		const lostCard = this.BOTS[ player ].OnCardLoss({
-			...this.GetGameState(player),
-		});
+		let lostCard;
+		try {
+			lostCard = this.BOTS[ player ].OnCardLoss({
+				...this.GetGameState(player),
+			});
+		}
+		catch( error ) {
+			this.PLAYER[ player ].card1 = undefined;
+			this.PLAYER[ player ].card2 = undefined;
+		}
 
 		const _validCard = [ this.PLAYER[ player ].card1, this.PLAYER[ player ].card2 ].includes( lostCard ) && lostCard;
 
@@ -326,14 +333,22 @@ class COUP {
 			'counter-round': 'OnCounterActionRound',
 		};
 
-		if( this.BOTS[ challenger ][ challengeTypes[ type ] ]({
-			...this.GetGameState(challenger),
-			action,
-			byWhom,
-			toWhom: target,
-			counterer,
-			card,
-		}) ) {
+		let botAnswer;
+		try {
+			botAnswer = this.BOTS[ challenger ][ challengeTypes[ type ] ]({
+				...this.GetGameState(challenger),
+				action,
+				byWhom,
+				toWhom: target,
+				counterer,
+				card,
+			});
+		}
+		catch( error ) {
+			this.Penalty( challenger, `the bot crashed` );
+		}
+
+		if( botAnswer ) {
 			const lying = this.PLAYER[ challengee ].card1 !== card && this.PLAYER[ challengee ].card2 !== card;
 
 			this.HISTORY.push({
@@ -408,13 +423,18 @@ class COUP {
 		};
 		const counter = {}
 		if( action !== 'foreign-aid' ) {
-			counter.counterAction = this.BOTS[ target ].OnCounterAction({
-				...this.GetGameState(target),
-				action,
-				byWhom: player,
-				toWhom: target,
-			});
-			counter.counterer = target;
+			try {
+				counter.counterAction = this.BOTS[ target ].OnCounterAction({
+					...this.GetGameState(target),
+					action,
+					byWhom: player,
+					toWhom: target,
+				});
+				counter.counterer = target;
+			}
+			catch( error ) {
+				this.Penalty( target, `the bot crashed` );
+			}
 		}
 		else {
 			// Foreign aid. everyone gets a go!
@@ -422,12 +442,19 @@ class COUP {
 				.keys( this.PLAYER )
 				.filter( counterer => counterer !== player && ( this.PLAYER[ counterer ].card1 || this.PLAYER[ counterer ].card2 ) )
 				.some( counterer => {
-					const _hasBeenChallenged = this.BOTS[ counterer ].OnCounterAction({
-						...this.GetGameState(counterer),
-						action,
-						byWhom: player,
-						toWhom: undefined,
-					});
+					let _hasBeenChallenged;
+					try {
+						_hasBeenChallenged = this.BOTS[ counterer ].OnCounterAction({
+							...this.GetGameState(counterer),
+							action,
+							byWhom: player,
+							toWhom: undefined,
+						});
+					}
+					catch( error ) {
+						this.Penalty( counterer, `the bot crashed` );
+					}
+
 					if( _hasBeenChallenged ) {
 						counter.counterAction = _hasBeenChallenged;
 						counter.counterer = counterer;
@@ -514,9 +541,15 @@ class COUP {
 
 			case 'couping':
 				this.PLAYER[ player ].coins -= 7;
-				disgarded = this.BOTS[ target ].OnCardLoss({
-					...this.GetGameState(target),
-				});
+				try {
+					disgarded = this.BOTS[ target ].OnCardLoss({
+						...this.GetGameState(target),
+					});
+				}
+				catch( error ) {
+					this.PLAYER[ target ].card1 = undefined;
+					this.PLAYER[ target ].card2 = undefined;
+				}
 
 				if( this.PLAYER[ target ].card1 === disgarded && disgarded ) {
 					this.LosePlayerCard( target, disgarded );
@@ -534,9 +567,15 @@ class COUP {
 				break;
 
 			case 'assassination':
-				disgarded = this.BOTS[ target ].OnCardLoss({
-					...this.GetGameState(target),
-				});
+				try {
+					disgarded = this.BOTS[ target ].OnCardLoss({
+						...this.GetGameState(target),
+					});
+				}
+				catch( error ) {
+					this.PLAYER[ target ].card1 = undefined;
+					this.PLAYER[ target ].card2 = undefined;
+				}
 
 				if( this.PLAYER[ target ].card1 === disgarded && disgarded ) {
 					this.LosePlayerCard( target, disgarded );
@@ -562,11 +601,16 @@ class COUP {
 
 			case 'swapping':
 				const newCards = [ this.GetCardFromDeck(), this.GetCardFromDeck() ];
-
-				const chosenCards = this.BOTS[ player ].OnSwappingCards({
-					...this.GetGameState(player),
-					newCards: newCards.slice( 0 ),
-				});
+				let chosenCards;
+				try {
+					chosenCards = this.BOTS[ player ].OnSwappingCards({
+						...this.GetGameState(player),
+						newCards: newCards.slice( 0 ),
+					});
+				}
+				catch( error ) {
+					this.Penalty( player, `the bot crashed` );
+				}
 
 				this.SwapCards({ chosenCards, player, newCards });
 				break;
@@ -577,113 +621,124 @@ class COUP {
 	Turn() {
 		const player = Object.keys( this.PLAYER )[ this.GetWhosNext() ];
 
-		const { action, against } = this.BOTS[ player ].OnTurn({
-			...this.GetGameState(player),
-		});
-
-		const playerAvatar = this.GetAvatar( player );
-		const targetAvatar = this.GetAvatar( against );
-
-		let skipAction = false;
-
-		switch( action ) {
-			case 'taking-1':
-				this.HISTORY.push({
-					type: 'action',
-					action: 'taking-1',
-					from: player,
-				});
-				console.log(`🃏  ${ playerAvatar } takes ${ Style.yellow('a coin') }`);
-				break;
-			case 'foreign-aid':
-				this.HISTORY.push({
-					type: 'action',
-					action: 'foreign-aid',
-					from: player,
-				});
-				console.log(`🃏  ${ playerAvatar } takes 2 coins ${ Style.yellow('foreign aid') }`);
-				break;
-			case 'couping':
-				this.HISTORY.push({
-					type: 'action',
-					action: 'couping',
-					from: player,
-					to: against,
-				});
-				console.log(`🃏  ${ playerAvatar } coups ${ targetAvatar }`);
-
-				if( this.PLAYER[ player ].coins < 7 ) {
-					this.Penalty( player, `did't having enough coins for a coup` );
-					skipAction = true;
-				}
-
-				if( !this.StillAlive( against ) ) {
-					this.Penalty( player, `tried to coup a dead player` );
-					skipAction = true;
-				}
-				break;
-			case 'taking-3':
-				this.HISTORY.push({
-					type: 'action',
-					action: 'taking-3',
-					from: player,
-				});
-				console.log(`🃏  ${ playerAvatar } takes 3 coins with the ${ Style.yellow('duke') }`);
-				break;
-			case 'assassination':
-				this.HISTORY.push({
-					type: 'action',
-					action: 'assassination',
-					from: player,
-					to: against,
-				});
-				console.log(`🃏  ${ playerAvatar } assassinates ${ targetAvatar }`);
-
-				if( this.PLAYER[ player ].coins < 3 ) {
-					this.Penalty( player, `did't have enough coins for an assassination` );
-					skipAction = true;
-				}
-				else if( !this.StillAlive( against ) ) {
-					this.Penalty( player, `tried to assassinat a dead player` );
-					skipAction = true;
-				}
-				else {
-					this.PLAYER[ player ].coins -= 3;
-				}
-				break;
-			case 'stealing':
-				this.HISTORY.push({
-					type: 'action',
-					action: 'stealing',
-					from: player,
-					to: against,
-				});
-
-				if( !this.StillAlive( against ) ) {
-					this.Penalty( player, `tried to steal from a dead player` );
-					skipAction = true;
-				}
-
-				console.log(`🃏  ${ playerAvatar } steals from ${ targetAvatar }`);
-				break;
-			case 'swapping':
-				this.HISTORY.push({
-					type: 'action',
-					action: 'swapping',
-					from: player,
-				});
-				console.log(`🃏  ${ playerAvatar } swaps two cards with the ${ Style.yellow('ambassador') }`);
-				break;
-			default:
-				this.HISTORY.push({
-					type: 'penalty',
-					from: player,
-				});
-				this.Penalty( player, `of issuing an invalid action: "${ Style.yellow( action ) }", allowed: ${ Style.yellow( ACTIONS.join(', ') ) }` );
-				skipAction = true;
+		let botAnswer;
+		try {
+			botAnswer = this.BOTS[ player ].OnTurn({
+				...this.GetGameState(player),
+			});
+		}
+		catch( error ) {
+			this.Penalty( player, `the bot crashed` );
 		}
 
-		if( !skipAction ) this.RunChallenges({ player, action, target: against });
+		if( !botAnswer ) {
+		}
+		else {
+			const { action, against } = botAnswer;
+			const playerAvatar = this.GetAvatar( player );
+			const targetAvatar = this.GetAvatar( against );
+
+			let skipAction = false;
+
+			switch( action ) {
+				case 'taking-1':
+					this.HISTORY.push({
+						type: 'action',
+						action: 'taking-1',
+						from: player,
+					});
+					console.log(`🃏  ${ playerAvatar } takes ${ Style.yellow('a coin') }`);
+					break;
+				case 'foreign-aid':
+					this.HISTORY.push({
+						type: 'action',
+						action: 'foreign-aid',
+						from: player,
+					});
+					console.log(`🃏  ${ playerAvatar } takes 2 coins ${ Style.yellow('foreign aid') }`);
+					break;
+				case 'couping':
+					this.HISTORY.push({
+						type: 'action',
+						action: 'couping',
+						from: player,
+						to: against,
+					});
+					console.log(`🃏  ${ playerAvatar } coups ${ targetAvatar }`);
+
+					if( this.PLAYER[ player ].coins < 7 ) {
+						this.Penalty( player, `did't having enough coins for a coup` );
+						skipAction = true;
+					}
+
+					if( !this.StillAlive( against ) ) {
+						this.Penalty( player, `tried to coup a dead player` );
+						skipAction = true;
+					}
+					break;
+				case 'taking-3':
+					this.HISTORY.push({
+						type: 'action',
+						action: 'taking-3',
+						from: player,
+					});
+					console.log(`🃏  ${ playerAvatar } takes 3 coins with the ${ Style.yellow('duke') }`);
+					break;
+				case 'assassination':
+					this.HISTORY.push({
+						type: 'action',
+						action: 'assassination',
+						from: player,
+						to: against,
+					});
+					console.log(`🃏  ${ playerAvatar } assassinates ${ targetAvatar }`);
+
+					if( this.PLAYER[ player ].coins < 3 ) {
+						this.Penalty( player, `did't have enough coins for an assassination` );
+						skipAction = true;
+					}
+					else if( !this.StillAlive( against ) ) {
+						this.Penalty( player, `tried to assassinat a dead player` );
+						skipAction = true;
+					}
+					else {
+						this.PLAYER[ player ].coins -= 3;
+					}
+					break;
+				case 'stealing':
+					this.HISTORY.push({
+						type: 'action',
+						action: 'stealing',
+						from: player,
+						to: against,
+					});
+
+					if( !this.StillAlive( against ) ) {
+						this.Penalty( player, `tried to steal from a dead player` );
+						skipAction = true;
+					}
+
+					console.log(`🃏  ${ playerAvatar } steals from ${ targetAvatar }`);
+					break;
+				case 'swapping':
+					this.HISTORY.push({
+						type: 'action',
+						action: 'swapping',
+						from: player,
+					});
+					console.log(`🃏  ${ playerAvatar } swaps two cards with the ${ Style.yellow('ambassador') }`);
+					break;
+				default:
+					this.HISTORY.push({
+						type: 'penalty',
+						from: player,
+					});
+					this.Penalty( player, `of issuing an invalid action: "${ Style.yellow( action ) }", allowed: ${ Style.yellow( ACTIONS.join(', ') ) }` );
+					skipAction = true;
+			}
+
+			if( !skipAction ) this.RunChallenges({ player, action, target: against });
+		}
 
 		if( this.WhoIsLeft().length > 1 && this.ROUNDS < 1000 ) {
 			this.ROUNDS ++;
