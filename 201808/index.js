@@ -418,7 +418,7 @@ class COUP {
 			// Foreign aid. everyone gets a go!
 			Object
 				.keys( this.PLAYER )
-				.filter( counterer => counterer !== target && ( this.PLAYER[ counterer ].card1 || this.PLAYER[ counterer ].card2 ) )
+				.filter( counterer => counterer !== player && ( this.PLAYER[ counterer ].card1 || this.PLAYER[ counterer ].card2 ) )
 				.some( counterer => {
 					const _hasBeenChallenged = this.BOTS[ counterer ].OnCounterAction({
 						...this.GetGameState(counterer),
