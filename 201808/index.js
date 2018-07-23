@@ -324,12 +324,12 @@ class COUP {
 			'counter-round': 'OnCounterActionRound',
 		};
 
-		const challengee = target;
+		const challengee = target; // FIXME: this doesn't seem right?
 
 		if( this.BOTS[ challenger ][ challengeTypes[ type ] ]({
 			...this.GetGameState(challenger),
 			action,
-			byWhom: byWhom ? byWhom : challenger,
+			byWhom: byWhom ? byWhom : challenger,  // FIXME: should always be byWhom
 			toWhom: target,
 			counterer,
 			card,
@@ -340,7 +340,7 @@ class COUP {
 				type,
 				challenger: challenger,
 				player: challengee,
-				action: action,
+				action: action,  // should include card? here?
 				lying: lying,
 			});
 
