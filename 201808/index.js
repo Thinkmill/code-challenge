@@ -74,6 +74,7 @@ class COUP {
 			});
 		}
 		catch( error ) {
+			console.error(`Error in bot ${ player }`);
 			console.error( error );
 			process.exit( 1 );
 		}
@@ -311,6 +312,8 @@ class COUP {
 		catch( error ) {
 			this.PLAYER[ player ].card1 = undefined;
 			this.PLAYER[ player ].card2 = undefined;
+			console.error(`Error in bot ${ player }`);
+			console.error( error );
 		}
 
 		const _validCard = [ this.PLAYER[ player ].card1, this.PLAYER[ player ].card2 ].includes( lostCard ) && lostCard;
@@ -346,6 +349,8 @@ class COUP {
 		}
 		catch( error ) {
 			this.Penalty( challenger, `the bot crashed` );
+			console.error(`Error in bot ${ challenger }`);
+			console.error( error );
 		}
 
 		if( botAnswer ) {
@@ -434,6 +439,8 @@ class COUP {
 			}
 			catch( error ) {
 				this.Penalty( target, `the bot crashed` );
+				console.error(`Error in bot ${ target }`);
+				console.error( error );
 			}
 		}
 		else {
@@ -453,6 +460,8 @@ class COUP {
 					}
 					catch( error ) {
 						this.Penalty( counterer, `the bot crashed` );
+						console.error(`Error in bot ${ counterer }`);
+						console.error( error );
 					}
 
 					if( _hasBeenChallenged ) {
@@ -549,6 +558,8 @@ class COUP {
 				catch( error ) {
 					this.PLAYER[ target ].card1 = undefined;
 					this.PLAYER[ target ].card2 = undefined;
+					console.error(`Error in bot ${ target }`);
+					console.error( error );
 				}
 
 				if( this.PLAYER[ target ].card1 === disgarded && disgarded ) {
@@ -575,6 +586,8 @@ class COUP {
 				catch( error ) {
 					this.PLAYER[ target ].card1 = undefined;
 					this.PLAYER[ target ].card2 = undefined;
+					console.error(`Error in bot ${ target }`);
+					console.error( error );
 				}
 
 				if( this.PLAYER[ target ].card1 === disgarded && disgarded ) {
@@ -610,6 +623,8 @@ class COUP {
 				}
 				catch( error ) {
 					this.Penalty( player, `the bot crashed` );
+					console.error(`Error in bot ${ player }`);
+					console.error( error );
 				}
 
 				this.SwapCards({ chosenCards, player, newCards });
@@ -629,6 +644,8 @@ class COUP {
 		}
 		catch( error ) {
 			this.Penalty( player, `the bot crashed` );
+			console.error(`Error in bot ${ player }`);
+			console.error( error );
 		}
 
 		if( !botAnswer ) {
@@ -759,10 +776,11 @@ class COUP {
 
 class LOOP {
 	constructor() {
+		this.DEBUG = false;
 		this.WINNERS = {};
-		this.SCORE = {};
 		this.LOG = '';
-		this.ERRORLOG = '';
+		this.ERROR = false;
+		this.SCORE = {};
 		this.ROUND = 0;
 		this.ROUNDS = this.GetRounds();
 
@@ -796,7 +814,8 @@ class LOOP {
 		if( clear ) process.stdout.write(`\u001b[${ Object.keys( this.SCORE ).length + 1 }A\u001b[2K`);
 
 		const done = String( Math.floor( this.ROUND/this.ROUNDS * 100 ) + 1 );
-		process.stdout.write(`\u001b[2K${ done.padEnd(3) }% done\n`)
+		process.stdout.write(`\u001b[2K${ done.padEnd(3) }% done\n`);
+
 		Object
 			.keys( this.SCORE )
 			.sort( ( a, b ) => this.SCORE[b] - this.SCORE[a] )
@@ -824,16 +843,13 @@ class LOOP {
 		let game = new COUP();
 		const winners = game.Play( GetPlayer( ALLBOTS ) );
 
-		if( !winners || this.ERRORLOG !== '' ) {
+		if( !winners || this.ERROR ) {
 			console.info( this.LOG );
-			console.info( this.ERRORLOG );
-			console.info( JSON.stringify( game.HISTORY, null, 2 ) );
+			// console.info( JSON.stringify( game.HISTORY, null, 2 ) );
 			this.ROUND = this.ROUNDS;
 		}
 
 		this.GetScore( winners, game.ALLPLAYER );
-
-		game = null;
 
 		this.ROUND ++;
 		this.LOG = '';
@@ -850,9 +866,16 @@ class LOOP {
 		}
 	}
 
-	Run() {
+	Run( debug = false ) {
+		this.DEBUG = debug;
+
 		console.log = text => { this.LOG += `${ text }\n` };
-		console.error = text => { this.ERRORLOG += `${ text }\n` };
+		console.error = text => {
+			if( this.DEBUG ) {
+				this.ERROR = true;
+				this.LOG += Style.red(`🛑  ${ text }\n`);
+			}
+		};
 		console.info(`\nGame round started`);
 		console.info('\n🎉   WINNERS  🎉\n');
 
@@ -877,7 +900,10 @@ if( process.argv.includes('play') ) {
 }
 
 if( process.argv.includes('loop') ) {
-	new LOOP().Run();
+	const loop = new LOOP();
+	const debug = process.argv.includes('-d');
+
+	loop.Run( debug );
 }
 
 

@@ -65,10 +65,18 @@ To run 1000 games:
 node index.js loop
 ```
 
-To run n number of games:
+To run `n` number of games:
 
 ```sh
-node index.js loop -r [number]
+node index.js loop -r [n]
+```
+
+In the loop rounds all output is suppressed so that the games run smoothly on the day.
+For development please use the `-d` flag to enable debug mode. It will stop the game loop when it
+encounters an error and display the last game with error.
+
+```sh
+node index.js loop -r [number] -d
 ```
 
 To run the test suit:
