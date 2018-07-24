@@ -1,19 +1,17 @@
 'use strict';
 
-const HonestBot = require('./honest-bot');
+const HonestBot = require('./HonestBot');
 
 class BOT {
 	constructor () {
 		this.bot = new HonestBot();
+		this.OnTurn = this.bot.OnTurn;
+		this.OnChallengeActionRound = this.bot.OnChallengeActionRound;
+		this.OnCounterAction = this.bot.OnCounterAction;
+		this.OnCounterActionRound = this.bot.OnCounterActionRound;
+		this.OnSwappingCards = this.bot.OnSwappingCards;
+		this.OnCardLoss = this.bot.OnCardLoss;
 	}
-
-	OnTurn = (opts) => this.bot.OnTurn(opts);
-	OnChallengeActionRound = (opts) => this.bot.OnChallengeActionRound(opts);
-	OnCounterAction = (opts) => this.bot.OnCounterAction(opts);
-	OnCounterActionRound = (opts) => this.bot.OnCounterActionRound(opts);
-	OnSwappingCards = (opts) => this.bot.OnSwappingCards(opts);
-	OnCardLoss = (opts) => this.bot.OnCardLoss(opts);
 }
-
 
 module.exports = exports = BOT;
