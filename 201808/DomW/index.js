@@ -13,6 +13,17 @@ class BOT {
 		this.hasDuke = [];
 		this.hasStealingBlocker = [];
 		this.hasContessa = [];
+		this.cardOrder = () => ['captain', 'duke', 'contessa', 'assassin', 'ambassador'];
+	}
+
+	CountDiscardPile( discardedCards, myCards ) {
+		const discardPile = {};
+		[ ...discardedCards, ...myCards ].forEach( card => {
+			if( !discardPile[ card ] ) discardPile[ card ] = 1;
+			else discardPile[ card ] ++;
+		});
+
+		return discardPile;
 	}
 
 	OnTurn({ history, myCards, myCoins, otherPlayers, discardedCards }) {
@@ -35,24 +46,20 @@ class BOT {
 			thisAction = thisAction.filter( action => action !== 'taking-1' );
 		}
 
-		let against;
+		let action = thisAction[ Math.floor( Math.random() * thisAction.length ) ];
+		let against = otherPlayers[ Math.floor( Math.random() * otherPlayers.length ) ].name;
 
 		if( thisAction.includes( 'stealing' ) ) {
 			otherPlayers.some( player => {
 				if( player.coins >= 2 && !this.hasStealingBlocker.includes( player.name ) ) {
 					against = player.name;
+					action = 'stealing';
 					return true;
 				}
 			});
-			if( !against ) {
-				thisAction = thisAction.filter( action => action !== 'stealing' );
-			}
 		}
 
-		let action = thisAction[ Math.floor( Math.random() * thisAction.length ) ];
-		if( !against ) against = otherPlayers[ Math.floor( Math.random() * otherPlayers.length ) ].name;
-
-		if( myCoins > 10 ) {
+		if( myCoins >= 7 ) {
 			action = 'couping';
 		}
 
@@ -63,6 +70,19 @@ class BOT {
 	}
 
 	OnChallengeActionRound({ history, myCards, myCoins, otherPlayers, discardedCards, action, byWhom, toWhom }) {
+		const discardPile = this.CountDiscardPile( discardedCards, myCards );
+		const actionCards = {
+			'foreign-aid': 'duke',
+			'assassination': 'assassin',
+			'stealing': 'captain',
+			'swapping': 'ambassador',
+			'taking-1': 'contessa',
+		};
+
+		if( discardPile[ actionCards[ action ] ] === 3 ) {
+			return true;
+		}
+
 		return false;
 	}
 
@@ -89,10 +109,6 @@ class BOT {
 	}
 
 	OnCounterActionRound({ history, myCards, myCoins, otherPlayers, discardedCards, action, byWhom, toWhom, card }) {
-		console.log({action});
-		console.log({byWhom});
-		console.log({toWhom});
-		console.log({card});
 		if( action === 'stealing' ) {
 			this.hasStealingBlocker.push( toWhom );
 		}
@@ -102,15 +118,25 @@ class BOT {
 		if( action === 'foreign-aid' ) {
 			this.hasDuke.push( toWhom );
 		}
+
 		return false;
 	}
 
 	OnSwappingCards({ history, myCards, myCoins, otherPlayers, discardedCards, newCards }) {
-		return newCards;
+		const allCards = [ ...myCards, ...newCards ];
+
+		const order = this.cardOrder();
+		return allCards
+			.sort( (a, b) => order.indexOf( a ) - order.indexOf( b ) )
+			.slice( 0, myCards.length );
 	};
 
 	OnCardLoss({ history, myCards, myCoins, otherPlayers, discardedCards }) {
-		return myCards[ 0 ];
+		const order = this.cardOrder().reverse();
+
+		return myCards
+			.sort( (a, b) => order.indexOf( a ) - order.indexOf( b ) )
+			.slice( 0, 1 );
 	};
 }
 
