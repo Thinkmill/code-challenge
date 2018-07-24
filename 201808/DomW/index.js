@@ -14,6 +14,20 @@ class BOT {
 		this.hasStealingBlocker = [];
 		this.hasContessa = [];
 		this.cardOrder = () => ['captain', 'duke', 'contessa', 'assassin', 'ambassador'];
+		this.actionCards = () => ({
+			'foreign-aid': 'duke',
+			'assassination': 'assassin',
+			'stealing': 'captain',
+			'swapping': 'ambassador',
+			'taking-1': 'contessa',
+		});
+		this.cardActions = () => ({
+			duke: 'foreign-aid',
+			assassin: 'assassination',
+			captain: 'stealing',
+			ambassador: 'swapping',
+			contessa: 'taking-1',
+		});
 	}
 
 	CountDiscardPile( discardedCards, myCards ) {
@@ -30,13 +44,7 @@ class BOT {
 		let thisAction = [];
 		let thisAgainst = [];
 		let allActions = ACTIONS();
-		const actionCards = {
-			duke: 'foreign-aid',
-			assassin: 'assassination',
-			captain: 'stealing',
-			ambassador: 'swapping',
-			contessa: 'taking-1',
-		};
+		const actionCards = this.cardActions();
 
 		myCards.forEach( action => {
 			thisAction.push( actionCards[ action ] );
@@ -71,13 +79,12 @@ class BOT {
 
 	OnChallengeActionRound({ history, myCards, myCoins, otherPlayers, discardedCards, action, byWhom, toWhom }) {
 		const discardPile = this.CountDiscardPile( discardedCards, myCards );
-		const actionCards = {
-			'foreign-aid': 'duke',
-			'assassination': 'assassin',
-			'stealing': 'captain',
-			'swapping': 'ambassador',
-			'taking-1': 'contessa',
-		};
+		const actionCards = this.actionCards();
+
+		if( byWhom === 'TimL' || byWhom === 'JohnM' ) {
+			// can't trust those guys!
+			return true;
+		}
 
 		if( discardPile[ actionCards[ action ] ] === 3 ) {
 			return true;
@@ -88,12 +95,7 @@ class BOT {
 
 	OnCounterAction({ history, myCards, myCoins, otherPlayers, discardedCards, action, byWhom }) {
 		if( action === 'assassination' ) {
-			if( myCards.includes('contessa') ) {
-				return 'contessa';
-			}
-			else {
-				return false;
-			}
+			return 'contessa';
 		}
 		else if( action === 'stealing' ) {
 			if( myCards.includes('ambassador') ) {
@@ -106,9 +108,17 @@ class BOT {
 				return false;
 			}
 		}
+		else if( action === 'foreign-aid' ) {
+			if( myCards.includes('duke') ) {
+				return 'duke';
+			}
+		}
 	}
 
 	OnCounterActionRound({ history, myCards, myCoins, otherPlayers, discardedCards, action, byWhom, toWhom, card }) {
+		const discardPile = this.CountDiscardPile( discardedCards, myCards );
+		const actionCards = this.actionCards();
+
 		if( action === 'stealing' ) {
 			this.hasStealingBlocker.push( toWhom );
 		}
@@ -119,13 +129,17 @@ class BOT {
 			this.hasDuke.push( toWhom );
 		}
 
+		if( discardPile[ actionCards[ action ] ] === 3 ) {
+			return true;
+		}
+
 		return false;
 	}
 
 	OnSwappingCards({ history, myCards, myCoins, otherPlayers, discardedCards, newCards }) {
+		const order = this.cardOrder();
 		const allCards = [ ...myCards, ...newCards ];
 
-		const order = this.cardOrder();
 		return allCards
 			.sort( (a, b) => order.indexOf( a ) - order.indexOf( b ) )
 			.slice( 0, myCards.length );
