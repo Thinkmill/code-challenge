@@ -103,5 +103,4 @@ class BOT {
 	};
 }
 
-
 module.exports = exports = BOT;
