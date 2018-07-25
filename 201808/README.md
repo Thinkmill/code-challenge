@@ -254,7 +254,8 @@ A counter action:
 	action: <Action>,
 	from: <Player>,
 	to: <Player>,
-	counter: <Action>,
+	counter: <Card>,
+	counterer: <Player>,
 }
 ```
 
