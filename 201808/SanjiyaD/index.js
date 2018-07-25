@@ -1,12 +1,7 @@
 'use strict';
 
-const {
-	ALLBOTS,
-	CARDS,
-	DECK,
-	ACTIONS,
-} = require('../constants.js');
-
+const { ACTIONS } = require('../constants.js');
+const actions = ACTIONS();
 
 class BOT {
 
@@ -17,11 +12,11 @@ class BOT {
 
 	OnTurn({ history, myCards, myCoins, otherPlayers, discardedCards }) {
 		let action
-		let actionsAvailable = ACTIONS();
+		let actionsAvailable = actions;
 		const against = otherPlayers[ Math.floor( Math.random() * otherPlayers.length ) ].name;
 
-		console.log("===========================================")
-		console.log("myCards= " + myCards)
+		// console.log("===========================================")
+		// console.log("myCards= " + myCards)
 
 		// Dequalify actions
 		//don't coup if I have less than 7 coins
@@ -32,13 +27,11 @@ class BOT {
 		if( myCoins < 3) {
 			actionsAvailable.splice( actionsAvailable.indexOf('assassination'), 1 );}
 
-
-// randomly choose action
-action = this.shuffleActions( actionsAvailable );
-
+		// randomly choose action
+		action = this.shuffleActions( actionsAvailable );
 
 		if(action == 'couping' && myCoins<7){
-			ACTIONS()[ Math.floor( Math.random() * ACTIONS().length ) ];
+			actions[ Math.floor( Math.random() * actions.length ) ];
 		}
 		if(myCards.includes('assassin') && myCoins>2){
 			action='assassination'
@@ -50,8 +43,7 @@ action = this.shuffleActions( actionsAvailable );
 
 		if(myCards.includes('duke')){
 			action='taking-3';
-
-	
+		}
 
 		if( myCoins > 10 ) {
 			action = 'couping';
@@ -64,30 +56,29 @@ action = this.shuffleActions( actionsAvailable );
 	}
 
 	OnChallengeActionRound({ history, myCards, myCoins, otherPlayers, discardedCards, action, byWhom, toWhom }) {
-		
+
 		if(toWhom=="SanjiyaD"){
 			return [ true, false ][ Math.floor( Math.random() * 2 ) ];
-		}else{
+		}
+		else{
 			return false;
 		}
 	}
 
 	OnCounterAction({ history, myCards, myCoins, otherPlayers, discardedCards, action, byWhom }) {
-		
+
 		if( action === 'assassination' ) {
 			return [ false, 'contessa' ][ Math.floor( Math.random() * 2 ) ];
 		}
 		else if( action === 'stealing' ) {
 			return [ false, 'ambassador', 'captain' ][ Math.floor( Math.random() * 3 ) ];
 		}
+		else if( action === 'foreign-aid' ) {
+			return [ false, 'duke', ][ Math.floor( Math.random() * 3 ) ];
+		}
 	}
-	else if( action === 'foreign-aid' ) {
-		return [ false, 'duke', ][ Math.floor( Math.random() * 3 ) ];
-
-
 
 	OnCounterActionRound({ history, myCards, myCoins, otherPlayers, discardedCards, action, byWhom, toWhom, card }) {
-		
 		return [ true, false ][ Math.floor( Math.random() * 2 ) ];
 	}
 
