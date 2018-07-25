@@ -394,6 +394,7 @@ class COUP {
 					type: 'unsuccessful-challenge',
 					action: 'swap-1',
 					from: challengee,
+					card: card,
 				});
 				console.log(`↬  ${ this.GetAvatar( challengee ) } put the ${ Style.yellow( card ) } back in the deck and drew a new card`);
 
