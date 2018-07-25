@@ -83,7 +83,7 @@ class BOT {
 
 		if( byWhom === 'TimL' || byWhom === 'JohnM' ) {
 			// can't trust those guys!
-			return true;
+			return [ true, true, false ][ Math.floor( Math.random() * 3 ) ];
 		}
 
 		if( discardPile[ actionCards[ action ] ] === 3 ) {
