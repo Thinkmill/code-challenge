@@ -173,6 +173,8 @@ class COUP {
 				return true;
 			})
 			.map( card => this.DECK.push( card ) );
+
+		this.ShuffleCards();
 	}
 
 
