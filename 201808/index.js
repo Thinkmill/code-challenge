@@ -56,7 +56,7 @@ class COUP {
 		try {
 			this.ALLPLAYER.forEach( player => {
 				const bot = require(`./${ player }/index.js`);
-				this.BOTS[ player ] = new bot();
+				this.BOTS[ player ] = new bot({ name: player });
 
 				if(
 					!this.BOTS[ player ].OnTurn ||
