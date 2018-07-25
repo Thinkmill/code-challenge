@@ -824,9 +824,10 @@ class LOOP {
 			.sort( ( a, b ) => this.SCORE[b] - this.SCORE[a] )
 			.forEach( player => {
 				const percentage = ( this.ROUND > 0 ) ? `${ ( ( this.WINNERS[ player ] * 100 ) / this.ROUND ).toFixed( 3 ) }%` : '-';
+				const scoreWidth = Math.round( Math.log10( this.ROUNDS ) + 8 );
 				process.stdout.write(
-					`\u001b[2K${ Style.gray( percentage.padEnd(7) ) } ` +
-					`${ Style.red( String( this.SCORE[ player ].toFixed( 2 ) ).padEnd( Math.round( Math.log10( this.ROUNDS ) + 6 ) ) ) } ` +
+					`\u001b[2K${ Style.gray( percentage.padStart( 8 ) ) } ` +
+					`${ Style.red( String( this.SCORE[ player ].toFixed( 2 ) ).padStart( scoreWidth - 2 ).padEnd( scoreWidth ) ) } ` +
 					`${ Style.yellow( player ) } got ${ Style.red( this.WINNERS[ player ] ) } wins\n`
 				);
 			});
