@@ -948,9 +948,9 @@ const TEST = {
 		if(
 			game.PLAYER.bot1.card1 === 'assassin' &&
 			game.PLAYER.bot1.card2 === 'captain' &&
-			game.DECK[ 0 ] === 'duke' &&
-			game.DECK[ 1 ] === 'duke' &&
-			game.DECK[ 2 ] === 'contessa'
+			game.DECK.includes('duke') &&
+			game.DECK.includes('duke') &&
+			game.DECK.includes('contessa')
 		) status = Style.green('PASS');
 		console.info(`${ status }  SwapCards merges cards correctly`);
 	},
@@ -970,9 +970,9 @@ const TEST = {
 		if(
 			game.PLAYER.bot1.card1 === 'captain' &&
 			game.PLAYER.bot1.card2 === undefined &&
-			game.DECK[ 0 ] === 'ambassador' &&
-			game.DECK[ 1 ] === 'contessa' &&
-			game.DECK[ 2 ] === 'duke'
+			game.DECK.includes('ambassador') &&
+			game.DECK.includes('contessa') &&
+			game.DECK.includes('duke')
 		) status = Style.green('PASS');
 		console.info(`${ status }  SwapCards merges cards correctly even with one card`);
 	},
@@ -992,9 +992,9 @@ const TEST = {
 		if(
 			game.PLAYER.bot1.card1 === undefined &&
 			game.PLAYER.bot1.card2 === undefined &&
-			game.DECK[ 0 ] === 'contessa' &&
-			game.DECK[ 1 ] === 'captain' &&
-			game.DECK[ 2 ] === 'duke'
+			game.DECK.includes('contessa') &&
+			game.DECK.includes('captain') &&
+			game.DECK.includes('duke')
 		) status = Style.green('PASS');
 		console.info(`${ status }  SwapCards merges cards correctly even when given cards are invalid`);
 	},
