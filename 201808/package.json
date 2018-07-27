@@ -9,6 +9,7 @@
 		"test": "npm run test:code && npm run test:format",
 		"format:config": "prettier --single-quote --trailing-comma es5 --use-tabs --arrow-parens always",
 		"format": "npm run format:config -- --write \"**/*.js\"",
+		"precommit": "test:format",
 		"play": "node coup.js play",
 		"loop": "node coup.js loop"
 	},
