@@ -53,22 +53,38 @@ Each bot lives inside a folder and is named after that folder name.
 └── test.js
 ```
 
-To run the game `cd` into the challenge `201808` folder and run:
+To run the game `cd` into the challenge `201808` folder.
+Install dependencies (`prettier` and `pre-commit`).
 
 ```sh
-node index.js play
+yarn
+```
+
+**Do make sure you run the formatter before each commit**
+On the pre commit hook perrier runs and checks if there are any changes.
+If it finds changes it will stop the commit.
+Run the formatter via:
+
+```sh
+yarn format
+```
+
+To play the game run:
+
+```sh
+yarn play
 ```
 
 To run 1000 games:
 
 ```sh
-node index.js loop
+yarn loop
 ```
 
 To run `n` number of games:
 
 ```sh
-node index.js loop -r [n]
+yarn loop -- -r [n]
 ```
 
 In the loop rounds all output is suppressed so that the games run smoothly on the day.
@@ -76,14 +92,17 @@ For development please use the `-d` flag to enable debug mode. It will stop the 
 encounters an error and display the last game with error.
 
 ```sh
-node index.js loop -r [number] -d
+yarn loop -r [number] -d
 ```
 
 To run the test suit:
 
 ```sh
-node test.js
+yarn test
 ```
+
+
+##
 
 
 ## How do I build a bot?

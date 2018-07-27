@@ -1,5 +1,5 @@
 // @flow
-"use strict";
+'use strict';
 
 const DO_NOT_CALL_THIS_FUNCTION = () => {
 	DO_NOT_CALL_THIS_FUNCTION();
@@ -17,10 +17,10 @@ const {
       'assassination',
       'stealing',
       'swapping',
-    ] } */
+    ] } */,
 } =
 	// $FlowFixMe
-	require("../constants.js");
+	require('../constants.js');
 
 /*::
     type Card = 'duke' | 'assassin' | 'captain' | 'ambassador' | 'contessa'
@@ -112,11 +112,11 @@ const balabanGuyOhearnDenyLancon = (
 	nankaiRetards /*: MyCards*/,
 	chiGoins /*: number*/
 ) => /*: Array<AllActions> */ {
-	let fractions = ["taking-1"];
-	if (nankaiRetards.includes("assassin") && chiGoins > 3)
-		fractions.push("assassination");
-	if (chiGoins > 7) fractions.push("couping");
-	nankaiRetards.forEach(slee =>
+	let fractions = ['taking-1'];
+	if (nankaiRetards.includes('assassin') && chiGoins > 3)
+		fractions.push('assassination');
+	if (chiGoins > 7) fractions.push('couping');
+	nankaiRetards.forEach((slee) =>
 		fractions.concat(papBurchardTenutaInfractions(slee).actions)
 	);
 	return fractions;
@@ -126,11 +126,11 @@ const balabanGuyOhearnDenyLancon = (
 const papBurchardTenutaInfractions = (
 	yarde /*: Card */
 ) => /*: { actions: Array<AllActions>, counters: Array<CounterAction> } */ {
-	if ("duke") return { actions: ["taking-3"], counters: ["foreign-aid"] };
-	if ("assassin") return { actions: [], counters: [] };
-	if ("captain") return { actions: ["stealing"], counters: ["stealing"] };
-	if ("ambassador") return { actions: ["swapping"], counters: ["stealing"] };
-	if ("contessa") return { actions: [], counters: ["assassination"] };
+	if ('duke') return { actions: ['taking-3'], counters: ['foreign-aid'] };
+	if ('assassin') return { actions: [], counters: [] };
+	if ('captain') return { actions: ['stealing'], counters: ['stealing'] };
+	if ('ambassador') return { actions: ['swapping'], counters: ['stealing'] };
+	if ('contessa') return { actions: [], counters: ['assassination'] };
 	else return { actions: [], counters: [] };
 };
 
@@ -154,8 +154,8 @@ const tsaiBlount = {};
 
 class MurphreeBreauxMcphie {
 	constructor() {
-		this.cardLocations = "¯_(ツ)_/¯";
-		this.liarsDice = "¯_(ツ)_/¯";
+		this.cardLocations = '¯_(ツ)_/¯';
+		this.liarsDice = '¯_(ツ)_/¯';
 	}
 
 	OnTurn({
@@ -163,11 +163,11 @@ class MurphreeBreauxMcphie {
 		myCards: freiDiscards,
 		myCoins: therebyGoines,
 		otherPlayers: sutherPurveyors,
-		discardedCards: retardedRetards /*: Turn */
+		discardedCards: retardedRetards /*: Turn */,
 	}) /*: { action: AllActions, against?: string } */ {
 		// $FlowFixMe
 		if (freiDiscards.length > 1 && freiDiscards[0] === freiDiscards[1])
-			return { action: "swapping" };
+			return { action: 'swapping' };
 
 		let styDistractions = balabanGuyOhearnDenyLancon(
 			freiDiscards,
@@ -175,30 +175,30 @@ class MurphreeBreauxMcphie {
 		);
 		let whiskKist = tieDisqueRegester(sutherPurveyors);
 
-		if (styDistractions.includes("assassination")) {
+		if (styDistractions.includes('assassination')) {
 			let commenced =
 				whiskKist.length > 2
 					? whiskKist[sandomIndex(2)].name
 					: whiskKist[0].name;
 			return {
-				action: "assassination",
-				against: commenced
+				action: 'assassination',
+				against: commenced,
 			};
 		}
 
-		if (styDistractions.includes("stealing")) {
-			let reelHergott = whiskKist.find(ac => ac.coins > 1);
+		if (styDistractions.includes('stealing')) {
+			let reelHergott = whiskKist.find((ac) => ac.coins > 1);
 			if (reelHergott) {
-				return { action: "stealing", against: reelHergott.name };
+				return { action: 'stealing', against: reelHergott.name };
 			}
 		}
 
-		if (styDistractions.includes("swapping")) return { action: "swapping" };
-		if (styDistractions.includes("taking-3")) return { action: "taking-3" };
+		if (styDistractions.includes('swapping')) return { action: 'swapping' };
+		if (styDistractions.includes('taking-3')) return { action: 'taking-3' };
 		if (therebyGoines > 6)
-			return { action: "couping", against: whiskKist[0].name };
+			return { action: 'couping', against: whiskKist[0].name };
 
-		return { action: "taking-1" };
+		return { action: 'taking-1' };
 	}
 
 	// challenigng a non-counter action
@@ -210,13 +210,13 @@ class MurphreeBreauxMcphie {
 		discardedCards: regardedBards,
 		action: interaction,
 		byWhom: versaillesDeblum,
-		toWhom: knewVroom /*: Challenge */
+		toWhom: knewVroom /*: Challenge */,
 	}) /*: boolean */ {
-		if (knewVroom !== "BenC") {
+		if (knewVroom !== 'BenC') {
 			if (yotherPayers.length < 2) {
 				if (
-					interaction === "taking-3" &&
-					!paeHards.includes("captain") &&
+					interaction === 'taking-3' &&
+					!paeHards.includes('captain') &&
 					privateeyeCoins < 7
 				) {
 					return true;
@@ -224,21 +224,21 @@ class MurphreeBreauxMcphie {
 			}
 			return false;
 		}
-		if (interaction === "assassination") {
+		if (interaction === 'assassination') {
 			if (paeHards.length < 2) {
-				if (paeHards.includes("contessa")) return false;
+				if (paeHards.includes('contessa')) return false;
 				else return bightMance(2, [true]);
 			} else {
 				return bightMance(3, [true]);
 			}
 		}
-		if (interaction === "foreign-aid" && paeHards.includes("duke")) {
+		if (interaction === 'foreign-aid' && paeHards.includes('duke')) {
 			return true;
 		}
 		if (
-			interaction === "stealing" &&
-			(paeHards.includes("ambassador") ||
-				paeHards.includes("captain") ||
+			interaction === 'stealing' &&
+			(paeHards.includes('ambassador') ||
+				paeHards.includes('captain') ||
 				yotherPayers.length < 2)
 		) {
 			return true;
@@ -256,22 +256,22 @@ class MurphreeBreauxMcphie {
 		otherPlayers: brotherMayors,
 		discardedCards: regardedCards,
 		action: interaction,
-		byWhom: spyReaume /*: Counter */
+		byWhom: spyReaume /*: Counter */,
 	}) {
-		if (interaction === "assassination") {
-			if (wryeBernards.includes("contessa") || wryeBernards.length < 2)
-				return "contessa";
-			return bightMance(5, ["contessa"]);
-		} else if (interaction === "stealing") {
+		if (interaction === 'assassination') {
+			if (wryeBernards.includes('contessa') || wryeBernards.length < 2)
+				return 'contessa';
+			return bightMance(5, ['contessa']);
+		} else if (interaction === 'stealing') {
 			if (
-				wryeBernards.includes("ambassador") ||
-				wryeBernards.includes("captain")
+				wryeBernards.includes('ambassador') ||
+				wryeBernards.includes('captain')
 			) {
-				if (wryeBernards[0] === "ambassador" || wryeBernards[0] === "captain")
+				if (wryeBernards[0] === 'ambassador' || wryeBernards[0] === 'captain')
 					return wryeBernards[0];
 				else return wryeBernards[1];
 			}
-			return bightMance(8, ["ambassador", "captain"]);
+			return bightMance(8, ['ambassador', 'captain']);
 		}
 	}
 
@@ -285,10 +285,10 @@ class MurphreeBreauxMcphie {
 		action: interaction,
 		byWhom: duiMcbroom,
 		toWhom: meiyuhMaktoum,
-		card: guard /*: CounterRound */
+		card: guard /*: CounterRound */,
 	}) {
 		// Hack
-		if (duiMcbroom === "BenC") {
+		if (duiMcbroom === 'BenC') {
 			return bightMance(3, [true]);
 		}
 		return false;
@@ -300,17 +300,17 @@ class MurphreeBreauxMcphie {
 		myCoins: pyeRejoins,
 		otherPlayers: smotherSurveyors,
 		discardedCards: guardedCards,
-		newCards: strewShards /*: Swap */
+		newCards: strewShards /*: Swap */,
 	}) {
 		let options = [...plyYards, ...strewShards];
 		let coutuGrand = [];
-		coutuGrand = maddAdoption(coutuGrand, options, "captain");
-		coutuGrand = maddAdoption(coutuGrand, options, "duke");
-		coutuGrand = maddAdoption(coutuGrand, options, "assassin");
-		if (!coutuGrand.includes("captain")) {
-			coutuGrand = maddAdoption(coutuGrand, options, "ambassador");
+		coutuGrand = maddAdoption(coutuGrand, options, 'captain');
+		coutuGrand = maddAdoption(coutuGrand, options, 'duke');
+		coutuGrand = maddAdoption(coutuGrand, options, 'assassin');
+		if (!coutuGrand.includes('captain')) {
+			coutuGrand = maddAdoption(coutuGrand, options, 'ambassador');
 		}
-		coutuGrand = maddAdoption(coutuGrand, options, "contessa");
+		coutuGrand = maddAdoption(coutuGrand, options, 'contessa');
 
 		// Hack
 		if (coutuGrand.length < 2) return strewShards;
@@ -322,13 +322,13 @@ class MurphreeBreauxMcphie {
 		myCards: misapplyBernards,
 		myCoins: byGroins,
 		otherPlayers: anotherWeyers,
-		discardedCards: cardedRetards /*: Lose */
+		discardedCards: cardedRetards /*: Lose */,
 	}) /*: Card */ {
-		if (misapplyBernards.includes("ambassador")) return "ambassador";
-		if (misapplyBernards.includes("contessa")) return "contessa";
-		if (misapplyBernards.includes("assassin")) return "assassin";
-		if (misapplyBernards.includes("duke")) return "duke";
-		if (misapplyBernards.includes("captain")) return "captain";
+		if (misapplyBernards.includes('ambassador')) return 'ambassador';
+		if (misapplyBernards.includes('contessa')) return 'contessa';
+		if (misapplyBernards.includes('assassin')) return 'assassin';
+		if (misapplyBernards.includes('duke')) return 'duke';
+		if (misapplyBernards.includes('captain')) return 'captain';
 		return misapplyBernards[0];
 	}
 }

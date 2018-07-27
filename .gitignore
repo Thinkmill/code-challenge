@@ -16,3 +16,6 @@ dist/*
 coverage/*
 __tests__/*
 *.log
+
+yarn.lock
+package-lock.json

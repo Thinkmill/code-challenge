@@ -18,7 +18,7 @@ function hasCard(card, myCards) {
 	return myCards.indexOf(card) > -1;
 }
 function getCardCount(card, fromCards) {
-	return fromCards.filter(c => c === card).length;
+	return fromCards.filter((c) => c === card).length;
 }
 function isCardAvailable(card, fromCards) {
 	const count = getCardCount(card, fromCards);
@@ -57,8 +57,8 @@ class BOT {
 
 		// avoid attempting a coup/assassination without enough coins
 		let safeActs = ACTIONS();
-		if (myCoins < 7) safeActs = safeActs.filter(a => a !== 'couping');
-		if (myCoins < 3) safeActs = safeActs.filter(a => a !== 'assassination');
+		if (myCoins < 7) safeActs = safeActs.filter((a) => a !== 'couping');
+		if (myCoins < 3) safeActs = safeActs.filter((a) => a !== 'assassination');
 
 		let action = selectRandomFrom(safeActs, { value: 'taking-1', count: 3 }); // pad with income to limit challenges
 		let against = selectRandomFrom(otherPlayers).name;
@@ -211,14 +211,14 @@ class BOT {
 
 		// try to gain assassin when possible
 		if (!this.hasAssassin && canHaveAssassin) {
-			let otherCard = myCards.filter(c => c !== 'contessa')[0]; // avoid discarding contessa
+			let otherCard = myCards.filter((c) => c !== 'contessa')[0]; // avoid discarding contessa
 			otherCard = otherCard || myCards[0];
 			return [otherCard, 'assassin'];
 		}
 
 		// try to gain contessa when possible
 		if (!this.hasContessa && canHaveContessa) {
-			let otherCard = myCards.filter(c => c !== 'assassin')[0]; // avoid discarding assassin
+			let otherCard = myCards.filter((c) => c !== 'assassin')[0]; // avoid discarding assassin
 			otherCard = otherCard || myCards[0];
 			return [otherCard, 'contessa'];
 		}
@@ -234,13 +234,13 @@ class BOT {
 
 		// avoid discarding the contessa
 		if (this.hasContessa) {
-			let withoutContessa = myCards.filter(c => c !== 'contessa');
+			let withoutContessa = myCards.filter((c) => c !== 'contessa');
 			return withoutContessa.length ? withoutContessa[0] : myCards[0];
 		}
 
 		// avoid discarding the assassin
 		if (this.hasAssassin) {
-			let withoutAssassin = myCards.filter(c => c !== 'assassin');
+			let withoutAssassin = myCards.filter((c) => c !== 'assassin');
 			return withoutAssassin.length ? withoutAssassin[0] : myCards[0];
 		}
 

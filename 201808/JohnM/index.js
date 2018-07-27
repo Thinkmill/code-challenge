@@ -1,4 +1,3 @@
-
 // Approx precedence of hands
 const handPreferrence = [
 	'assassin & duke', // 8477
@@ -30,13 +29,12 @@ const cardPreferrence = [
 const actionCardRequirements = {
 	'taking-1': null,
 	'foreign-aid': null,
-	'couping': null,
+	couping: null,
 	'taking-3': 'duke',
-	'assassination': 'assassin',
-	'stealing': 'captain',
-	'swapping': 'ambassador',
+	assassination: 'assassin',
+	stealing: 'captain',
+	swapping: 'ambassador',
 };
-
 
 // TODO: Preceedence of operations?
 let operations = [
@@ -52,7 +50,11 @@ let operations = [
 	},
 	// Late stage captain'ing?
 	(args) => {
-		if (args.otherPlayers.length === 1 && args.myCards.includes('captain') && args.otherPlayers[0].coins > 1) {
+		if (
+			args.otherPlayers.length === 1 &&
+			args.myCards.includes('captain') &&
+			args.otherPlayers[0].coins > 1
+		) {
 			return { action: 'stealing', against: args.otherPlayers[0].name };
 		}
 	},
@@ -67,12 +69,16 @@ let operations = [
 	},
 	(args) => {
 		if (args.myCards.includes('captain')) {
-			const stealFrom = args.otherPlayers.filter(p => (p.coins > 2)).reduce((a, p) => a ? a : p.name, '');
+			const stealFrom = args.otherPlayers
+				.filter((p) => p.coins > 2)
+				.reduce((a, p) => (a ? a : p.name), '');
 			if (stealFrom) return { action: 'stealing', against: stealFrom };
 		}
 	},
 	(args) => {
-		const nonEnemyDukes = [].concat(args.myCards, args.discardedCards).filter(c => c === 'duke');
+		const nonEnemyDukes = []
+			.concat(args.myCards, args.discardedCards)
+			.filter((c) => c === 'duke');
 		if (nonEnemyDukes === 3) return { action: 'foreign-aid' };
 	},
 	(args) => {
@@ -83,16 +89,15 @@ let operations = [
 	},
 ];
 
-
 class Sensible {
-	constructor ({ name }) {
+	constructor({ name }) {
 		this.name = name;
 		this.turnNumber = 0;
 	}
 
 	// { history, myCards, myCoins, otherPlayers, discardedCards }
-	OnTurn (args) {
-		this.turnNumber ++;
+	OnTurn(args) {
+		this.turnNumber++;
 		if (this.turnNumber === 1) {
 			// console.log(`${this.name} (Sensible): I've been dealt: ${args.myCards.join(' & ')}`);
 		}
@@ -105,11 +110,18 @@ class Sensible {
 
 	// Counter the obvious stuff
 	// { history, myCards, myCoins, otherPlayers, discardedCards, action, byWhom }
-	OnCounterAction (args) {
-		if (args.action === 'foreign-aid' && args.myCards.includes('duke')) return 'duke';
-		if (args.action === 'stealing' && args.myCards.includes('captain')) return 'captain';
-		if (args.action === 'stealing' && args.myCards.includes('ambassador')) return 'ambassador';
-		if (args.action === 'assassination' && (args.myCards.includes('contessa') || args.myCards.length === 1)) return 'contessa';
+	OnCounterAction(args) {
+		if (args.action === 'foreign-aid' && args.myCards.includes('duke'))
+			return 'duke';
+		if (args.action === 'stealing' && args.myCards.includes('captain'))
+			return 'captain';
+		if (args.action === 'stealing' && args.myCards.includes('ambassador'))
+			return 'ambassador';
+		if (
+			args.action === 'assassination' &&
+			(args.myCards.includes('contessa') || args.myCards.length === 1)
+		)
+			return 'contessa';
 
 		// If I'm one of 2 players left and being stolen from, fake a block
 		if (args.action === 'stealing' && args.otherPlayers.length === 1) {
@@ -118,12 +130,12 @@ class Sensible {
 	}
 
 	// { history, myCards, myCoins, otherPlayers, discardedCards, action, byWhom, toWhom }
-	OnChallengeActionRound (args) {
-
+	OnChallengeActionRound(args) {
 		// Is the action possible based on known cards?
 		const reqCard = actionCardRequirements[args.action];
 		const nonOpCards = [].concat(args.myCards, args.discardedCards);
-		const couldHaveReqCard = (!reqCard || nonOpCards.filter(c => c === reqCard).length < 3);
+		const couldHaveReqCard =
+			!reqCard || nonOpCards.filter((c) => c === reqCard).length < 3;
 		if (!couldHaveReqCard) return true;
 
 		// If its not me being attacked or I have a counter action
@@ -136,29 +148,46 @@ class Sensible {
 
 	// { history, myCards, myCoins, otherPlayers, discardedCards, action, byWhom, toWhom }
 	// args.action is currently the original action, not the "block" action (eg. 'stealing' not block by 'captain')
-	OnCounterActionRound (args) {
-		const challengerCanNotHave = (reqCard) => ([].concat(args.myCards, args.discardedCards).filter(c => c === reqCard).length > 2);
+	OnCounterActionRound(args) {
+		const challengerCanNotHave = (reqCard) =>
+			[].concat(args.myCards, args.discardedCards).filter((c) => c === reqCard)
+				.length > 2;
 		if (args.action === 'foreign-aid') return challengerCanNotHave('duke');
-		if (args.action === 'stealing') return challengerCanNotHave('captain') && challengerCanNotHave('ambassador');
-		if (args.action === 'assassination') return challengerCanNotHave('contessa');
+		if (args.action === 'stealing')
+			return (
+				challengerCanNotHave('captain') && challengerCanNotHave('ambassador')
+			);
+		if (args.action === 'assassination')
+			return challengerCanNotHave('contessa');
 		return false;
 	}
 
 	// { history, myCards, myCoins, otherPlayers, discardedCards, newCards }
-	OnSwappingCards ({ myCards, newCards }) {
-		const allCombos = [myCards, newCards, [myCards[0], newCards[0]], [myCards[0], newCards[1]], [myCards[1], newCards[0]], [myCards[1], newCards[1]]];
-		const validCombos = allCombos.filter(p => p.filter(c => typeof c !== 'undefined').length === 2);
-		const strCombos = validCombos.map(p => p.sort().join(' & '));
+	OnSwappingCards({ myCards, newCards }) {
+		const allCombos = [
+			myCards,
+			newCards,
+			[myCards[0], newCards[0]],
+			[myCards[0], newCards[1]],
+			[myCards[1], newCards[0]],
+			[myCards[1], newCards[1]],
+		];
+		const validCombos = allCombos.filter(
+			(p) => p.filter((c) => typeof c !== 'undefined').length === 2
+		);
+		const strCombos = validCombos.map((p) => p.sort().join(' & '));
 		for (let pref of handPreferrence) {
 			if (strCombos.includes(pref)) return pref.split(' & ');
 		}
 	}
 
-	OnCardLoss ({ history, myCards, myCoins, otherPlayers, discardedCards }) {
+	OnCardLoss({ history, myCards, myCoins, otherPlayers, discardedCards }) {
 		if (myCards.length === 1) return myCards[0];
-		return cardPreferrence.indexOf(myCards[0]) > cardPreferrence.indexOf(myCards[1]) ? myCards[0] : myCards[1];
+		return cardPreferrence.indexOf(myCards[0]) >
+			cardPreferrence.indexOf(myCards[1])
+			? myCards[0]
+			: myCards[1];
 	}
 }
-
 
 module.exports = exports = Sensible;

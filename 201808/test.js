@@ -11,7 +11,7 @@ const MakeBots = () => ({
 		OnCounterAction: () => false,
 		OnCounterActionRound: () => false,
 		OnSwappingCards: () => {},
-		OnCardLoss: ({ myCards }) => myCards[ 0 ],
+		OnCardLoss: ({ myCards }) => myCards[0],
 	},
 	bot2: {
 		OnTurn: () => ({}),
@@ -19,7 +19,7 @@ const MakeBots = () => ({
 		OnCounterAction: () => false,
 		OnCounterActionRound: () => false,
 		OnSwappingCards: () => {},
-		OnCardLoss: ({ myCards }) => myCards[ 0 ],
+		OnCardLoss: ({ myCards }) => myCards[0],
 	},
 	bot3: {
 		OnTurn: () => ({}),
@@ -27,28 +27,29 @@ const MakeBots = () => ({
 		OnCounterAction: () => false,
 		OnCounterActionRound: () => false,
 		OnSwappingCards: () => {},
-		OnCardLoss: ({ myCards }) => myCards[ 0 ],
+		OnCardLoss: ({ myCards }) => myCards[0],
 	},
 });
 const MakePlayer = () => ({
 	bot1: {
 		card1: undefined,
 		card2: undefined,
-		coins: 0
+		coins: 0,
 	},
 	bot2: {
 		card1: undefined,
 		card2: undefined,
-		coins: 0
+		coins: 0,
 	},
 	bot3: {
 		card1: undefined,
 		card2: undefined,
-		coins: 0
+		coins: 0,
 	},
 });
 
 console.log = () => {};
+let pass = true;
 
 const TEST = {
 	//   _____     _     _  _   ___   _  _    ___         _
@@ -57,7 +58,7 @@ const TEST = {
 	//   |_|   /_/ \_\ |_|\_\ |___| |_|\_|  \___|       |_|
 	// bot1 will take one coin
 	'taking-1': async () => {
-		const game = new COUP;
+		const game = new COUP();
 
 		const player = MakePlayer();
 		player.bot1.card1 = 'duke';
@@ -77,20 +78,22 @@ const TEST = {
 		await game.Turn();
 
 		let status = Style.red('FAIL');
-		if(
+		if (
 			game.PLAYER.bot1.coins === 1 &&
 			game.PLAYER.bot1.card1 === 'duke' &&
 			game.PLAYER.bot2.card1 === 'duke'
-		) status = Style.green('PASS');
-		console.info(`${ status }  ${ Style.yellow('taking-1') } action`);
+		)
+			status = Style.green('PASS');
+		else pass = false;
+		console.info(`${status}  ${Style.yellow('taking-1')} action`);
 	},
 	//    __    ___    _   _   ___   ___   _  _    ___
 	//  / __|  / _ \  | | | | | _ \ |_ _| | \| |  / __|
 	// | (__  | (_) | | |_| | |  _/  | |  | .` | | (_ |
 	//  \___|  \___/   \___/  |_|   |___| |_|\_|  \___|
 	// bot1 will coup bot2
-	'couping': async () => {
-		const game = new COUP;
+	couping: async () => {
+		const game = new COUP();
 
 		const player = MakePlayer();
 		player.bot1.card1 = 'duke';
@@ -110,12 +113,14 @@ const TEST = {
 		await game.Turn();
 
 		let status = Style.red('FAIL');
-		if(
+		if (
 			game.PLAYER.bot1.card1 === 'duke' &&
 			game.PLAYER.bot1.coins === 1 &&
 			game.PLAYER.bot2.card1 === undefined
-		) status = Style.green('PASS');
-		console.info(`${ status }  ${ Style.yellow('couping') } action`);
+		)
+			status = Style.green('PASS');
+		else pass = false;
+		console.info(`${status}  ${Style.yellow('couping')} action`);
 	},
 	//  _____     _     _  _   ___   _  _    ___         ___
 	// |_   _|   /_\   | |/ / |_ _| | \| |  / __|  ___  |__ /
@@ -123,7 +128,7 @@ const TEST = {
 	//   |_|   /_/ \_\ |_|\_\ |___| |_|\_|  \___|       |___/
 	// bot1 will take three coins with duke
 	'taking-31': async () => {
-		const game = new COUP;
+		const game = new COUP();
 
 		const player = MakePlayer();
 		player.bot1.coins = 0;
@@ -144,16 +149,18 @@ const TEST = {
 		await game.Turn();
 
 		let status = Style.red('FAIL');
-		if(
+		if (
 			game.PLAYER.bot1.coins === 3 &&
 			game.PLAYER.bot1.card1 === 'duke' &&
 			game.PLAYER.bot2.card1 === 'duke'
-		) status = Style.green('PASS');
-		console.info(`${ status }  ${ Style.yellow('taking-3') } without challenge`);
+		)
+			status = Style.green('PASS');
+		else pass = false;
+		console.info(`${status}  ${Style.yellow('taking-3')} without challenge`);
 	},
 	// bot1 will take three coins with duke, bot2 calls bot1, bot1 did not have the duke
 	'taking-32': async () => {
-		const game = new COUP;
+		const game = new COUP();
 
 		const player = MakePlayer();
 		player.bot1.coins = 0;
@@ -175,16 +182,20 @@ const TEST = {
 		await game.Turn();
 
 		let status = Style.red('FAIL');
-		if(
+		if (
 			game.PLAYER.bot1.coins === 0 &&
 			game.PLAYER.bot1.card1 === undefined &&
 			game.PLAYER.bot2.card1 === 'duke'
-		) status = Style.green('PASS');
-		console.info(`${ status }  ${ Style.yellow('taking-3') } with successful challenge`);
+		)
+			status = Style.green('PASS');
+		else pass = false;
+		console.info(
+			`${status}  ${Style.yellow('taking-3')} with successful challenge`
+		);
 	},
 	// bot1 will take three coins with duke, bot2 calls bot1, bot1 did have the duke
 	'taking-33': async () => {
-		const game = new COUP;
+		const game = new COUP();
 
 		const player = MakePlayer();
 		player.bot1.coins = 0;
@@ -206,20 +217,24 @@ const TEST = {
 		await game.Turn();
 
 		let status = Style.red('FAIL');
-		if(
+		if (
 			game.PLAYER.bot1.coins === 3 &&
 			game.PLAYER.bot1.card1 === 'duke' &&
 			game.PLAYER.bot2.card1 === undefined
-		) status = Style.green('PASS');
-		console.info(`${ status }  ${ Style.yellow('taking-3') } with unsuccessful challenge`);
+		)
+			status = Style.green('PASS');
+		else pass = false;
+		console.info(
+			`${status}  ${Style.yellow('taking-3')} with unsuccessful challenge`
+		);
 	},
 	//    _     ___   ___     _     ___   ___   ___   _  _     _     _____   ___    ___    _  _
 	//   /_\   / __| / __|   /_\   / __| / __| |_ _| | \| |   /_\   |_   _| |_ _|  / _ \  | \| |
 	//  / _ \  \__ \ \__ \  / _ \  \__ \ \__ \  | |  | .` |  / _ \    | |    | |  | (_) | | .` |
 	// /_/ \_\ |___/ |___/ /_/ \_\ |___/ |___/ |___| |_|\_| /_/ \_\   |_|   |___|  \___/  |_|\_|
 	// bot1 will assassinate bot2 with assassin
-	'assassination1': async () => {
-		const game = new COUP;
+	assassination1: async () => {
+		const game = new COUP();
 
 		const player = MakePlayer();
 		player.bot1.card1 = 'duke';
@@ -243,18 +258,24 @@ const TEST = {
 		await game.Turn();
 
 		let status = Style.red('FAIL');
-		if(
+		if (
 			game.PLAYER.bot1.card1 === 'duke' &&
 			game.PLAYER.bot1.coins === 1 &&
 			game.PLAYER.bot2.card1 === 'duke' &&
 			game.PLAYER.bot2.card2 === undefined &&
 			game.PLAYER.bot2.coins === 5
-		) status = Style.green('PASS');
-		console.info(`${ status }  ${ Style.yellow('assassination') } without challenge or counter action`);
+		)
+			status = Style.green('PASS');
+		else pass = false;
+		console.info(
+			`${status}  ${Style.yellow(
+				'assassination'
+			)} without challenge or counter action`
+		);
 	},
 	// bot1 will assassinate bot2 with assassin, bot2 calls bot1, bot1 did not have the assassin
-	'assassination2': async () => {
-		const game = new COUP;
+	assassination2: async () => {
+		const game = new COUP();
 
 		const player = MakePlayer();
 		player.bot1.card1 = 'duke';
@@ -278,18 +299,22 @@ const TEST = {
 		await game.Turn();
 
 		let status = Style.red('FAIL');
-		if(
+		if (
 			game.PLAYER.bot1.card1 === undefined &&
 			game.PLAYER.bot1.coins === 1 &&
 			game.PLAYER.bot2.card1 === 'duke' &&
 			game.PLAYER.bot2.card2 === 'captain' &&
 			game.PLAYER.bot2.coins === 5
-		) status = Style.green('PASS');
-		console.info(`${ status }  ${ Style.yellow('assassination') } with successful challenge`);
+		)
+			status = Style.green('PASS');
+		else pass = false;
+		console.info(
+			`${status}  ${Style.yellow('assassination')} with successful challenge`
+		);
 	},
 	// bot1 will assassinate bot2 with assassin, bot2 calls bot1, bot1 did have the assassin
-	'assassination3': async () => {
-		const game = new COUP;
+	assassination3: async () => {
+		const game = new COUP();
 
 		const player = MakePlayer();
 		player.bot1.card1 = 'assassin';
@@ -314,18 +339,22 @@ const TEST = {
 		await game.Turn();
 
 		let status = Style.red('FAIL');
-		if(
+		if (
 			game.PLAYER.bot1.card1 !== undefined &&
 			game.PLAYER.bot1.coins === 1 &&
 			game.PLAYER.bot2.card1 === undefined &&
 			game.PLAYER.bot2.card2 === undefined &&
 			game.PLAYER.bot2.coins === 5
-		) status = Style.green('PASS');
-		console.info(`${ status }  ${ Style.yellow('assassination') } with unsuccessful challenge`);
+		)
+			status = Style.green('PASS');
+		else pass = false;
+		console.info(
+			`${status}  ${Style.yellow('assassination')} with unsuccessful challenge`
+		);
 	},
 	// bot1 will assassinate bot2 with assassin, bot2 says it has the contessa, bot1 is fine with that
-	'assassination4': async () => {
-		const game = new COUP;
+	assassination4: async () => {
+		const game = new COUP();
 
 		const player = MakePlayer();
 		player.bot1.card1 = 'assassin';
@@ -349,18 +378,24 @@ const TEST = {
 		await game.Turn();
 
 		let status = Style.red('FAIL');
-		if(
+		if (
 			game.PLAYER.bot1.card1 === 'assassin' &&
 			game.PLAYER.bot1.coins === 1 &&
 			game.PLAYER.bot2.card1 === 'duke' &&
 			game.PLAYER.bot2.card2 === 'captain' &&
 			game.PLAYER.bot2.coins === 5
-		) status = Style.green('PASS');
-		console.info(`${ status }  ${ Style.yellow('assassination') } with counter action but no counter challenge`);
+		)
+			status = Style.green('PASS');
+		else pass = false;
+		console.info(
+			`${status}  ${Style.yellow(
+				'assassination'
+			)} with counter action but no counter challenge`
+		);
 	},
 	// bot1 will assassinate bot2 with assassin, bot2 says it has the contessa, bot1 is challenging bot2, bot2 did not have the contessa
-	'assassination5': async () => {
-		const game = new COUP;
+	assassination5: async () => {
+		const game = new COUP();
 
 		const player = MakePlayer();
 		player.bot1.card1 = 'assassin';
@@ -385,18 +420,24 @@ const TEST = {
 		await game.Turn();
 
 		let status = Style.red('FAIL');
-		if(
+		if (
 			game.PLAYER.bot1.card1 === 'assassin' &&
 			game.PLAYER.bot1.coins === 1 &&
 			game.PLAYER.bot2.card1 === undefined &&
 			game.PLAYER.bot2.card2 === undefined &&
 			game.PLAYER.bot2.coins === 5
-		) status = Style.green('PASS');
-		console.info(`${ status }  ${ Style.yellow('assassination') } with counter action and successful counter challenge`);
+		)
+			status = Style.green('PASS');
+		else pass = false;
+		console.info(
+			`${status}  ${Style.yellow(
+				'assassination'
+			)} with counter action and successful counter challenge`
+		);
 	},
 	// bot1 will assassinate bot2 with assassin, bot2 says it has the contessa, bot1 is challenging bot2, bot2 did have the contessa
-	'assassination6': async () => {
-		const game = new COUP;
+	assassination6: async () => {
+		const game = new COUP();
 
 		const player = MakePlayer();
 		player.bot1.card1 = 'assassin';
@@ -421,22 +462,28 @@ const TEST = {
 		await game.Turn();
 
 		let status = Style.red('FAIL');
-		if(
+		if (
 			game.PLAYER.bot1.card1 === undefined &&
 			game.PLAYER.bot1.coins === 1 &&
 			game.PLAYER.bot2.card1 === 'duke' &&
 			game.PLAYER.bot2.card2 !== undefined &&
 			game.PLAYER.bot2.coins === 5
-		) status = Style.green('PASS');
-		console.info(`${ status }  ${ Style.yellow('assassination') } with counter action and unsuccessful counter challenge`);
+		)
+			status = Style.green('PASS');
+		else pass = false;
+		console.info(
+			`${status}  ${Style.yellow(
+				'assassination'
+			)} with counter action and unsuccessful counter challenge`
+		);
 	},
 	//  ___   _____   ___     _     _      ___   _  _    ___
 	// / __| |_   _| | __|   /_\   | |    |_ _| | \| |  / __|
 	// \__ \   | |   | _|   / _ \  | |__   | |  | .` | | (_ |
 	// |___/   |_|   |___| /_/ \_\ |____| |___| |_|\_|  \___|
 	// bot1 will steal from bot2 with captain
-	'stealing1': async () => {
-		const game = new COUP;
+	stealing1: async () => {
+		const game = new COUP();
 
 		const player = MakePlayer();
 		player.bot1.coins = 1;
@@ -458,17 +505,23 @@ const TEST = {
 		await game.Turn();
 
 		let status = Style.red('FAIL');
-		if(
+		if (
 			game.PLAYER.bot1.coins === 3 &&
 			game.PLAYER.bot1.card1 === 'duke' &&
 			game.PLAYER.bot2.coins === 3 &&
 			game.PLAYER.bot2.card1 === 'duke'
-		) status = Style.green('PASS');
-		console.info(`${ status }  ${ Style.yellow('stealing') } without challenge or counter action`);
+		)
+			status = Style.green('PASS');
+		else pass = false;
+		console.info(
+			`${status}  ${Style.yellow(
+				'stealing'
+			)} without challenge or counter action`
+		);
 	},
 	// bot1 will steal from bot2 with captain, bot2 calls bot1, bot1 did not have the captain
-	'stealing2': async () => {
-		const game = new COUP;
+	stealing2: async () => {
+		const game = new COUP();
 
 		const player = MakePlayer();
 		player.bot1.coins = 1;
@@ -491,17 +544,21 @@ const TEST = {
 		await game.Turn();
 
 		let status = Style.red('FAIL');
-		if(
+		if (
 			game.PLAYER.bot1.coins === 1 &&
 			game.PLAYER.bot1.card1 === undefined &&
 			game.PLAYER.bot2.coins === 5 &&
 			game.PLAYER.bot2.card1 === 'duke'
-		) status = Style.green('PASS');
-		console.info(`${ status }  ${ Style.yellow('stealing') } with successful challenge`);
+		)
+			status = Style.green('PASS');
+		else pass = false;
+		console.info(
+			`${status}  ${Style.yellow('stealing')} with successful challenge`
+		);
 	},
 	// bot1 will steal from bot2 with captain, bot2 calls bot1, bot1 did have the captain
-	'stealing3': async () => {
-		const game = new COUP;
+	stealing3: async () => {
+		const game = new COUP();
 
 		const player = MakePlayer();
 		player.bot1.coins = 1;
@@ -524,17 +581,21 @@ const TEST = {
 		await game.Turn();
 
 		let status = Style.red('FAIL');
-		if(
+		if (
 			game.PLAYER.bot1.coins === 3 &&
 			game.PLAYER.bot1.card1 !== undefined &&
 			game.PLAYER.bot2.coins === 3 &&
 			game.PLAYER.bot2.card1 === undefined
-		) status = Style.green('PASS');
-		console.info(`${ status }  ${ Style.yellow('stealing') } with unsuccessful challenge`);
+		)
+			status = Style.green('PASS');
+		else pass = false;
+		console.info(
+			`${status}  ${Style.yellow('stealing')} with unsuccessful challenge`
+		);
 	},
 	// bot1 will steal from bot2 with captain, bot2 says it has the captain|ambassador, bot1 is fine with that
-	'stealing4': async () => {
-		const game = new COUP;
+	stealing4: async () => {
+		const game = new COUP();
 
 		const player = MakePlayer();
 		player.bot1.coins = 1;
@@ -557,17 +618,23 @@ const TEST = {
 		await game.Turn();
 
 		let status = Style.red('FAIL');
-		if(
+		if (
 			game.PLAYER.bot1.coins === 1 &&
 			game.PLAYER.bot1.card1 === 'captain' &&
 			game.PLAYER.bot2.coins === 5 &&
 			game.PLAYER.bot2.card1 === 'duke'
-		) status = Style.green('PASS');
-		console.info(`${ status }  ${ Style.yellow('stealing') } with counter action but no counter challenge`);
+		)
+			status = Style.green('PASS');
+		else pass = false;
+		console.info(
+			`${status}  ${Style.yellow(
+				'stealing'
+			)} with counter action but no counter challenge`
+		);
 	},
 	// bot1 will steal from bot2 with captain, bot2 says it has the captain|ambassador, bot1 is challenging bot2, bot2 did not have the captain|ambassador
-	'stealing5': async () => {
-		const game = new COUP;
+	stealing5: async () => {
+		const game = new COUP();
 
 		const player = MakePlayer();
 		player.bot1.coins = 1;
@@ -591,17 +658,23 @@ const TEST = {
 		await game.Turn();
 
 		let status = Style.red('FAIL');
-		if(
+		if (
 			game.PLAYER.bot1.coins === 3 &&
 			game.PLAYER.bot1.card1 === 'captain' &&
 			game.PLAYER.bot2.coins === 3 &&
 			game.PLAYER.bot2.card1 === undefined
-		) status = Style.green('PASS');
-		console.info(`${ status }  ${ Style.yellow('stealing') } with counter action and successful counter challenge`);
+		)
+			status = Style.green('PASS');
+		else pass = false;
+		console.info(
+			`${status}  ${Style.yellow(
+				'stealing'
+			)} with counter action and successful counter challenge`
+		);
 	},
 	// bot1 will steal from bot2 with captain, bot2 says it has the captain|ambassador, bot1 is challenging bot2, bot2 did have the captain|ambassador
-	'stealing6': async () => {
-		const game = new COUP;
+	stealing6: async () => {
+		const game = new COUP();
 
 		const player = MakePlayer();
 		player.bot1.coins = 1;
@@ -625,21 +698,27 @@ const TEST = {
 		await game.Turn();
 
 		let status = Style.red('FAIL');
-		if(
+		if (
 			game.PLAYER.bot1.coins === 1 &&
 			game.PLAYER.bot1.card1 === undefined &&
 			game.PLAYER.bot2.coins === 5 &&
 			game.PLAYER.bot2.card1 !== undefined
-		) status = Style.green('PASS');
-		console.info(`${ status }  ${ Style.yellow('stealing') } with counter action and unsuccessful counter challenge`);
+		)
+			status = Style.green('PASS');
+		else pass = false;
+		console.info(
+			`${status}  ${Style.yellow(
+				'stealing'
+			)} with counter action and unsuccessful counter challenge`
+		);
 	},
 	//  ___  __      __    _     ___   ___   ___   _  _    ___
 	// / __| \ \    / /   /_\   | _ \ | _ \ |_ _| | \| |  / __|
 	// \__ \  \ \/\/ /   / _ \  |  _/ |  _/  | |  | .` | | (_ |
 	// |___/   \_/\_/   /_/ \_\ |_|   |_|   |___| |_|\_|  \___|
 	// bot1 will swap cards with ambassador
-	'swapping1': async () => {
-		const game = new COUP;
+	swapping1: async () => {
+		const game = new COUP();
 
 		const player = MakePlayer();
 		player.bot1.card1 = 'assassin';
@@ -661,16 +740,18 @@ const TEST = {
 		await game.Turn();
 
 		let status = Style.red('FAIL');
-		if(
+		if (
 			game.PLAYER.bot1.card1 === 'captain' &&
 			game.PLAYER.bot1.card2 === 'duke' &&
 			game.PLAYER.bot2.card1 === 'ambassador'
-		) status = Style.green('PASS');
-		console.info(`${ status }  ${ Style.yellow('swapping') } without challenge`);
+		)
+			status = Style.green('PASS');
+		else pass = false;
+		console.info(`${status}  ${Style.yellow('swapping')} without challenge`);
 	},
 	// bot1 will swap cards with ambassador, bot2 calls bot1, bot1 did not have the ambassador
-	'swapping2': async () => {
-		const game = new COUP;
+	swapping2: async () => {
+		const game = new COUP();
 
 		const player = MakePlayer();
 		player.bot1.card1 = 'assassin';
@@ -693,16 +774,20 @@ const TEST = {
 		await game.Turn();
 
 		let status = Style.red('FAIL');
-		if(
+		if (
 			game.PLAYER.bot1.card1 === undefined &&
 			game.PLAYER.bot1.card2 === 'contessa' &&
 			game.PLAYER.bot2.card1 === 'ambassador'
-		) status = Style.green('PASS');
-		console.info(`${ status }  ${ Style.yellow('swapping') } with successful challenge`);
+		)
+			status = Style.green('PASS');
+		else pass = false;
+		console.info(
+			`${status}  ${Style.yellow('swapping')} with successful challenge`
+		);
 	},
 	// bot1 will swap cards with ambassador, bot2 calls bot1, bot1 did have the ambassador
-	'swapping3': async () => {
-		const game = new COUP;
+	swapping3: async () => {
+		const game = new COUP();
 
 		const player = MakePlayer();
 		player.bot1.card1 = 'ambassador';
@@ -725,12 +810,16 @@ const TEST = {
 		await game.Turn();
 
 		let status = Style.red('FAIL');
-		if(
+		if (
 			game.PLAYER.bot1.card1 !== undefined &&
 			game.PLAYER.bot1.card2 !== undefined &&
 			game.PLAYER.bot2.card1 === undefined
-		) status = Style.green('PASS');
-		console.info(`${ status }  ${ Style.yellow('swapping') } with unsuccessful challenge`);
+		)
+			status = Style.green('PASS');
+		else pass = false;
+		console.info(
+			`${status}  ${Style.yellow('swapping')} with unsuccessful challenge`
+		);
 	},
 	//  ___    ___    ___   ___   ___    ___   _  _           _     ___   ___
 	// | __|  / _ \  | _ \ | __| |_ _|  / __| | \| |  ___    /_\   |_ _| |   \
@@ -738,7 +827,7 @@ const TEST = {
 	// |_|    \___/  |_|_\ |___| |___|  \___| |_|\_|       /_/ \_\ |___| |___/
 	// bot1 will take bot2 foreign aid
 	'foreign-aid1': async () => {
-		const game = new COUP;
+		const game = new COUP();
 
 		const player = MakePlayer();
 		player.bot1.card1 = 'duke';
@@ -758,16 +847,22 @@ const TEST = {
 		await game.Turn();
 
 		let status = Style.red('FAIL');
-		if(
+		if (
 			game.PLAYER.bot1.coins === 2 &&
 			game.PLAYER.bot1.card1 === 'duke' &&
 			game.PLAYER.bot2.card1 === 'duke'
-		) status = Style.green('PASS');
-		console.info(`${ Style.red( status ) }  ${ Style.yellow('foreign-aid') } without counter action`);
+		)
+			status = Style.green('PASS');
+		else pass = false;
+		console.info(
+			`${Style.red(status)}  ${Style.yellow(
+				'foreign-aid'
+			)} without counter action`
+		);
 	},
 	// bot1 will take bot2 foreign aid, bot2 says it has the duke, bot1 is fine with that
 	'foreign-aid2': async () => {
-		const game = new COUP;
+		const game = new COUP();
 
 		const player = MakePlayer();
 		player.bot1.coins = 0;
@@ -790,17 +885,23 @@ const TEST = {
 		await game.Turn();
 
 		let status = Style.red('FAIL');
-		if(
+		if (
 			game.PLAYER.bot1.coins === 0 &&
 			game.PLAYER.bot1.card1 === 'duke' &&
 			game.PLAYER.bot2.card1 === 'duke' &&
 			game.PLAYER.bot3.card1 === 'captain'
-		) status = Style.green('PASS');
-		console.info(`${ Style.red( status ) }  ${ Style.yellow('foreign-aid') } with counter action and no counter challenge`);
+		)
+			status = Style.green('PASS');
+		else pass = false;
+		console.info(
+			`${Style.red(status)}  ${Style.yellow(
+				'foreign-aid'
+			)} with counter action and no counter challenge`
+		);
 	},
 	// bot1 will take bot2 foreign aid, bot2 says it has the duke, bot1 calls bot2, bot2 did not have the duke
 	'foreign-aid3': async () => {
-		const game = new COUP;
+		const game = new COUP();
 
 		const player = MakePlayer();
 		player.bot1.coins = 0;
@@ -824,17 +925,23 @@ const TEST = {
 		await game.Turn();
 
 		let status = Style.red('FAIL');
-		if(
+		if (
 			game.PLAYER.bot1.coins === 2 &&
 			game.PLAYER.bot1.card1 === 'duke' &&
 			game.PLAYER.bot2.card1 === 'duke' &&
 			game.PLAYER.bot3.card1 === undefined
-		) status = Style.green('PASS');
-		console.info(`${ Style.red( status ) }  ${ Style.yellow('foreign-aid') } with counter action and successful counter challenge`);
+		)
+			status = Style.green('PASS');
+		else pass = false;
+		console.info(
+			`${Style.red(status)}  ${Style.yellow(
+				'foreign-aid'
+			)} with counter action and successful counter challenge`
+		);
 	},
 	// bot1 will take bot2 foreign aid, bot2 says it has the duke, bot1 calls bot2, bot2 did have the duke
 	'foreign-aid4': async () => {
-		const game = new COUP;
+		const game = new COUP();
 
 		const player = MakePlayer();
 		player.bot1.coins = 0;
@@ -870,7 +977,7 @@ const TEST = {
 		await game.Turn();
 
 		let status = Style.red('FAIL');
-		if(
+		if (
 			game.PLAYER.bot1.coins === 0 &&
 			game.PLAYER.bot1.card1 === undefined &&
 			game.PLAYER.bot2.card1 === 'duke' &&
@@ -878,12 +985,18 @@ const TEST = {
 			runs.length === 1 &&
 			!runs.includes('bot1') &&
 			!runs.includes('bot3')
-		) status = Style.green('PASS');
-		console.info(`${ Style.red( status ) }  ${ Style.yellow('foreign-aid') } with counter action and unsuccessful counter challenge`);
+		)
+			status = Style.green('PASS');
+		else pass = false;
+		console.info(
+			`${Style.red(status)}  ${Style.yellow(
+				'foreign-aid'
+			)} with counter action and unsuccessful counter challenge`
+		);
 	},
 
 	'challenge-only-once': () => {
-		const game = new COUP;
+		const game = new COUP();
 
 		const player = MakePlayer();
 		player.bot1.card1 = 'assassin';
@@ -898,15 +1011,15 @@ const TEST = {
 		bots.bot2.OnCounterAction = () => 'captain';
 		bots.bot1.OnCardLoss = () => 'assassin';
 		bots.bot1.OnCounterActionRound = () => {
-			runs ++;
+			runs++;
 			return true;
 		};
 		bots.bot2.OnCounterActionRound = () => {
-			runs ++;
+			runs++;
 			return true;
 		};
 		bots.bot3.OnCounterActionRound = () => {
-			runs ++;
+			runs++;
 			return true;
 		};
 
@@ -920,7 +1033,7 @@ const TEST = {
 		game.RunChallenges({ action: 'stealing', player: 'bot1', target: 'bot2' });
 
 		let status = Style.red('FAIL');
-		if(
+		if (
 			game.PLAYER.bot1.card1 === undefined &&
 			game.PLAYER.bot1.card2 === 'captain' &&
 			game.PLAYER.bot1.coins === 1 &&
@@ -929,11 +1042,15 @@ const TEST = {
 			game.PLAYER.bot3.card1 === 'duke' &&
 			game.DECK.length === 1 &&
 			runs === 1
-		) status = Style.green('PASS');
-		console.info(`${ status }  an unsuccessful counter action round yields punishment`);
+		)
+			status = Style.green('PASS');
+		else pass = false;
+		console.info(
+			`${status}  an unsuccessful counter action round yields punishment`
+		);
 	},
-	'SwapCards1': () => {
-		const game = new COUP;
+	SwapCards1: () => {
+		const game = new COUP();
 
 		const player = MakePlayer();
 		player.bot1.card1 = 'duke';
@@ -942,20 +1059,26 @@ const TEST = {
 		game.PLAYER = player;
 		game.DECK = ['duke'];
 
-		game.SwapCards({ chosenCards: ['assassin', 'captain'], player: 'bot1', newCards: ['captain', 'assassin'] });
+		game.SwapCards({
+			chosenCards: ['assassin', 'captain'],
+			player: 'bot1',
+			newCards: ['captain', 'assassin'],
+		});
 
 		let status = Style.red('FAIL');
-		if(
+		if (
 			game.PLAYER.bot1.card1 === 'assassin' &&
 			game.PLAYER.bot1.card2 === 'captain' &&
 			game.DECK.includes('duke') &&
 			game.DECK.includes('duke') &&
 			game.DECK.includes('contessa')
-		) status = Style.green('PASS');
-		console.info(`${ status }  SwapCards merges cards correctly`);
+		)
+			status = Style.green('PASS');
+		else pass = false;
+		console.info(`${status}  SwapCards merges cards correctly`);
 	},
-	'SwapCards2': () => {
-		const game = new COUP;
+	SwapCards2: () => {
+		const game = new COUP();
 
 		const player = MakePlayer();
 		player.bot1.card1 = undefined;
@@ -964,20 +1087,28 @@ const TEST = {
 		game.PLAYER = player;
 		game.DECK = ['ambassador'];
 
-		game.SwapCards({ chosenCards: ['ambassador', 'captain'], player: 'bot1', newCards: ['captain', 'duke'] });
+		game.SwapCards({
+			chosenCards: ['ambassador', 'captain'],
+			player: 'bot1',
+			newCards: ['captain', 'duke'],
+		});
 
 		let status = Style.red('FAIL');
-		if(
+		if (
 			game.PLAYER.bot1.card1 === 'captain' &&
 			game.PLAYER.bot1.card2 === undefined &&
 			game.DECK.includes('ambassador') &&
 			game.DECK.includes('contessa') &&
 			game.DECK.includes('duke')
-		) status = Style.green('PASS');
-		console.info(`${ status }  SwapCards merges cards correctly even with one card`);
+		)
+			status = Style.green('PASS');
+		else pass = false;
+		console.info(
+			`${status}  SwapCards merges cards correctly even with one card`
+		);
 	},
-	'SwapCards3': () => {
-		const game = new COUP;
+	SwapCards3: () => {
+		const game = new COUP();
 
 		const player = MakePlayer();
 		player.bot1.card1 = 'contessa';
@@ -986,20 +1117,28 @@ const TEST = {
 		game.PLAYER = player;
 		game.DECK = [];
 
-		game.SwapCards({ chosenCards: ['ambassador', 'ambassador'], player: 'bot1', newCards: ['captain', 'duke'] });
+		game.SwapCards({
+			chosenCards: ['ambassador', 'ambassador'],
+			player: 'bot1',
+			newCards: ['captain', 'duke'],
+		});
 
 		let status = Style.red('FAIL');
-		if(
+		if (
 			game.PLAYER.bot1.card1 === undefined &&
 			game.PLAYER.bot1.card2 === undefined &&
 			game.DECK.includes('contessa') &&
 			game.DECK.includes('captain') &&
 			game.DECK.includes('duke')
-		) status = Style.green('PASS');
-		console.info(`${ status }  SwapCards merges cards correctly even when given cards are invalid`);
+		)
+			status = Style.green('PASS');
+		else pass = false;
+		console.info(
+			`${status}  SwapCards merges cards correctly even when given cards are invalid`
+		);
 	},
-	'checkParameters1': async () => {
-		const game = new COUP;
+	checkParameters1: async () => {
+		const game = new COUP();
 
 		const player = MakePlayer();
 		player.bot1.card1 = 'assassin';
@@ -1011,7 +1150,7 @@ const TEST = {
 
 		const bots = MakeBots();
 		let output;
-		bots.bot1.OnTurn = ( param ) => {
+		bots.bot1.OnTurn = (param) => {
 			output = param;
 			return { action: 'foreign-aid' };
 		};
@@ -1027,7 +1166,7 @@ const TEST = {
 		await game.Turn();
 
 		let status = Style.red('FAIL');
-		if(
+		if (
 			game.PLAYER.bot1.card1 === 'assassin' &&
 			game.PLAYER.bot1.card2 === 'captain' &&
 			game.PLAYER.bot1.coins === 3 &&
@@ -1036,14 +1175,16 @@ const TEST = {
 			game.PLAYER.bot3.card1 === 'duke' &&
 			game.DECK.length === 1 &&
 			output.history.length === 0 &&
-			output.myCards[ 0 ] === 'assassin' &&
-			output.myCards[ 1 ] === 'captain' &&
+			output.myCards[0] === 'assassin' &&
+			output.myCards[1] === 'captain' &&
 			output.myCoins === 1
-		) status = Style.green('PASS');
-		console.info(`${ status }  we get the right parameters passed in for OnTurn`);
+		)
+			status = Style.green('PASS');
+		else pass = false;
+		console.info(`${status}  we get the right parameters passed in for OnTurn`);
 	},
-	'checkParameters2': async () => {
-		const game = new COUP;
+	checkParameters2: async () => {
+		const game = new COUP();
 
 		const player = MakePlayer();
 		player.bot1.card1 = 'assassin';
@@ -1055,8 +1196,8 @@ const TEST = {
 
 		const bots = MakeBots();
 		let output;
-		bots.bot1.OnTurn = () =>({ action: 'stealing', against: 'bot2' });
-		bots.bot2.OnChallengeActionRound = ( param ) => {
+		bots.bot1.OnTurn = () => ({ action: 'stealing', against: 'bot2' });
+		bots.bot2.OnChallengeActionRound = (param) => {
 			output = param;
 			return false;
 		};
@@ -1072,7 +1213,7 @@ const TEST = {
 		await game.Turn();
 
 		let status = Style.red('FAIL');
-		if(
+		if (
 			game.PLAYER.bot1.card1 === 'assassin' &&
 			game.PLAYER.bot1.card2 === 'captain' &&
 			game.PLAYER.bot1.coins === 3 &&
@@ -1080,13 +1221,17 @@ const TEST = {
 			game.PLAYER.bot2.coins === 1 &&
 			game.PLAYER.bot3.card1 === 'duke' &&
 			game.DECK.length === 1 &&
-			output.myCards[ 0 ] === 'captain' &&
+			output.myCards[0] === 'captain' &&
 			output.myCoins === 3
-		) status = Style.green('PASS');
-		console.info(`${ status }  we get the right parameters passed in for OnChallengeActionRound`);
+		)
+			status = Style.green('PASS');
+		else pass = false;
+		console.info(
+			`${status}  we get the right parameters passed in for OnChallengeActionRound`
+		);
 	},
-	'checkParameters3': async () => {
-		const game = new COUP;
+	checkParameters3: async () => {
+		const game = new COUP();
 
 		const player = MakePlayer();
 		player.bot1.card1 = 'assassin';
@@ -1099,7 +1244,7 @@ const TEST = {
 		const bots = MakeBots();
 		let output;
 		bots.bot1.OnTurn = () => ({ action: 'foreign-aid' });
-		bots.bot2.OnCounterAction = ( param ) => {
+		bots.bot2.OnCounterAction = (param) => {
 			output = param;
 			return false;
 		};
@@ -1115,7 +1260,7 @@ const TEST = {
 		await game.Turn();
 
 		let status = Style.red('FAIL');
-		if(
+		if (
 			game.PLAYER.bot1.card1 === 'assassin' &&
 			game.PLAYER.bot1.card2 === 'captain' &&
 			game.PLAYER.bot1.coins === 3 &&
@@ -1125,11 +1270,15 @@ const TEST = {
 			game.DECK.length === 1 &&
 			output.action === 'foreign-aid' &&
 			output.byWhom === 'bot1'
-		) status = Style.green('PASS');
-		console.info(`${ status }  we get the right parameters passed in for OnCounterAction`);
+		)
+			status = Style.green('PASS');
+		else pass = false;
+		console.info(
+			`${status}  we get the right parameters passed in for OnCounterAction`
+		);
 	},
-	'checkParameters4': async () => {
-		const game = new COUP;
+	checkParameters4: async () => {
+		const game = new COUP();
 
 		const player = MakePlayer();
 		player.bot1.card1 = 'assassin';
@@ -1143,7 +1292,7 @@ const TEST = {
 		let output;
 		bots.bot1.OnTurn = () => ({ action: 'foreign-aid' });
 		bots.bot2.OnCounterAction = () => 'duke';
-		bots.bot3.OnCounterActionRound = ( param ) => {
+		bots.bot3.OnCounterActionRound = (param) => {
 			output = param;
 			return false;
 		};
@@ -1159,7 +1308,7 @@ const TEST = {
 		await game.Turn();
 
 		let status = Style.red('FAIL');
-		if(
+		if (
 			game.PLAYER.bot1.card1 === 'assassin' &&
 			game.PLAYER.bot1.card2 === 'captain' &&
 			game.PLAYER.bot1.coins === 1 &&
@@ -1171,11 +1320,15 @@ const TEST = {
 			output.byWhom === 'bot1' &&
 			output.counterer === 'bot2' &&
 			output.card === 'duke'
-		) status = Style.green('PASS');
-		console.info(`${ status }  we get the right parameters passed in for OnCounterActionRound for duking`);
+		)
+			status = Style.green('PASS');
+		else pass = false;
+		console.info(
+			`${status}  we get the right parameters passed in for OnCounterActionRound for duking`
+		);
 	},
-	'checkParameters5': async () => {
-		const game = new COUP;
+	checkParameters5: async () => {
+		const game = new COUP();
 
 		const player = MakePlayer();
 		player.bot1.card1 = 'assassin';
@@ -1189,7 +1342,7 @@ const TEST = {
 		let output;
 		bots.bot1.OnTurn = () => ({ action: 'assassination', against: 'bot2' });
 		bots.bot2.OnCounterAction = () => 'contessa';
-		bots.bot3.OnCounterActionRound = ( param ) => {
+		bots.bot3.OnCounterActionRound = (param) => {
 			output = param;
 			return false;
 		};
@@ -1205,7 +1358,7 @@ const TEST = {
 		await game.Turn();
 
 		let status = Style.red('FAIL');
-		if(
+		if (
 			game.PLAYER.bot1.card1 === 'assassin' &&
 			game.PLAYER.bot1.card2 === 'captain' &&
 			game.PLAYER.bot1.coins === 1 &&
@@ -1218,11 +1371,14 @@ const TEST = {
 			output.toWhom === 'bot2' &&
 			output.counterer === 'bot2' &&
 			output.card === 'contessa'
-		) status = Style.green('PASS');
-		console.info(`${ status }  we get the right parameters passed in for OnCounterActionRound for assassination`);
+		)
+			status = Style.green('PASS');
+		else pass = false;
+		console.info(
+			`${status}  we get the right parameters passed in for OnCounterActionRound for assassination`
+		);
 	},
 };
-
 
 console.info(`
  ████████╗ ███████╗ ███████╗ ████████╗ ██╗ ███╗   ██╗  ██████╗
@@ -1233,20 +1389,19 @@ console.info(`
     ╚═╝    ╚══════╝ ╚══════╝    ╚═╝    ╚═╝ ╚═╝  ╚═══╝  ╚═════╝
 `);
 
-Object
-	.entries( TEST )
-	.forEach( async ([ name, test ]) => await test() );
+Object.entries(TEST).forEach(async ([name, test]) => await test());
 
-
-const ExitHandler = ( exiting, error ) => {
-	if( error && error !== 1 ) {
-		console.error( error );
+const ExitHandler = (exiting, error) => {
+	if (error && error !== 1) {
+		console.error(error);
 	}
 
 	console.info();
-	process.exit( 0 ); //now exit with a smile :)
+
+	if (!pass) process.exit(1);
+	else process.exit(0); //now exit with a smile :)
 };
 
-process.on( 'exit', ExitHandler );
-process.on( 'SIGINT', ExitHandler );
-process.on( 'uncaughtException', ExitHandler );
+process.on('exit', ExitHandler);
+process.on('SIGINT', ExitHandler);
+process.on('uncaughtException', ExitHandler);
