@@ -9,7 +9,6 @@
 		"test": "npm run test:code && npm run test:format",
 		"format:config": "prettier --single-quote --trailing-comma es5 --use-tabs --arrow-parens always",
 		"format": "npm run format:config -- --write \"**/*.js\"",
-		"precommit": "test:format",
 		"play": "node coup.js play",
 		"loop": "node coup.js loop"
 	},
@@ -20,7 +19,12 @@
 	"author": "",
 	"license": "ISC",
 	"devDependencies": {
-		"pre-commit": "^1.2.2",
+		"husky": "^1.0.0-rc.13",
 		"prettier": "^1.13.7"
+	},
+	"husky": {
+		"hooks": {
+			"pre-commit": "npm run test:format"
+		}
 	}
 }
