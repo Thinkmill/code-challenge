@@ -225,6 +225,7 @@ An action:
 	type: 'action',
 	action: <Action>,
 	from: <Player>,
+	to: <Player>,
 }
 ```
 
