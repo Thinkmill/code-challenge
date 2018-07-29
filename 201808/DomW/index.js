@@ -65,13 +65,12 @@ class BOT {
 
 		history.some((item) => {
 			if (item.type === 'counter-round' || item.type === 'challenge-round') {
-				if(against) {
+				if (against) {
 					if (item.action === action && item.challengee === against) {
 						result = true;
 						return true;
 					}
-				}
-				else {
+				} else {
 					if (item.action === action) {
 						result = true;
 						return true;
@@ -85,7 +84,7 @@ class BOT {
 
 	OnTurn({ history, myCards, myCoins, otherPlayers, discardedCards }) {
 		this.GO++;
-		let thisAction = ['foreign-aid','taking-1'];
+		let thisAction = ['foreign-aid', 'taking-1'];
 		let thisAgainst = [];
 		let allActions = ACTIONS();
 		const cardActions = this.cardActions();
@@ -103,7 +102,7 @@ class BOT {
 			thisAction = thisAction.filter((action) => action !== 'taking-1');
 		}
 
-		if(this.HasBeenBlockedBefore(history, 'foreign-aid')) {
+		if (this.HasBeenBlockedBefore(history, 'foreign-aid')) {
 			thisAction = thisAction.filter((action) => action !== 'foreign-aid');
 		}
 
