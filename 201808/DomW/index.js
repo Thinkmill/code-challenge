@@ -5,12 +5,41 @@ const { ALLBOTS, CARDS, DECK, ACTIONS } = require('../constants.js');
 class BOT {
 	constructor() {
 		this.GO = 0;
+		this.actions = {
+			AbbasA: [],
+			BenC: [],
+			BorisB: [],
+			CharlesL: [],
+			JedW: [],
+			DomW: [],
+			JessT: [],
+			JohnM: [],
+			JossM: [],
+			KevinY: [],
+			LaurenA: [],
+			MalB: [],
+			MikeG: [],
+			MikeH: [],
+			NathS: [],
+			SanjiyaD: [],
+			TiciA: [],
+			TimL: [],
+			TomW: [],
+			TuanH: [],
+		};
 		this.cardOrder = () => [
 			'duke',
 			'captain',
 			'contessa',
 			'ambassador',
 			'assassin',
+		];
+		this.discardOrder = () => [
+			'ambassador',
+			'contessa',
+			'assassin',
+			'captain',
+			'duke',
 		];
 		this.actionOrder = () => [
 			'assassination',
@@ -93,13 +122,22 @@ class BOT {
 		let result = false;
 
 		history.some((item) => {
-			if (
-				item.type === 'counter-round' ||
-				item.type === 'challenge-round' ||
-				item.type === 'counter-action'
-			) {
+			if (item.type === 'counter-round' || item.type === 'challenge-round') {
 				if (against) {
 					if (item.action === action && item.challengee === against) {
+						result = true;
+						return true;
+					}
+				} else {
+					if (item.action === action) {
+						result = true;
+						return true;
+					}
+				}
+			}
+			if (item.type === 'counter-action') {
+				if (against) {
+					if (item.action === action && item.to === against) {
 						result = true;
 						return true;
 					}
@@ -279,6 +317,28 @@ class BOT {
 			}
 		}
 
+		if (
+			otherPlayers.length === 1 &&
+			otherPlayers[0].coins > myCoins &&
+			this.actions[otherPlayers[0].name][
+				this.actions[otherPlayers[0].name].length - 1
+			] === 'taking-3' &&
+			myCards.includes('captain') &&
+			!this.HasBeenBlockedBefore(history, 'stealing', otherPlayers[0].name)
+		) {
+			action = 'stealing';
+		} else if (
+			otherPlayers.length === 1 &&
+			otherPlayers[0].coins > myCoins &&
+			this.actions[otherPlayers[0].name][
+				this.actions[otherPlayers[0].name].length - 1
+			] === 'taking-3' &&
+			myCards.includes('assassin') &&
+			myCoins >= 3
+		) {
+			action = 'assassination';
+		}
+
 		if (myCoins >= 7) {
 			action = 'couping';
 			against = this.GetTarget(otherPlayers);
@@ -302,6 +362,8 @@ class BOT {
 	}) {
 		const discardPile = this.CountDiscardPile(discardedCards, myCards);
 		const actionCards = this.actionCards();
+
+		this.actions[byWhom].push(action);
 
 		if (discardPile[actionCards[action]] === 3) {
 			return true;
@@ -341,7 +403,13 @@ class BOT {
 		action,
 		byWhom,
 	}) {
-		if (action === 'assassination' && myCards.includes('contessa')) {
+		if (
+			otherPlayers.length === 1 &&
+			otherPlayers[0].coins >= myCoins &&
+			action === 'foreign-aid'
+		) {
+			return 'duke';
+		} else if (action === 'assassination' && myCards.includes('contessa')) {
 			return 'contessa';
 		} else if (
 			action === 'assassination' &&
@@ -385,10 +453,6 @@ class BOT {
 		const discardPile = this.CountDiscardPile(discardedCards, myCards);
 		const actionCards = this.actionCards();
 
-		if (action === 'assassination' && ['TimL', 'JohnM'].includes(byWhom)) {
-			return [true, false][Math.floor(Math.random() * 2)];
-		}
-
 		if (
 			action === 'stealing' &&
 			['JohnM'].includes(byWhom) &&
@@ -422,7 +486,7 @@ class BOT {
 	}
 
 	OnCardLoss({ history, myCards, myCoins, otherPlayers, discardedCards }) {
-		const order = this.cardOrder().reverse();
+		const order = this.discardOrder();
 		let newCards = myCards.sort((a, b) => order.indexOf(a) - order.indexOf(b));
 
 		return newCards.slice(0, 1)[0];
