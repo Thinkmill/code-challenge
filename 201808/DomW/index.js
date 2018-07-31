@@ -21,15 +21,15 @@ class BOT {
 			'taking-1',
 		];
 		this.targetOrder = () => [
-			'TimL',
 			'JohnM',
+			'TimL',
+			'TuanH',
 			'MikeH',
 			'AbbasA',
 			'TomW',
 			'JossM',
 			'NathS',
 			'BenC',
-			'TuanH',
 			'SanjiyaD',
 			'MikeG',
 			'BorisB',
@@ -228,12 +228,12 @@ class BOT {
 			against = targetObject.against;
 		}
 
-		if (myCards[0] === myCards[1]) {
-			if (!this.HasBeenBlockedBefore(history, 'swapping')) {
-				action = 'swapping';
-			} else {
-				action = [action, 'swapping'][Math.floor(Math.random() * 2)];
-			}
+		if (
+			otherPlayers.length < 2 &&
+			myCoins < otherPlayers[0].coins &&
+			!this.HasBeenBlockedBefore(history, 'foreign-aid', otherPlayers[0].name)
+		) {
+			action = 'foreign-aid';
 		}
 
 		if (
@@ -264,6 +264,14 @@ class BOT {
 			action = 'taking-1';
 		}
 
+		if (myCards[0] === myCards[1]) {
+			if (!this.HasBeenBlockedBefore(history, 'swapping')) {
+				action = 'swapping';
+			} else {
+				action = [action, 'swapping'][Math.floor(Math.random() * 2)];
+			}
+		}
+
 		if (myCoins >= 7) {
 			action = 'couping';
 			against = this.GetTarget(otherPlayers);
@@ -292,18 +300,27 @@ class BOT {
 			return true;
 		}
 
-		if (this.GO === 1 && action === 'swapping' && ['JohnM'].includes(byWhom)) {
+		if (this.GO <= 3 && action === 'swapping' && ['JohnM'].includes(byWhom)) {
 			return [true, true, false][Math.floor(Math.random() * 3)];
 		}
 
-		// if (
-		// 	action === 'assassination' &&
-		// 	toWhom === 'DomW' &&
-		// 	!myCards.includes('contessa') &&
-		// 	discardPile['assassin'] >= 2
-		// ) {
-		// 	return [true, false, false, false][Math.floor(Math.random() * 4)];
-		// }
+		if (
+			action === 'assassination' &&
+			['TuanH', 'JohnM'].includes(byWhom) &&
+			!myCards.includes('contessa') &&
+			toWhom === 'DomW'
+		) {
+			return [true, true, false][Math.floor(Math.random() * 3)];
+		}
+
+		if (
+			action === 'assassination' &&
+			toWhom === 'DomW' &&
+			myCards.length === 1 &&
+			!myCards.includes('contessa')
+		) {
+			return true;
+		}
 
 		return false;
 	}
@@ -328,7 +345,7 @@ class BOT {
 			return 'contessa';
 		} else if (action === 'stealing') {
 			if (otherPlayers.length === 1) {
-				return ['ambassador', 'captain'][Math.floor(Math.random() * 2)];
+				return ['ambassador', 'captain', false][Math.floor(Math.random() * 3)];
 			}
 			if (myCards.includes('ambassador')) {
 				return 'ambassador';
@@ -362,6 +379,14 @@ class BOT {
 
 		if (action === 'assassination' && ['TimL', 'JohnM'].includes(byWhom)) {
 			return [true, false][Math.floor(Math.random() * 2)];
+		}
+
+		if (
+			action === 'stealing' &&
+			['JohnM'].includes(byWhom) &&
+			otherPlayers.length === 1
+		) {
+			return [true, true, false][Math.floor(Math.random() * 3)];
 		}
 
 		if (discardPile[actionCards[action]] === 3) {
