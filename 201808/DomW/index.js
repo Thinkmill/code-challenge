@@ -231,7 +231,12 @@ class BOT {
 		if (
 			otherPlayers.length < 2 &&
 			myCoins < otherPlayers[0].coins &&
-			!this.HasBeenBlockedBefore(history, 'foreign-aid', otherPlayers[0].name)
+			!this.HasBeenBlockedBefore(
+				history,
+				'foreign-aid',
+				otherPlayers[0].name
+			) &&
+			!myCards.includes('duke')
 		) {
 			action = 'foreign-aid';
 		}
@@ -240,7 +245,8 @@ class BOT {
 			myCards.length === 1 &&
 			otherPlayers.length === 1 &&
 			otherPlayers[0].cards === 2 &&
-			myCoins < otherPlayers[0].coins
+			myCoins < otherPlayers[0].coins &&
+			myCoins >= 3
 		) {
 			action = 'assassination';
 			against = otherPlayers[0].name;
@@ -249,7 +255,8 @@ class BOT {
 		if (
 			myCards.includes('captain') &&
 			otherPlayers.length === 1 &&
-			otherPlayers[0].coins >= 1
+			otherPlayers[0].coins >= 1 &&
+			!this.HasBeenBlockedBefore(history, 'stealing', otherPlayers[0].name)
 		) {
 			action = 'stealing';
 			against = otherPlayers[0].name;
@@ -260,7 +267,11 @@ class BOT {
 			against = otherPlayers[0].name;
 		}
 
-		if (myCoins === 6 && action !== 'assassination') {
+		if (
+			myCoins === 6 &&
+			action !== 'assassination' &&
+			!otherPlayers[0].coins >= 7
+		) {
 			action = 'taking-1';
 		}
 
@@ -338,7 +349,9 @@ class BOT {
 			return 'contessa';
 		} else if (
 			action === 'assassination' &&
-			!this.HasBeenChallegendBefore(history)
+			!this.HasBeenChallegendBefore(history) &&
+			otherPlayers.length !== 1 &&
+			myCards.length === 2
 		) {
 			return 'contessa';
 		} else if (action === 'assassination' && myCards.length === 1) {
@@ -389,7 +402,7 @@ class BOT {
 			return [true, true, false][Math.floor(Math.random() * 3)];
 		}
 
-		if (discardPile[actionCards[action]] === 3) {
+		if (discardPile[card] === 3) {
 			return true;
 		}
 
@@ -405,7 +418,8 @@ class BOT {
 		newCards,
 	}) {
 		const order = this.cardOrder();
-		const allCards = [...myCards, ...newCards];
+		let allCards = new Set([...myCards, ...newCards]);
+		allCards = [...allCards];
 
 		return allCards
 			.sort((a, b) => order.indexOf(a) - order.indexOf(b))
@@ -414,11 +428,9 @@ class BOT {
 
 	OnCardLoss({ history, myCards, myCoins, otherPlayers, discardedCards }) {
 		const order = this.cardOrder().reverse();
-
 		let newCards = myCards.sort((a, b) => order.indexOf(a) - order.indexOf(b));
-		newCards = new Set(newCards);
 
-		return [...newCards].slice(0, 1)[0];
+		return newCards.slice(0, 1)[0];
 	}
 }
 
