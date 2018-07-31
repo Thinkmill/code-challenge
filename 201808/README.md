@@ -120,6 +120,9 @@ You get to require 4 functions from the engine at `constants.js` inside your bot
 - `DECK()` Returns an array of all cards in the deck (3 of each)
 - `ACTIONS()` Returns an array of all actions `<Action>`
 
+> TIP: If you console log out the string `STOP` the loop will stop as soon as a game prints this and print everything out from that game. Great for debugging.
+> Just make sure you remove the console log before submitting.
+
 ### `<Player>`
 
 - `AbbasA`

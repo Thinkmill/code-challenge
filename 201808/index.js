@@ -654,7 +654,7 @@ class COUP {
 				} else if (this.PLAYER[target].card2 === disgarded && disgarded) {
 					this.LosePlayerCard(target, disgarded);
 				} else {
-					this.Penalty(target, `did't give up a valid card`);
+					this.Penalty(target, `did't give up a valid card "${disgarded}"`);
 				}
 				break;
 
@@ -679,7 +679,7 @@ class COUP {
 				} else if (this.PLAYER[target].card2 === disgarded && disgarded) {
 					this.LosePlayerCard(target, disgarded);
 				} else {
-					this.Penalty(target, `did't give up a valid card`);
+					this.Penalty(target, `did't give up a valid card "${disgarded}"`);
 				}
 				break;
 
@@ -948,7 +948,7 @@ class LOOP {
 
 		this.DisplayScore(true);
 
-		if (!winners || this.ERROR) {
+		if (!winners || this.ERROR || this.LOG.includes(`STOP`)) {
 			console.info(this.LOG);
 			// console.info( JSON.stringify( game.HISTORY, null, 2 ) );
 			this.ROUND = this.ROUNDS;
