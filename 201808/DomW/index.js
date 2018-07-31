@@ -9,8 +9,37 @@ class BOT {
 			'duke',
 			'captain',
 			'contessa',
-			'assassin',
 			'ambassador',
+			'assassin',
+		];
+		this.actionOrder = () => [
+			'assassination',
+			'swapping',
+			'taking-3',
+			'stealing',
+			'foreign-aid',
+			'taking-1',
+		];
+		this.targetOrder = () => [
+			'TimL',
+			'JohnM',
+			'MikeH',
+			'AbbasA',
+			'TomW',
+			'JossM',
+			'NathS',
+			'BenC',
+			'TuanH',
+			'SanjiyaD',
+			'MikeG',
+			'BorisB',
+			'CharlesL',
+			'JedW',
+			'JessT',
+			'KevinY',
+			'LaurenA',
+			'MalB',
+			'TiciA',
 		];
 		this.actionCards = () => ({
 			'foreign-aid': 'duke',
@@ -82,11 +111,63 @@ class BOT {
 		return result;
 	}
 
+	SelectTarget({ history, doAction, otherPlayers, thisAction, condition }) {
+		const order = this.targetOrder();
+		let found = false;
+		let action;
+		let against;
+
+		otherPlayers
+			.sort(
+				(a, b) =>
+					b.cards - a.cards ||
+					b.coins - a.coins ||
+					order.indexOf(a.name) - order.indexOf(b.name)
+			)
+			.some((player) => {
+				if (
+					!this.HasBeenBlockedBefore(history, doAction, player.name) &&
+					condition(player)
+				) {
+					action = doAction;
+					against = player.name;
+					found = true;
+					return true;
+				}
+			});
+
+		if (!found) {
+			thisAction = thisAction.filter((action) => action !== doAction);
+			action = thisAction[Math.floor(Math.random() * thisAction.length)];
+			against =
+				otherPlayers[Math.floor(Math.random() * otherPlayers.length)].name;
+		}
+
+		return {
+			action,
+			thisAction,
+			against,
+		};
+	}
+
+	GetTarget(players) {
+		const order = this.targetOrder();
+		return players
+			.sort(
+				(a, b) =>
+					b.cards - a.cards ||
+					b.coins - a.coins ||
+					order.indexOf(a.name) - order.indexOf(b.name)
+			)
+			.slice(0, 1)[0].name;
+	}
+
 	OnTurn({ history, myCards, myCoins, otherPlayers, discardedCards }) {
 		this.GO++;
 		let thisAction = ['foreign-aid', 'taking-1'];
 		let thisAgainst = [];
 		let allActions = ACTIONS();
+		const order = this.actionOrder();
 		const cardActions = this.cardActions();
 
 		myCards.forEach((action) => {
@@ -95,41 +176,97 @@ class BOT {
 
 		if (myCards[0] === myCards[1]) {
 			thisAction.push('swapping');
-			thisAction.push('swapping');
-		}
-
-		if (thisAction.includes('taking-1') && thisAction.includes('foreign-aid')) {
-			thisAction = thisAction.filter((action) => action !== 'taking-1');
 		}
 
 		if (this.HasBeenBlockedBefore(history, 'foreign-aid')) {
 			thisAction = thisAction.filter((action) => action !== 'foreign-aid');
 		}
 
+		if (thisAction.includes('taking-1') && thisAction.includes('foreign-aid')) {
+			thisAction = thisAction.filter((action) => action !== 'taking-1');
+		}
+
 		if (thisAction.includes('assassination') && myCoins < 3) {
 			thisAction = thisAction.filter((action) => action !== 'assassination');
 		}
 
-		if (thisAction.length < 2) {
+		if (
+			thisAction.length < 2 &&
+			!this.HasBeenBlockedBefore(history, 'taking-3')
+		) {
 			thisAction.push('taking-3');
 		}
 
-		let action = thisAction[Math.floor(Math.random() * thisAction.length)];
-		let against =
-			otherPlayers[Math.floor(Math.random() * otherPlayers.length)].name;
+		let action = thisAction
+			.sort((a, b) => order.indexOf(a) - order.indexOf(b))
+			.slice(0, 1)[0];
+		let against = this.GetTarget(otherPlayers);
 
-		if (thisAction.includes('stealing')) {
-			otherPlayers.some((player) => {
-				if (player.coins >= 2) {
-					against = player.name;
-					action = 'stealing';
-					return true;
-				}
+		if (action === 'stealing') {
+			const targetObject = this.SelectTarget({
+				history,
+				doAction: 'stealing',
+				otherPlayers,
+				thisAction,
+				condition: (player) => player.coins > 2,
 			});
+			action = targetObject.action;
+			thisAction = targetObject.thisAction;
+			against = targetObject.against;
+		}
+
+		if (action === 'assassination') {
+			const targetObject = this.SelectTarget({
+				history,
+				doAction: 'assassination',
+				otherPlayers,
+				thisAction,
+				condition: () => true,
+			});
+			action = targetObject.action;
+			thisAction = targetObject.thisAction;
+			against = targetObject.against;
+		}
+
+		if (myCards[0] === myCards[1]) {
+			if (!this.HasBeenBlockedBefore(history, 'swapping')) {
+				action = 'swapping';
+			} else {
+				action = [action, 'swapping'][Math.floor(Math.random() * 2)];
+			}
+		}
+
+		if (
+			myCards.length === 1 &&
+			otherPlayers.length === 1 &&
+			otherPlayers[0].cards === 2 &&
+			myCoins < otherPlayers[0].coins
+		) {
+			action = 'assassination';
+			against = otherPlayers[0].name;
+		}
+
+		if (
+			myCards.includes('captain') &&
+			otherPlayers.length === 1 &&
+			otherPlayers[0].coins >= 1
+		) {
+			action = 'stealing';
+			against = otherPlayers[0].name;
+		}
+
+		if (otherPlayers.length === 1 && myCoins >= 3 && this.GO > 30) {
+			action = 'assassination';
+			against = otherPlayers[0].name;
+		}
+
+		if (myCoins === 6 && action !== 'assassination') {
+			action = 'taking-1';
 		}
 
 		if (myCoins >= 7) {
 			action = 'couping';
+			against = this.GetTarget(otherPlayers);
 		}
 
 		return {
@@ -155,21 +292,17 @@ class BOT {
 			return true;
 		}
 
-		// if (byWhom === 'TimL' || byWhom === 'JohnM') {
-		// 	// can't trust those guys!
-		// 	return [true, true, false][Math.floor(Math.random() * 3)];
-		// }
-
-		if (
-			this.GO === 1 &&
-			action === 'swapping' &&
-			['TimL', 'MikeH', 'JossM', 'NathS'].includes(byWhom)
-		) {
+		if (this.GO === 1 && action === 'swapping' && ['JohnM'].includes(byWhom)) {
 			return [true, true, false][Math.floor(Math.random() * 3)];
 		}
 
-		// if (action === 'assassination' && discardPile[actionCards[action]] === 2) {
-		// 	return [true, false][Math.floor(Math.random() * 2)];
+		// if (
+		// 	action === 'assassination' &&
+		// 	toWhom === 'DomW' &&
+		// 	!myCards.includes('contessa') &&
+		// 	discardPile['assassin'] >= 2
+		// ) {
+		// 	return [true, false, false, false][Math.floor(Math.random() * 4)];
 		// }
 
 		return false;
@@ -184,43 +317,33 @@ class BOT {
 		action,
 		byWhom,
 	}) {
-		if (this.HasBeenChallegendBefore(history)) {
-			if (action === 'assassination' && myCards.includes('contessa')) {
-				return 'contessa';
-			} else if (action === 'stealing') {
-				if (myCards.includes('ambassador')) {
-					return 'ambassador';
-				} else if (myCards.includes('captain')) {
-					return 'captain';
-				} else {
-					return false;
-				}
-			} else if (action === 'foreign-aid') {
-				if (myCards.includes('duke')) {
-					return 'duke';
-				}
+		if (action === 'assassination' && myCards.includes('contessa')) {
+			return 'contessa';
+		} else if (
+			action === 'assassination' &&
+			!this.HasBeenChallegendBefore(history)
+		) {
+			return 'contessa';
+		} else if (action === 'assassination' && myCards.length === 1) {
+			return 'contessa';
+		} else if (action === 'stealing') {
+			if (otherPlayers.length === 1) {
+				return ['ambassador', 'captain'][Math.floor(Math.random() * 2)];
 			}
-
-			return false;
-		} else {
-			if (action === 'assassination') {
-				return 'contessa';
-			} else if (action === 'stealing') {
-				if (myCards.includes('ambassador')) {
-					return 'ambassador';
-				} else if (myCards.includes('captain')) {
-					return 'captain';
-				} else {
-					return false;
-				}
-			} else if (action === 'foreign-aid') {
-				if (myCards.includes('duke')) {
-					return 'duke';
-				}
+			if (myCards.includes('ambassador')) {
+				return 'ambassador';
+			} else if (myCards.includes('captain')) {
+				return 'captain';
+			} else {
+				return false;
 			}
-
-			return false;
+		} else if (action === 'foreign-aid') {
+			if (myCards.includes('duke')) {
+				return 'duke';
+			}
 		}
+
+		return false;
 	}
 
 	OnCounterActionRound({
@@ -237,11 +360,8 @@ class BOT {
 		const discardPile = this.CountDiscardPile(discardedCards, myCards);
 		const actionCards = this.actionCards();
 
-		if (
-			action === 'assassination' &&
-			['TimL', 'JohnM', 'MikeH', 'JossM', 'NathS', 'BenC'].includes(byWhom)
-		) {
-			return true;
+		if (action === 'assassination' && ['TimL', 'JohnM'].includes(byWhom)) {
+			return [true, false][Math.floor(Math.random() * 2)];
 		}
 
 		if (discardPile[actionCards[action]] === 3) {
