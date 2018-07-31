@@ -93,7 +93,11 @@ class BOT {
 		let result = false;
 
 		history.some((item) => {
-			if (item.type === 'counter-round' || item.type === 'challenge-round') {
+			if (
+				item.type === 'counter-round' ||
+				item.type === 'challenge-round' ||
+				item.type === 'counter-action'
+			) {
 				if (against) {
 					if (item.action === action && item.challengee === against) {
 						result = true;
@@ -202,7 +206,13 @@ class BOT {
 			.slice(0, 1)[0];
 		let against = this.GetTarget(otherPlayers);
 
-		if (action === 'stealing') {
+		if (
+			action === 'stealing' ||
+			(myCards.includes('captain') &&
+				otherPlayers.length === 1 &&
+				otherPlayers[0].coins >= 1 &&
+				!this.HasBeenBlockedBefore(history, 'stealing', otherPlayers[0].name))
+		) {
 			const targetObject = this.SelectTarget({
 				history,
 				doAction: 'stealing',
@@ -231,11 +241,7 @@ class BOT {
 		if (
 			otherPlayers.length < 2 &&
 			myCoins < otherPlayers[0].coins &&
-			!this.HasBeenBlockedBefore(
-				history,
-				'foreign-aid',
-				otherPlayers[0].name
-			) &&
+			!this.HasBeenBlockedBefore(history, 'foreign-aid') &&
 			!myCards.includes('duke')
 		) {
 			action = 'foreign-aid';
@@ -249,16 +255,6 @@ class BOT {
 			myCoins >= 3
 		) {
 			action = 'assassination';
-			against = otherPlayers[0].name;
-		}
-
-		if (
-			myCards.includes('captain') &&
-			otherPlayers.length === 1 &&
-			otherPlayers[0].coins >= 1 &&
-			!this.HasBeenBlockedBefore(history, 'stealing', otherPlayers[0].name)
-		) {
-			action = 'stealing';
 			against = otherPlayers[0].name;
 		}
 
@@ -350,7 +346,6 @@ class BOT {
 		} else if (
 			action === 'assassination' &&
 			!this.HasBeenChallegendBefore(history) &&
-			otherPlayers.length !== 1 &&
 			myCards.length === 2
 		) {
 			return 'contessa';
