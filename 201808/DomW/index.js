@@ -317,26 +317,22 @@ class BOT {
 			}
 		}
 
-		if (
-			otherPlayers.length === 1 &&
-			otherPlayers[0].coins > myCoins &&
-			this.actions[otherPlayers[0].name][
-				this.actions[otherPlayers[0].name].length - 1
-			] === 'taking-3' &&
-			myCards.includes('captain') &&
-			!this.HasBeenBlockedBefore(history, 'stealing', otherPlayers[0].name)
-		) {
-			action = 'stealing';
-		} else if (
-			otherPlayers.length === 1 &&
-			otherPlayers[0].coins > myCoins &&
-			this.actions[otherPlayers[0].name][
-				this.actions[otherPlayers[0].name].length - 1
-			] === 'taking-3' &&
-			myCards.includes('assassin') &&
-			myCoins >= 3
-		) {
-			action = 'assassination';
+		if (otherPlayers.length === 1 && otherPlayers[0].coins > myCoins) {
+			const otherPlayer = otherPlayers[0];
+			const otherPlayerAction = this.actions[otherPlayer.name];
+
+			if (
+				myCards.includes('captain') &&
+				!this.HasBeenBlockedBefore(history, 'stealing', otherPlayer.name)
+			) {
+				action = 'stealing';
+			} else if (
+				otherPlayerAction[otherPlayerAction.length - 1] === 'taking-3' &&
+				myCards.includes('assassin') &&
+				myCoins >= 3
+			) {
+				action = 'assassination';
+			}
 		}
 
 		if (myCoins >= 7) {
