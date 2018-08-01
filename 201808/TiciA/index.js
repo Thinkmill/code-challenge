@@ -2,51 +2,51 @@
 
 const { ALLBOTS, CARDS, DECK, ACTIONS } = require('../constants.js');
 
+const target = (players) => players .map((p) => [p.coins * p.cards, p]) .sort((a, b) => b[0] - a[0]) .map((x) => x[1]);
+
+const sortCards = (cards) => {
+	const order = {
+		duke: 0,
+		captain: 1,
+		contessa: 2,
+		ambassador: 3,
+		assassin: 4,
+	};
+	const inverseOrder = Object.entries(order).reduce(
+		(o, [k, v]) => ({ ...o, [v]: k }),
+		{}
+	);
+	return cards
+		.map((c) => order[c])
+		.sort()
+		.map((x) => inverseOrder[x]);
+};
 class BOT {
 	constructor() {
-		this.ROUND = 0;
+		// this.ROUND = 0;
 	}
 
 	OnTurn({ history, myCards, myCoins, otherPlayers, discardedCards }) {
 		let action = ['taking-1', 'foreign-aid'][Math.floor(Math.random() * 2)];
-		let against =
-			otherPlayers[Math.floor(Math.random() * otherPlayers.length)].name;
+		let against = otherPlayers[Math.floor(Math.random() * otherPlayers.length)].name;
+		let enemy = target(otherPlayers);
 
-		let playerWithMoreCoins = otherPlayers.reduce(
-			(a, b) => (a.coins > b.coins ? a : b)
-		);
-		let playerWithMoreCards = otherPlayers.reduce(
-			(a, b) => (a.cards > b.cards ? a : b)
-		);
-		let enemy = [playerWithMoreCoins.name, playerWithMoreCards.name][
-			Math.floor(Math.random() * 2)
-		];
+		// this.ROUND++;
 
-		this.ROUND++;
-
-		if (this.ROUND <= 2) {
-			if (myCards.includes('duke')) {
-				action = 'taking-3';
-			}
-			if (myCards.includes('ambassador')) {
-				action = 'swapping';
-			}
-
-			action = ['taking-3', 'swapping'][Math.floor(Math.random() * 2)];
-		}
-
-		if (
-			myCoins >= 3 &&
-			myCards.includes('assassin') &&
-			discardedCards.includes('contessa')
-		) {
-			action = 'assassination';
-			against = enemy;
-		}
-
-		if (myCoins > 10) {
+		if (myCoins > 6) {
 			action = 'couping';
-			against = enemy;
+		} else if (myCards.includes('duke')) {
+			action = 'taking-3';
+		} else if (myCards.includes('assassin') && myCoins >= 3) {
+			action = 'assassination';
+			against = enemy[0].name;
+		} else if (myCards.includes('captain')) {
+			action = 'stealing';
+			against = enemy[0].name;
+		} else if (myCards.includes('ambassador')) {
+			action = 'swapping';
+		} else {
+			action = 'taking-1';
 		}
 
 		return {
@@ -82,26 +82,18 @@ class BOT {
 		action,
 		byWhom,
 	}) {
-		if (action === 'assassination') {
-			if (myCards.length === 2 && myCards.indexOf('contessa') === -1) {
-				return false;
-			} else if (myCards.includes('contessa')) {
-				return 'contessa';
-			} else {
-				return [false, 'contessa'][Math.floor(Math.random() * 2)];
-			}
-		}
-
-		if (action === 'stealing') {
-			return [false, 'ambassador', 'captain'][Math.floor(Math.random() * 3)];
-		}
-
-		if (action === 'foreign-aid') {
-			return [false, 'duke'][Math.floor(Math.random() * 2)];
-		}
-
-		if (action === 'taking-3') {
-			return [false, 'duke'][Math.floor(Math.random() * 2)];
+		if (myCards.includes('ambassador') && action === 'stealing') {
+			return 'ambassador';
+		} else if (myCards.includes('captain') && action === 'stealing') {
+			return 'captain';
+		} else if (myCards.includes('contessa') && action === 'assassination') {
+			return 'contessa';
+		} else if (myCards.includes('duke') && action === 'foreign-aid') {
+			return 'duke';
+		} else if (myCards.length === 1 && action === 'assassination') {
+			return 'contessa';
+		} else {
+			return false;
 		}
 	}
 
@@ -116,26 +108,20 @@ class BOT {
 		toWhom,
 		card,
 	}) {
-		return [true, true, false][Math.floor(Math.random() * 3)];
+		return [true, false, false][Math.floor(Math.random() * 3)];
 	}
 
-	OnSwappingCards({
-		history,
-		myCards,
-		myCoins,
-		otherPlayers,
-		discardedCards,
-		newCards,
-	}) {
-		if (myCards.length === 2) {
-			return newCards;
-		}
-
-		return myCards;
+	OnSwappingCards({ history, myCards, myCoins, otherPlayers, discardedCards, newCards }) {
+		// Pick the best two non-identical cards
+		const sorted = sortCards([...myCards, ...newCards]);
+		const first = sorted[0];
+		return myCards.length === 1
+			? [first]
+			: [first, sorted.find((c) => c !== first) || first];
 	}
 
 	OnCardLoss({ history, myCards, myCoins, otherPlayers, discardedCards }) {
-		return myCards[0];
+		return sortCards([...myCards]).slice(-1)[0];
 	}
 }
 
