@@ -62,10 +62,10 @@ function aggregatePlayerData({
 		if (event.type === 'lost-card' && event.player) {
 			if (!obj[event.player]) obj[event.player] = init();
 			obj[event.player].actions = obj[event.player].actions.filter(
-				x => x !== getActionFrom(event.lost)
+				(x) => x !== getActionFrom(event.lost)
 			);
 			obj[event.player].counters = obj[event.player].counters.filter(
-				x => x !== getCounterFrom(event.lost)
+				(x) => x !== getCounterFrom(event.lost)
 			);
 		}
 
@@ -74,7 +74,7 @@ function aggregatePlayerData({
 
 	// remove own and deceased bots | reintroduce coins & cards
 	let cleanData = {};
-	otherPlayers.forEach(player => {
+	otherPlayers.forEach((player) => {
 		cleanData[player.name] = { ...historicData[player.name], ...player };
 	});
 

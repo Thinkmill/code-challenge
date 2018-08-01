@@ -30,7 +30,7 @@ class CoupCouper {
 	}
 	OnCounterAction({ history, otherPlayers, action, myCards }) {
 		if (action === 'assassination' && myCards.length === 1) return 'contessa';
-		const canBlock = getBlockersFor(action).find(c => myCards.includes(c));
+		const canBlock = getBlockersFor(action).find((c) => myCards.includes(c));
 		return canBlock || false;
 	}
 	OnCounterActionRound({

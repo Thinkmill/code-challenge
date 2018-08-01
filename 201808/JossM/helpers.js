@@ -8,16 +8,16 @@ function cardPreference(shouldReverse) {
 	return shouldReverse ? order.reverse() : order;
 }
 function loseCard(cards) {
-	return cardPreference(true).filter(c => cards.includes(c))[0];
+	return cardPreference(true).filter((c) => cards.includes(c))[0];
 }
 function swapCards(cards) {
 	const uniqueCards = cards.filter(unique);
 	return cardPreference()
-		.filter(c => uniqueCards.includes(c))
+		.filter((c) => uniqueCards.includes(c))
 		.slice(0, 2);
 }
 function getCount(card, cards) {
-	return cards.filter(c => c === card).length;
+	return cards.filter((c) => c === card).length;
 }
 function getCardFor(action) {
 	const actions = {
@@ -55,15 +55,15 @@ function getCounterFrom(card) {
 }
 function getMostInfluential(players) {
 	const byCoin = (a, b) => b.coins - a.coins;
-	const withTwo = players.filter(p => p.cards === 2);
-	const withOne = players.filter(p => p.cards === 1);
+	const withTwo = players.filter((p) => p.cards === 2);
+	const withOne = players.filter((p) => p.cards === 1);
 	const arr = withTwo.length ? withTwo.sort(byCoin) : withOne.sort(byCoin);
 
 	return arr[0] || players[0];
 }
 function getPassiveAction(playerData) {
 	const aidWillBeCountered = Boolean(
-		playerData.filter(p => {
+		playerData.filter((p) => {
 			return p.counters && p.counters.includes('foreign-aid');
 		}).length
 	);
@@ -72,7 +72,7 @@ function getPassiveAction(playerData) {
 	return { action, against: null };
 }
 function getCanditate(action, playerData) {
-	return playerData.filter(p => {
+	return playerData.filter((p) => {
 		// console.log('getCanditate for', action, p.name, p.counters);
 		if (!p.counters || !p.counters.length) return true;
 		return !p.counters.includes(action);
