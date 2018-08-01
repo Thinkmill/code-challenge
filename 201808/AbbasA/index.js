@@ -1,10 +1,28 @@
 'use strict';
 
+const count = (card, cards) => cards.filter((c) => c === card).length;
+
+const sortCards = (cards) => {
+	const order = {
+		duke: 0,
+		captain: 1,
+		contessa: 2,
+		ambassador: 3,
+		assassin: 4,
+	};
+	const inverseOrder = Object.entries(order).reduce(
+		(o, [k, v]) => ({ ...o, [v]: k }),
+		{}
+	);
+	return cards
+		.map((c) => order[c])
+		.sort()
+		.map((x) => inverseOrder[x]);
+};
+
 const { ALLBOTS, CARDS, DECK, ACTIONS } = require('../constants.js');
 
 class BOT {
-	constructor() {}
-
 	OnTurn({ history, myCards, myCoins, otherPlayers, discardedCards }) {
 		let action;
 		const against =
@@ -30,32 +48,15 @@ class BOT {
 		};
 	}
 
-	OnChallengeActionRound({
-		history,
-		myCards,
-		myCoins,
-		otherPlayers,
-		discardedCards,
-		action,
-		byWhom,
-		toWhom,
-	}) {
+	OnChallengeActionRound({}) {
 		return false;
 	}
 
-	OnCounterAction({
-		history,
-		myCards,
-		myCoins,
-		otherPlayers,
-		discardedCards,
-		action,
-		byWhom,
-	}) {
-		if (myCards.includes('ambassador') && action === 'stealing') {
-			return 'ambassador';
-		} else if (myCards.includes('captain') && action === 'stealing') {
+	OnCounterAction({ myCards, action }) {
+		if (myCards.includes('captain') && action === 'stealing') {
 			return 'captain';
+		} else if (myCards.includes('ambassador') && action === 'stealing') {
+			return 'ambassador';
 		} else if (myCards.includes('contessa') && action === 'assassination') {
 			return 'contessa';
 		} else if (myCards.includes('duke') && action === 'foreign-aid') {
@@ -67,33 +68,20 @@ class BOT {
 		}
 	}
 
-	OnCounterActionRound({
-		history,
-		myCards,
-		myCoins,
-		otherPlayers,
-		discardedCards,
-		action,
-		byWhom,
-		toWhom,
-		card,
-	}) {
+	OnCounterActionRound({}) {
 		return false;
 	}
 
-	OnSwappingCards({
-		history,
-		myCards,
-		myCoins,
-		otherPlayers,
-		discardedCards,
-		newCards,
-	}) {
-		return newCards;
+	OnSwappingCards({ myCards, newCards }) {
+		const sorted = sortCards([...myCards, ...newCards]);
+		const first = sorted[0];
+		return myCards.length === 1
+			? [first]
+			: [first, sorted.find((c) => c !== first) || first];
 	}
 
 	OnCardLoss({ history, myCards, myCoins, otherPlayers, discardedCards }) {
-		return myCards[0];
+		return sortCards([...myCards]).slice(-1)[0];
 	}
 }
 
