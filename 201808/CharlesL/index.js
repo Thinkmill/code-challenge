@@ -1,14 +1,23 @@
 'use strict';
 
 const { ALLBOTS, CARDS, DECK, ACTIONS } = require('../constants.js');
-
 class BOT {
 	OnTurn({ history, myCards, myCoins, otherPlayers, discardedCards }) {
-		let action = ACTIONS()[Math.floor(Math.random() * ACTIONS().length)];
-		const against =
-			otherPlayers[Math.floor(Math.random() * otherPlayers.length)].name;
+		let action = 'taking-1';
 
-		if (myCoins > 10) {
+		if (myCards.includes('duke')) {
+			action = 'taking-3';
+		} else {
+			action = 'foreign-aid';
+		}
+
+		if (myCoins >= 3 && myCards.includes('assassin')) {
+			action = 'assassinate';
+		}
+
+		const against = otherPlayers.includes('TimL') ? 'TimL' : otherPlayers[Math.floor(Math.random() * otherPlayers.length)]
+
+		if (myCoins >= 7) {
 			action = 'couping';
 		}
 
@@ -28,7 +37,7 @@ class BOT {
 		byWhom,
 		toWhom,
 	}) {
-		return [true, false][Math.floor(Math.random() * 2)];
+		return false;
 	}
 
 	OnCounterAction({
@@ -40,10 +49,13 @@ class BOT {
 		action,
 		byWhom,
 	}) {
-		if (action === 'assassination') {
-			return [false, 'contessa'][Math.floor(Math.random() * 2)];
-		} else if (action === 'stealing') {
-			return [false, 'ambassador', 'captain'][Math.floor(Math.random() * 3)];
+		switch(action) {
+			case 'assassination':
+				return [false, 'contessa'][Math.floor(Math.random() * 2)];
+			case 'stealing':
+				return [false, 'captain', 'ambassador'][Math.floor(Math.random() * 2)];
+			case 'foreign-aid':
+				return [false, 'duke'][Math.floor(Math.random() * 2)];
 		}
 	}
 
@@ -73,7 +85,30 @@ class BOT {
 	}
 
 	OnCardLoss({ history, myCards, myCoins, otherPlayers, discardedCards }) {
+		if (!myCards.length) {
+			console.warn('Of course you\'d kill me off, racists');
+		} else {
+			const probableCause = history[history.length - 2];
+			const perpetrator = this.findPerpetrator(probableCause)
+			console.warn(`I trusted you ${perpetrator}, and I thought we were friends...`)
+		}
 		return myCards[0];
+	}
+
+	findPerpetrator(probableCause) {
+		if (probableCause.type === 'challenge-round') {
+			if (probableCause.lying) {
+				return probableCause.challenger;
+			}
+			return probableCause.challengee;
+		} else if (probableCause.type === 'counter-round') {
+			if (probableCause.lying) {
+				return probableCause.challengee;
+			}
+			return probableCause.challenger;
+		} else {
+			return probableCause.from;
+		}
 	}
 }
 
