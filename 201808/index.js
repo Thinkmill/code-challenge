@@ -255,6 +255,20 @@ class COUP {
 		};
 	}
 
+	IsValidTarget(action, target, player) {
+		const doesExist = Object.keys(this.PLAYER).includes(target);
+		const isRequired = ['couping', 'assassination', 'stealing'].includes(
+			action
+		);
+		const isValid = (isRequired && doesExist) || !isRequired;
+
+		if (!isValid) {
+			this.Penalty(player, `the bot gave invalid target "${target}"`);
+		}
+
+		return isValid;
+	}
+
 	Wait(time) {
 		return new Promise((resolve) => setTimeout(resolve, time));
 	}
@@ -726,8 +740,10 @@ class COUP {
 			console.error(error);
 		}
 
-		if (!botAnswer) {
-		} else {
+		if (
+			botAnswer &&
+			this.IsValidTarget(botAnswer.action, botAnswer.against, player)
+		) {
 			const { action, against } = botAnswer;
 			const playerAvatar = this.GetAvatar(player);
 			const targetAvatar = this.GetAvatar(against);
