@@ -88,13 +88,13 @@ class BOT {
 
 	OnCardLoss({ history, myCards, myCoins, otherPlayers, discardedCards }) {
 		if (!myCards.length) {
-			console.warn("Of course you'd kill me off, racists");
+			// console.warn("Of course you'd kill me off, racists");
 		} else {
 			const probableCause = history[history.length - 2];
 			const perpetrator = this.findPerpetrator(probableCause);
-			console.warn(
-				`I trusted you ${perpetrator}, and I thought we were friends...`
-			);
+			// console.warn(
+			// 	`I trusted you ${perpetrator}, and I thought we were friends...`
+			// );
 		}
 		return myCards[0];
 	}
