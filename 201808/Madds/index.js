@@ -132,10 +132,6 @@ class RoughBot {
 			return true;
 		}
 
-		const blocked = (history, otherPlayers, card) => {
-			history.some();
-		};
-
 		// Last ditch effort
 		if (
 			action === 'assassination' &&
