@@ -2,7 +2,11 @@
 
 const { ALLBOTS, CARDS, DECK, ACTIONS } = require('../constants.js');
 
-const target = (players) => players .map((p) => [p.coins * p.cards, p]) .sort((a, b) => b[0] - a[0]) .map((x) => x[1]);
+const target = (players) =>
+	players
+		.map((p) => [p.coins * p.cards, p])
+		.sort((a, b) => b[0] - a[0])
+		.map((x) => x[1]);
 
 const sortCards = (cards) => {
 	const order = {
@@ -28,7 +32,8 @@ class BOT {
 
 	OnTurn({ history, myCards, myCoins, otherPlayers, discardedCards }) {
 		let action = ['taking-1', 'foreign-aid'][Math.floor(Math.random() * 2)];
-		let against = otherPlayers[Math.floor(Math.random() * otherPlayers.length)].name;
+		let against =
+			otherPlayers[Math.floor(Math.random() * otherPlayers.length)].name;
 		let enemy = target(otherPlayers);
 
 		// this.ROUND++;
@@ -111,7 +116,14 @@ class BOT {
 		return [true, false, false][Math.floor(Math.random() * 3)];
 	}
 
-	OnSwappingCards({ history, myCards, myCoins, otherPlayers, discardedCards, newCards }) {
+	OnSwappingCards({
+		history,
+		myCards,
+		myCoins,
+		otherPlayers,
+		discardedCards,
+		newCards,
+	}) {
 		// Pick the best two non-identical cards
 		const sorted = sortCards([...myCards, ...newCards]);
 		const first = sorted[0];

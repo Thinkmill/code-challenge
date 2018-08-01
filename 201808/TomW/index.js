@@ -10,7 +10,7 @@ class BOT {
 		const against =
 			otherPlayers[Math.floor(Math.random() * otherPlayers.length)].name;
 
-		if( myCoins >= 7 ) {
+		if (myCoins >= 7) {
 			action = 'couping';
 			return { action, against };
 		}
