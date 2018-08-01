@@ -2,89 +2,91 @@
 
 const { ALLBOTS, CARDS, DECK, ACTIONS } = require('../constants.js');
 
-// Utils
-const randomPick = (items) => {
-	return items[Math.floor(Math.random() * items.length)];
-};
+const ME = 'TuanH';
 
-const foundInArray = (item, key, array) => {
-	let found = false;
-	for (var i = 0; i < array.length; i++) {
-		if (array[key][i] === i) {
-			found = true;
-			break;
-		}
-	}
-	return found;
-};
+const CARD_ORDER = ['duke', 'captain', 'ambassador', 'contessa', 'assassin'];
 
-const hasCard = (card, cards) => (cards.indexOf(card) > -1 ? true : false);
+const PLAYER_ORDER = [
+	'TimL',
+	'JohnM',
+	'DomW',
+	'MikeH',
+	'AbbasA',
+	'TomW',
+	'JossM',
+	'BenC',
+	'NathS',
+	'TiciA',
+	'SanjiyaD',
+	'BorisB',
+	'CharlesL',
+	'JedW',
+	'JessT',
+	'KevinY',
+	'LaurenA',
+	'MalB',
+	'MikeG',
+];
 
-// constants
-const EARLY_GAME_ACTIONS = ['taking-1', 'foreign-aid', 'taking-3'];
+const count = (card, cards) => cards.filter((c) => c === card).length;
+
+const cardFor = (action) =>
+	({
+		'taking-3': 'duke',
+		assassination: 'assassin',
+		stealing: 'captain',
+		swapping: 'ambassador',
+	}[action]);
+
+const blockersFor = (action) =>
+	({
+		assassination: ['contessa'],
+		stealing: ['captain', 'ambassador'],
+		'foreign-aid': ['duke'],
+	}[action] || []);
+
+const findAgainstPlayers = (players) =>
+	players
+		.map((player) => [player.coins * player.cards, player])
+		.sort((a, b) => b[0] - a[0])
+		.map((item) => item[1]);
+
+const getPlayer = (name, players) =>
+	players.find((player) => player.name === name);
 
 class BOT {
 	OnTurn({ history, myCards, myCoins, otherPlayers, discardedCards }) {
-		let action;
-		let against;
+		const knownCards = myCards.concat(discardedCards);
+		const againstPlayer = findAgainstPlayers(otherPlayers)[0];
 
-		let safeAction = randomPick(['taking-1', 'foreign-aid']);
-		action = safeAction;
+		let action = 'taking-1';
 
-		const weakPlayers = otherPlayers.filter((player) => {
-			return player.cards === 1;
-		});
-
-		const wealthyPlayers = otherPlayers.filter((player) => {
-			return player.coins > 2;
-		});
-
-		const randomPlayer = randomPick(otherPlayers);
-
-		if (history.length < 3) {
-			action = randomPick(EARLY_GAME_ACTIONS);
+		if (myCoins > 6) {
+			action = 'couping';
+		} else if (myCards.includes(cardFor('assassination')) && myCoins >= 3) {
+			action = 'assassination';
+		} else if (myCards.includes(cardFor('taking-3'))) {
+			action = 'taking-3';
+		} else if (myCards[0] === myCards[1]) {
+			action = 'swapping';
+		} else if (myCards.includes(cardFor('swapping'))) {
+			action = 'swapping';
+		} else if (
+			myCards.includes(cardFor('stealing')) &&
+			againstPlayer.coins >= 2
+		) {
+			action = 'stealing';
+		} else if (
+			blockersFor('foreign-aid').every((card) => count(card, knownCards) === 3)
+		) {
+			action = 'foreign-aid';
 		} else {
-			if (myCoins > 10) {
-				action = 'couping';
-				against =
-					weakPlayers.length > 0 ? randomPick(weakPlayers) : randomPlayer;
-			} else if (myCoins > 3 && myCoins < 10) {
-				if (myCards.length > 0) {
-					if (hasCard('assassin', myCards)) {
-						action = 'assassination';
-						against =
-							weakPlayers.length > 0 ? randomPick(weakPlayers) : randomPlayer;
-					} else if (hasCard('captain', myCards)) {
-						action = 'stealing';
-						against =
-							wealthyPlayers.length > 0
-								? randomPick(wealthyPlayers)
-								: randomPlayer;
-					} else {
-						action = 'foreign-aid';
-					}
-				}
-			} else {
-				if (myCards.length > 0) {
-					if (hasCard('duke', myCards)) {
-						action = 'taking-3';
-					} else if (hasCard('ambassador', myCards)) {
-						action = 'swapping';
-					} else if (hasCard('captain', myCards)) {
-						action = 'stealing';
-						against =
-							wealthyPlayers.length > 0
-								? randomPick(wealthyPlayers)
-								: randomPlayer;
-					} else {
-						action = safeAction;
-					}
-				}
-			}
+			action = 'taking-1';
 		}
+
 		return {
 			action,
-			against: against.name,
+			against: againstPlayer.name,
 		};
 	}
 
@@ -98,7 +100,22 @@ class BOT {
 		byWhom,
 		toWhom,
 	}) {
-		return false;
+		const knownCards = myCards.concat(discardedCards);
+		const shouldCallOut =
+			knownCards.filter((card) => card === cardFor(action)).length === 3;
+		return shouldCallOut;
+
+		if (action === 'assassination' && toWhom === ME && myCards.length === 1) {
+			return true;
+		}
+
+		if (
+			action === 'stealing' &&
+			toWhom === ME &&
+			blockersFor('stealing').find((card) => myCards.includes(card))
+		) {
+			return true;
+		}
 	}
 
 	OnCounterAction({
@@ -110,10 +127,11 @@ class BOT {
 		action,
 		byWhom,
 	}) {
-		if (action === 'assassination') {
-			return [false, 'contessa'][Math.floor(Math.random() * 2)];
-		} else if (action === 'stealing') {
-			return [false, 'ambassador', 'captain'][Math.floor(Math.random() * 3)];
+		const haveBlockers = blockersFor(action).find((card) =>
+			myCards.includes(card)
+		);
+		if (haveBlockers) {
+			return haveBlockers;
 		}
 	}
 
@@ -128,7 +146,15 @@ class BOT {
 		toWhom,
 		card,
 	}) {
-		return [true, false][Math.floor(Math.random() * 2)];
+		const knownCards = myCards.concat(discardedCards);
+		const shouldCallOut = knownCards.filter((c) => c === card).length === 3;
+		return shouldCallOut;
+
+		if (action === 'assassination' && myCards.length === 1) {
+			return true;
+		}
+
+		return false;
 	}
 
 	OnSwappingCards({
@@ -139,11 +165,24 @@ class BOT {
 		discardedCards,
 		newCards,
 	}) {
-		return newCards;
+		const allCards = [...myCards, ...newCards];
+		const considerationCards = allCards.filter((card) => card !== 'ambassador');
+		const reorderCard = CARD_ORDER.filter((card) =>
+			considerationCards.includes(card)
+		);
+		return reorderCard.slice(0, myCards.length);
 	}
 
 	OnCardLoss({ history, myCards, myCoins, otherPlayers, discardedCards }) {
-		return myCards[0];
+		if (myCards.length === 1) {
+			return myCards[0];
+		}
+
+		if (CARD_ORDER.indexOf(myCards[0]) < CARD_ORDER.indexOf(myCards[1])) {
+			return myCards[0];
+		} else {
+			return myCards[1];
+		}
 	}
 }
 
