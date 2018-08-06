@@ -1,6 +1,6 @@
 'use strict';
 
-const ME = 'TimL';
+const ME = 'clever1';
 
 const count = (card, cards) => cards.filter((c) => c === card).length;
 
@@ -32,25 +32,27 @@ const reformatHistory = (history) => {
 	return newHistory;
 };
 
-const hasPlayerBlocked = (history, action, from) => {
-	return history.some(
-		(turn) =>
-			turn.find(
-				(record) => record.type === 'action' && record.action === action
-			) &&
-			turn.find(
-				(record) =>
-					record.type === 'counter-action' &&
-					record.counterer !== ME &&
-					(from === undefined || record.counterer === from)
-			)
-	);
-};
+const historyAfterLossOrSwap = (history, player, card) => {
+	const i = history.indexOf(
+		history.filter(
+			turn => ((turn.find(record => record.type === 'lost-card' && record.player === player && record.lost === card)) ||
+					 (turn.find(record => record.action === 'swap-1' && record.from === player && record.card === card)) ||
+					 (turn.find(record => record.action === 'swapping' && record.from === player)))
+		).slice(-1)[0]
+	) + 1
+	return i ? history = history.slice(i) : history;
+}
 
-const safeish = (history, visibleCards, action, against) => {
+const doesPlayerHave = (history, player, card, otherPlayers) =>
+	player.constructor === Array ? player.some(p => doesPlayerHave(history, p.name, card, otherPlayers)) :
+		historyAfterLossOrSwap(history, player, card)
+			.some(turn => (turn[0].from === player && cardFor(turn[0].action) === card) ||
+					(turn.find(record => record.type === 'counter-action' && record.counterer === player && record.counter === card)));
+
+const safeish = (history, visibleCards, action, against, otherPlayers) => {
 	return (
-		blockersFor(action).every((c) => count(c, visibleCards) === 3) ||
-		!hasPlayerBlocked(history, action, against)
+		blockersFor(action).every(c => count(c, visibleCards) === 3) ||
+		!blockersFor(action).some(c => doesPlayerHave(history, against, c, otherPlayers))
 	);
 };
 
@@ -89,7 +91,7 @@ class BOT {
 		if (
 			myCards.includes(cardFor('assassination')) &&
 			myCoins >= 3 &&
-			safeish(history, visibleCards, 'assassination', target.name)
+			safeish(history, visibleCards, 'assassination', target.name, otherPlayers)
 		) {
 			action = 'assassination';
 		} else if (myCoins >= 7) {
@@ -100,16 +102,16 @@ class BOT {
 			action = 'swapping';
 		} else if (
 			myCards.includes(cardFor('stealing')) &&
-			safeish(history, visibleCards, 'stealing', target.name) &&
+			safeish(history, visibleCards, 'stealing', target.name, otherPlayers) &&
 			target.coins >= 2
 		) {
 			action = 'stealing';
-		} else if (safeish(history, visibleCards, 'foreign-aid')) {
+		} else if (safeish(history, visibleCards, 'foreign-aid', otherPlayers)) {
 			action = 'foreign-aid';
 		} else {
 			action = 'taking-1';
 		}
-
+		console.log(action, target.name);
 		return {
 			action,
 			against: target.name,
