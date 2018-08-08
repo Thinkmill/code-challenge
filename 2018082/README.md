@@ -3,10 +3,101 @@ August 2018 challenge (part two)
 
 This months _second_ challenge consists of you writing two [sorting algorithms](https://en.wikipedia.org/wiki/Sorting_algorithm) from scratch.
 This folder contains a json file `unsorted.json`.
-In that file we can find an object with two arrays: `heroes` and `villains`.
-Each of those need to be sorted alphabetically.
-`heroes` need to be sorted via the [selection](https://en.wikipedia.org/wiki/Selection_sort) algorithm.
-`villains` need to be sorted via the [merge](https://en.wikipedia.org/wiki/Merge_sort) algorithm.
+
+In that file we can find an object with three arrays: `normies`, `heroes` and `villains`.
+Each of those need to be sorted alphabetically by both algorithms [selection sort](https://en.wikipedia.org/wiki/Selection_sort) and
+[merge sort](https://en.wikipedia.org/wiki/Merge_sort).
+
+You need to output two things:
+- Each list in three different json files: `normies.json`, `heroes.json` and `villains.json`
+- You record the time it took for each algorithm to sort each list via the `time` bash helper `$ time node yourscript.js`
+
+The output will then be:
+
+```
+# selection sort
+
+normies.json
+real	0m4.011s
+user	0m2.631s
+sys	0m0.787s
+
+heroes.json
+real	0m4.011s
+user	0m2.631s
+sys	0m0.787s
+
+villains.json
+real	0m4.011s
+user	0m2.631s
+sys	0m0.787s
+
+# merge sort
+
+normies.json
+real	0m4.011s
+user	0m2.631s
+sys	0m0.787s
+
+heroes.json
+real	0m4.011s
+user	0m2.631s
+sys	0m0.787s
+
+villains.json
+real	0m4.011s
+user	0m2.631s
+sys	0m0.787s
+```
+
+The sorting order is:
+
+```sh
+a
+b
+c
+d
+e
+f
+g
+h
+i
+j
+k
+l
+m
+n
+o
+p
+q
+r
+s
+t
+u
+v
+w
+x
+y
+z
+ [space]
+1
+2
+3
+4
+5
+6
+7
+8
+9
+0
+:
+-
+.
+'
+’
+#
+/
+```
 
 ## RULEZ
 
