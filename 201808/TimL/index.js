@@ -1,8 +1,10 @@
 'use strict';
 
+let { CARDS } = require('../constants.js');
+
 const ME = 'TimL';
 
-const count = (card, cards) => cards.filter((c) => c === card).length;
+const count = (card, cards) => cards.filter(c => c === card).length;
 
 const cardFor = (action) =>
 	({
@@ -22,7 +24,7 @@ const blockersFor = (action) =>
 const reformatHistory = (history) => {
 	const newHistory = [];
 	let currentTurn = [];
-	history.forEach((record) => {
+	history.forEach(record => {
 		if (record.type === 'action' && currentTurn.length > 0) {
 			newHistory.push(currentTurn);
 			currentTurn = [];
@@ -32,27 +34,27 @@ const reformatHistory = (history) => {
 	return newHistory;
 };
 
-const hasPlayerBlocked = (history, action, from) => {
-	return history.some(
-		(turn) =>
-			turn.find(
-				(record) => record.type === 'action' && record.action === action
-			) &&
-			turn.find(
-				(record) =>
-					record.type === 'counter-action' &&
-					record.counterer !== ME &&
-					(from === undefined || record.counterer === from)
-			)
-	);
-};
+const historyAfterLossOrSwap = (history, player, card) => {
+	history = reformatHistory(history);
+	const i = history.indexOf(
+		[...history].reverse().find(
+			turn => ((turn.find(record => record.type === 'lost-card' && record.player === player && record.lost === card)) ||
+					 (turn.find(record => record.action === 'swap-1' && record.from === player && record.card === card)) ||
+					 (turn.find(record => record.action === 'swapping' && record.from === player)))
+		)
+	) + 1
+	return i ? history = history.slice(i) : history;
+}
 
-const safeish = (history, visibleCards, action, against) => {
-	return (
-		blockersFor(action).every((c) => count(c, visibleCards) === 3) ||
-		!hasPlayerBlocked(history, action, against)
-	);
-};
+const doesPlayerHave = (history, player, card, otherPlayers) =>
+	player.constructor === Array ? player.some(p => doesPlayerHave(history, p.name, card, otherPlayers)) :
+		historyAfterLossOrSwap(history, player, card).some(
+			turn => (turn[0].from === player && cardFor(turn[0].action) === card) ||
+					(turn.find(record => record.type === 'counter-action' && record.counterer === player && record.counter === card)));
+
+const safeish = (history, visibleCards, action, against, otherPlayers) =>
+	blockersFor(action).every(c => count(c, visibleCards) === 3) ||
+	!blockersFor(action).some(c => doesPlayerHave(history, against, c, otherPlayers));
 
 const sortCards = (cards) => {
 	const order = {
@@ -80,16 +82,14 @@ const findTargets = (players) =>
 
 class BOT {
 	OnTurn({ history, myCards, myCoins, otherPlayers, discardedCards }) {
-		const targets = findTargets(otherPlayers);
-		let target = targets[0];
+		const target = findTargets(otherPlayers)[0];
 		const visibleCards = [...myCards, ...discardedCards];
-		history = reformatHistory(history);
 
 		let action;
 		if (
 			myCards.includes(cardFor('assassination')) &&
 			myCoins >= 3 &&
-			safeish(history, visibleCards, 'assassination', target.name)
+			safeish(history, visibleCards, 'assassination', target.name, otherPlayers)
 		) {
 			action = 'assassination';
 		} else if (myCoins >= 7) {
@@ -100,11 +100,11 @@ class BOT {
 			action = 'swapping';
 		} else if (
 			myCards.includes(cardFor('stealing')) &&
-			safeish(history, visibleCards, 'stealing', target.name) &&
+			safeish(history, visibleCards, 'stealing', target.name, otherPlayers) &&
 			target.coins >= 2
 		) {
 			action = 'stealing';
-		} else if (safeish(history, visibleCards, 'foreign-aid')) {
+		} else if (safeish(history, visibleCards, 'foreign-aid', otherPlayers)) {
 			action = 'foreign-aid';
 		} else {
 			action = 'taking-1';
@@ -116,31 +116,14 @@ class BOT {
 		};
 	}
 
-	OnChallengeActionRound({
-		history,
-		myCards,
-		myCoins,
-		otherPlayers,
-		discardedCards,
-		action,
-		byWhom,
-		toWhom,
-	}) {
+	OnChallengeActionRound({ myCards, discardedCards, action }) {
 		// If they're obviously bullshitting, call them
 		return count(cardFor(action), [...myCards, ...discardedCards]) === 3;
 	}
 
-	OnCounterAction({
-		history,
-		myCards,
-		myCoins,
-		otherPlayers,
-		discardedCards,
-		action,
-		byWhom,
-	}) {
+	OnCounterAction({ myCards, action }) {
 		// If we can counter this, then do counter this.
-		const match = blockersFor(action).find((c) => myCards.includes(c));
+		const match = blockersFor(action).find(c => myCards.includes(c));
 		if (match) {
 			return match;
 		}
@@ -152,38 +135,28 @@ class BOT {
 		return false;
 	}
 
-	OnCounterActionRound({
-		history,
-		myCards,
-		myCoins,
-		otherPlayers,
-		discardedCards,
-		action,
-		byWhom,
-		toWhom,
-		card,
-	}) {
+	OnCounterActionRound({history, myCards, otherPlayers, discardedCards, card, counterer}) {
 		// If they're obviously bullshitting, call them
-		return count(card, [...myCards, ...discardedCards]) === 3;
+		if (count(card, [...myCards, ...discardedCards]) === 3) return true;
+
+		// If it looks like they have it, let it slide.
+		if (doesPlayerHave(history, counterer, card, otherPlayers)) return false;
+
+		// If it looks like they're holding other cards, call them.
+		const cardsHeld = CARDS()
+			.filter(c => doesPlayerHave(history, counterer, c, otherPlayers) && count(c, [...myCards, ...discardedCards]) < 3).length
+		const other = otherPlayers.find(p => p.name === counterer);
+		return other && cardsHeld >= other.cards;
 	}
 
-	OnSwappingCards({
-		history,
-		myCards,
-		myCoins,
-		otherPlayers,
-		discardedCards,
-		newCards,
-	}) {
+	OnSwappingCards({ myCards, newCards }) {
 		// Pick the best two non-identical cards
 		const sorted = sortCards([...myCards, ...newCards]);
 		const first = sorted[0];
-		return myCards.length === 1
-			? [first]
-			: [first, sorted.find((c) => c !== first) || first];
+		return myCards.length === 1 ? [first] : [first, sorted.find(c => c !== first) || first];
 	}
 
-	OnCardLoss({ history, myCards, myCoins, otherPlayers, discardedCards }) {
+	OnCardLoss({ myCards }) {
 		return sortCards([...myCards]).slice(-1)[0];
 	}
 }
