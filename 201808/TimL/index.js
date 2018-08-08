@@ -111,7 +111,7 @@ class BOT {
 		} else {
 			action = 'taking-1';
 		}
-		console.log(action, target.name);
+
 		return {
 			action,
 			against: target.name,
