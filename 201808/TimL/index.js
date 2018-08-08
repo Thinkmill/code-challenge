@@ -1,5 +1,7 @@
 'use strict';
 
+let { CARDS } = require('../constants.js');
+
 const ME = 'TimL';
 
 const count = (card, cards) => cards.filter((c) => c === card).length;
@@ -129,7 +131,7 @@ class BOT {
 		toWhom,
 	}) {
 		// If they're obviously bullshitting, call them
-		return count(cardFor(action), [...myCards, ...discardedCards]) === 3;
+		return (count(cardFor(action), [...myCards, ...discardedCards]) === 3);
 	}
 
 	OnCounterAction({
@@ -164,9 +166,19 @@ class BOT {
 		byWhom,
 		toWhom,
 		card,
+		counterer,
 	}) {
 		// If they're obviously bullshitting, call them
-		return count(card, [...myCards, ...discardedCards]) === 3;
+		if (count(card, [...myCards, ...discardedCards]) === 3) return true;
+		history = reformatHistory(history);
+		// If it looks like they have it, let it slide.
+		if (doesPlayerHave(history, counterer, card, otherPlayers)) return false;
+
+		// If it looks like they're holding other cards, call them.
+		const cardsHeld = CARDS()
+			.filter(c => doesPlayerHave(history, counterer, c, otherPlayers) && count(c, [...myCards, ...discardedCards]) < 3).length
+		const other = otherPlayers.find(p => p.name === counterer);
+		return other && cardsHeld >= other.cards;
 	}
 
 	OnSwappingCards({
