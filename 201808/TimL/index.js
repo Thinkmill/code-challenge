@@ -1,6 +1,6 @@
 'use strict';
 
-const ME = 'clever1';
+const ME = 'TimL';
 
 const count = (card, cards) => cards.filter((c) => c === card).length;
 
@@ -34,11 +34,11 @@ const reformatHistory = (history) => {
 
 const historyAfterLossOrSwap = (history, player, card) => {
 	const i = history.indexOf(
-		history.filter(
+		[...history].reverse().find(
 			turn => ((turn.find(record => record.type === 'lost-card' && record.player === player && record.lost === card)) ||
 					 (turn.find(record => record.action === 'swap-1' && record.from === player && record.card === card)) ||
 					 (turn.find(record => record.action === 'swapping' && record.from === player)))
-		).slice(-1)[0]
+		)
 	) + 1
 	return i ? history = history.slice(i) : history;
 }
