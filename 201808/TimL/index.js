@@ -118,7 +118,7 @@ class BOT {
 
 	OnChallengeActionRound({ myCards, discardedCards, action }) {
 		// If they're obviously bullshitting, call them
-		return (count(cardFor(action), [...myCards, ...discardedCards]) === 3);
+		return count(cardFor(action), [...myCards, ...discardedCards]) === 3;
 	}
 
 	OnCounterAction({ myCards, action }) {
