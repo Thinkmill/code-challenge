@@ -99,6 +99,13 @@ z
 /
 ```
 
+Also shorter is sorted higher:
+
+```
+foo
+food
+```
+
 ## RULEZ
 
 1. Node only
