@@ -1,6 +1,8 @@
 August 2018 challenge (part two)
 =====================
 
+**Due date: 22nd August 2018**
+
 This months _second_ challenge consists of you writing two [sorting algorithms](https://en.wikipedia.org/wiki/Sorting_algorithm) from scratch.
 This folder contains a json file `unsorted.json`.
 
