@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const fs = require('fs');
 const path = require('path');
 const selectionSort = require('./selectionSort');
@@ -20,7 +21,7 @@ const codeChallenge = function () {
 			throw new Error('Expected second argument to have value of either mergeSort or selectionSort');
 		}
 		const sortedNormies = dedupe(sorters[sortType](lists[listKey], sortLegend));
-		fs.writeFileSync(`${listKey}.json`, JSON.stringify(sortedNormies));
+		fs.writeFileSync(path.resolve(__dirname,`${listKey}.json`), JSON.stringify(sortedNormies));
 		console.log(`== FILE ${listKey}.json WRITTEN with sorted list`);
 	} catch (e) {
 		console.error(`=== ERROR: ${e.message}`);
