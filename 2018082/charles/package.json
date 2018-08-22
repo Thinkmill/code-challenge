@@ -1,0 +1,11 @@
+{
+  "name": "sight4SortEyes",
+  "version": "1.0.0",
+  "description": "sorting thing",
+  "main": "index.js",
+  "author": "me",
+  "license": "MIT",
+  "bin": {
+    "sight4SortEyes": "./index.js"
+  }
+}
