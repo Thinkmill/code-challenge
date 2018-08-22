@@ -8,7 +8,7 @@ module.exports = function selectionSort (array, legend) {
 			index: null,
 		};
 		unsortedList.forEach((value, index) => {
-			if (isLarger(value.toLowerCase(), largestItem.value.toLowerCase(), legend)) {
+			if (isLarger(value, largestItem.value, legend)) {
 				largestItem = {
 					value,
 					index,
@@ -18,5 +18,5 @@ module.exports = function selectionSort (array, legend) {
 		unsortedList.splice(largestItem.index, 1);
 		sortedList.push(largestItem.value);
 	}
-	return sortedList.reverse();
+	return sortedList;
 };

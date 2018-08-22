@@ -20,10 +20,10 @@ function merge (first, second, legend) {
 	const right = second.slice();
 	let sortedList = [];
 
-	while (left.length && right.length) {
+	while (left.length || right.length) {
 		const firstElement = left[0];
 		const secondElement = right[0];
-		if (isLarger(firstElement.toLowerCase(), secondElement.toLowerCase(), legend)) {
+		if (isLarger(firstElement, secondElement, legend)) {
 			sortedList.push(firstElement);
 			left.shift();
 		} else {
@@ -31,15 +31,5 @@ function merge (first, second, legend) {
 			right.shift();
 		}
 	}
-
-	while (left.length) {
-		sortedList.push(left[0]);
-		left.shift();
-	};
-
-	while (right.length) {
-		sortedList.push(right[0]);
-		right.shift();
-	};
 	return sortedList;
 }
