@@ -1,5 +1,5 @@
 {
-	"name": "code-challenge-201808",
+	"name": "code-challenge-201808-coup",
 	"version": "1.0.0",
 	"description": "August 2018 code challenge",
 	"main": "index.js",
@@ -19,12 +19,6 @@
 	"author": "",
 	"license": "ISC",
 	"devDependencies": {
-		"husky": "^1.0.0-rc.13",
 		"prettier": "^1.13.7"
-	},
-	"husky": {
-		"hooks": {
-			"pre-commit": "npm run test:format"
-		}
 	}
 }
