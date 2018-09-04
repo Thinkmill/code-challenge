@@ -93,20 +93,20 @@ const postOrder = (tree) => [];
 const breadthFirst = (tree) => [];
 
 module.exports = {
-  newTree,
-  insert,
-  remove,
+	newTree,
+	insert,
+	remove,
 
-  find,
-  depth,
-  height,
-  count,
-  balanced,
-  biggest,
-  smallest,
+	find,
+	depth,
+	height,
+	count,
+	balanced,
+	biggest,
+	smallest,
 
-  inOrder,
-  preOrder,
-  postOrder,
-  breadthFirst,
+	inOrder,
+	preOrder,
+	postOrder,
+	breadthFirst,
 };
