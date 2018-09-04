@@ -1,0 +1,14 @@
+{
+  "name": "bst",
+  "version": "1.0.0",
+  "description": "Binary Search Tree Code Challenge",
+  "main": "tree.js",
+  "scripts": {
+    "test": "jest",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "eslint": "^5.4.0",
+    "jest": "^23.5.0"
+  }
+}
