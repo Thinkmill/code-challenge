@@ -692,6 +692,7 @@ describe('API Tests - Insert only', () => {
 			sorted: [1, 2, 3, 4, 5],
 			reverse_sorted: [5, 4, 3, 2, 1],
 			balanced:  [5, 3, 7, 2, 6, 4, 8],
+			marginally_balanced:  [4, 3, 7, 2, 6, 5, 8],
 			unbalanced:  [5, 2, 8, 3, 7, 4, 6],
 		};
 
@@ -738,6 +739,14 @@ describe('API Tests - Insert only', () => {
 			expect(depth(trees.balanced, 7)).toEqual(1);
 			expect(depth(trees.balanced, 8)).toEqual(2);
 
+			expect(depth(trees.marginally_balanced, 2)).toEqual(2);
+			expect(depth(trees.marginally_balanced, 3)).toEqual(1);
+			expect(depth(trees.marginally_balanced, 4)).toEqual(0);
+			expect(depth(trees.marginally_balanced, 5)).toEqual(3);
+			expect(depth(trees.marginally_balanced, 6)).toEqual(2);
+			expect(depth(trees.marginally_balanced, 7)).toEqual(1);
+			expect(depth(trees.marginally_balanced, 8)).toEqual(2);
+
 			expect(depth(trees.unbalanced, 2)).toEqual(1);
 			expect(depth(trees.unbalanced, 3)).toEqual(2);
 			expect(depth(trees.unbalanced, 4)).toEqual(3);
@@ -754,6 +763,7 @@ describe('API Tests - Insert only', () => {
 			expect(height(trees.sorted)).toEqual(5);
 			expect(height(trees.reverse_sorted)).toEqual(5);
 			expect(height(trees.balanced)).toEqual(3);
+			expect(height(trees.marginally_balanced)).toEqual(4);
 			expect(height(trees.unbalanced)).toEqual(4);
 		});
 
@@ -764,6 +774,7 @@ describe('API Tests - Insert only', () => {
 			expect(count(trees.sorted)).toEqual(5);
 			expect(count(trees.reverse_sorted)).toEqual(5);
 			expect(count(trees.balanced)).toEqual(7);
+			expect(count(trees.marginally_balanced)).toEqual(7);
 			expect(count(trees.unbalanced)).toEqual(7);
 		});
 
@@ -774,6 +785,7 @@ describe('API Tests - Insert only', () => {
 			expect(balanced(trees.sorted)).toEqual(false);
 			expect(balanced(trees.reverse_sorted)).toEqual(false);
 			expect(balanced(trees.balanced)).toEqual(true);
+			expect(balanced(trees.marginally_balanced)).toEqual(true);
 			expect(balanced(trees.unbalanced)).toEqual(false);
 		});
 
@@ -783,6 +795,7 @@ describe('API Tests - Insert only', () => {
 			expect(biggest(trees.sorted)).toEqual(5);
 			expect(biggest(trees.reverse_sorted)).toEqual(5);
 			expect(biggest(trees.balanced)).toEqual(8);
+			expect(biggest(trees.marginally_balanced)).toEqual(8);
 			expect(biggest(trees.unbalanced)).toEqual(8);
 		});
 
@@ -792,6 +805,7 @@ describe('API Tests - Insert only', () => {
 			expect(smallest(trees.sorted)).toEqual(1);
 			expect(smallest(trees.reverse_sorted)).toEqual(1);
 			expect(smallest(trees.balanced)).toEqual(2);
+			expect(smallest(trees.marginally_balanced)).toEqual(2);
 			expect(smallest(trees.unbalanced)).toEqual(2);
 		});
 	});
@@ -804,6 +818,7 @@ describe('API Tests - Insert only', () => {
 			expect(inOrder(trees.sorted)).toEqual([1, 2, 3, 4, 5]);
 			expect(inOrder(trees.reverse_sorted)).toEqual([1, 2, 3, 4, 5]);
 			expect(inOrder(trees.balanced)).toEqual([2, 3, 4, 5, 6, 7, 8]);
+			expect(inOrder(trees.marginally_balanced)).toEqual([2, 3, 4, 5, 6, 7, 8]);
 			expect(inOrder(trees.unbalanced)).toEqual([2, 3, 4, 5, 6, 7, 8]);
 		});
 		test('preOrder', () => {
@@ -813,6 +828,7 @@ describe('API Tests - Insert only', () => {
 			expect(preOrder(trees.sorted)).toEqual([1, 2, 3, 4, 5]);
 			expect(preOrder(trees.reverse_sorted)).toEqual([5, 4, 3, 2, 1]);
 			expect(preOrder(trees.balanced)).toEqual([5, 3, 2, 4, 7, 6, 8]);
+			expect(preOrder(trees.marginally_balanced)).toEqual([4, 3, 2, 7, 6, 5, 8]);
 			expect(preOrder(trees.unbalanced)).toEqual([5, 2, 3, 4, 8, 7, 6]);
 		});
 
@@ -823,6 +839,7 @@ describe('API Tests - Insert only', () => {
 			expect(postOrder(trees.sorted)).toEqual([5, 4, 3, 2, 1]);
 			expect(postOrder(trees.reverse_sorted)).toEqual([1, 2, 3, 4, 5]);
 			expect(postOrder(trees.balanced)).toEqual([2, 4, 3, 6, 8, 7, 5]);
+			expect(postOrder(trees.marginally_balanced)).toEqual([2, 3, 5, 6, 8, 7, 4]);
 			expect(postOrder(trees.unbalanced)).toEqual([4, 3, 2, 6, 7, 8, 5]);
 		});
 
@@ -833,6 +850,7 @@ describe('API Tests - Insert only', () => {
 			expect(breadthFirst(trees.sorted)).toEqual([1, 2, 3, 4, 5]);
 			expect(breadthFirst(trees.reverse_sorted)).toEqual([5, 4, 3, 2, 1]);
 			expect(breadthFirst(trees.balanced)).toEqual([5, 3, 7, 2, 4, 6, 8]);
+			expect(breadthFirst(trees.marginally_balanced)).toEqual([4, 3, 7, 2, 6, 8, 5]);
 			expect(breadthFirst(trees.unbalanced)).toEqual([5, 2, 8, 3, 7, 4, 6]);
 		});
 	});
