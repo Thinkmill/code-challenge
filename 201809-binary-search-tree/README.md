@@ -1,5 +1,7 @@
 # Code Challenge - Binary Search Tree
 
+**The challenge finishes at team talks on Wednesday the 26th 4PM**
+
 A Binary Search Tree (BST) is a data structure which allows you to store values in a structure which supports fast insertion, removal, searching and sorting.
 
 For this challenge, you will need to implement a BST which can store numerical values.
