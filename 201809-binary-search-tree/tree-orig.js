@@ -1,0 +1,16 @@
+a=e=>t=>t[e].l?a(e)(t[e]):t.v
+b=t=>!t||b(t.l)&&b(t.r)&&Math.abs(h(t.l)-h(t.r))<=1
+c=t=>t?c(t.l)+c(t.r)+1:-.5
+d=(t,v)=>t.v==v?0:d(v>t.v?t.r:t.l,v)+1
+e=(t,v)=>t.l?e(v>t.v?t.r:t.l,v):f(t,{v,l:{},r:{}})
+f=(t,s)=>{t.v=s.v,t.l=s.l,t.r=s.r}
+g=(t,v)=>t.l&&(t.v==v?t.l.l==t.r.l?f(t,{}):t.l.l&&t.r.l?(x(t),t.l.l.l==t.l.r.l?t.l={}:t.l.r.l?s(t.l.r):f(t.l,t.l.l)):f(t,t.l.l?t.l:t.r):g(v>t.v?t.r:t.l,v))
+h=t=>t?Math.max(h(t.l),h(t.r))+1:-1
+i=t=>t.l?[...i(t.l),t.v,...i(t.r)]:[]
+m=t=>t<1?[]:[t[0].v,...m([...t.splice(1),t[0].l,t[0].r].filter(i=>i.l))]
+n=t=>t.l?[...n(t.l),...n(t.r),t.v]:[]
+o=(t,v)=>!!t&&(t.v==v||o(v>t.v?t.r:t.l,v))
+p=t=>t.l?[t.v,...p(t.l),...p(t.r)]:[]
+s=t=>t.r.l?s(t.r):f(t,t.l)
+x=t=>t.v=a('r')(t.l)
+module.exports={newTree:f=>({}),insert:e,remove:g,find:o,depth:(t,v)=>o(t,v)?d(t,v):-1,height:h,count:c,balanced:b,biggest:a('r'),smallest:a('l'),inOrder:i,preOrder:p,postOrder:n,breadthFirst:t=>t.l?m([t]):[]}
