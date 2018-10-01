@@ -32,8 +32,9 @@ describe('Dataset tests - Insert-only', () => {
 		expect(breadthFirst(tree)).toEqual([]);
 	});
 
-	test('Single value tree', () => {
+	test.only('Single value tree', () => {
 		const tree = newTree();
+		console.log('WHAT IS THE TREE', tree);
 		insert(tree, 1);
 
 		expect(find(tree, 0)).toEqual(false);
