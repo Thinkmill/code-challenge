@@ -73,12 +73,10 @@ const height = (tree, counter = 0) => {
 /*
  * Calculate the number of nodes in the tree.
  */
-const count = (tree, counter = 0) => {
-  if (!tree) return counter;
-  const nodes = counter + 1;
-  const left = count(tree.left, nodes);
-  const right = count(tree.right, nodes);
-  return left + right;
+const count = (tree, counter = 1) => {
+  const left = tree.left ? count(tree.left, counter + 1) : 0;
+  const right = tree.right ? count(tree.right, nodes) : 0;
+  return !tree.left && !tree.right ? counter : left + right;
 };
 
 /*
@@ -89,17 +87,37 @@ const count = (tree, counter = 0) => {
  *
  * An empty tree is always balanced.
  */
-const balanced = (tree) => true;
+const balanced = (tree) => {  
+  if (tree && tree.left && tree.right) {
+    if (!balanced(tree.left)) return false; 
+    if (!balanced(tree.right)) return false;
+  }
+  return Math.abs(height(tree.left) - height(tree.right)) <= 1;
+};
 
 /*
  * Calculate the biggest value in the tree. Behaviour is undefined for an empty tree.
  */
-const biggest = (tree) => 0;
+const biggest = (tree, value = 0) => {
+ if (!tree) return value;
+ console.log('BIGGEST', tree.value);
+ const newValue = tree.value > value ? tree.value : value;
+ const left = tree.left ? biggest(tree.left, newValue) : newValue;
+ const right = tree.right ? biggest(tree.right, newValue) : newValue;
+ return left >= right ? left : right;
+}
 
 /*
  * Calculate the smallest value in the tree. Behaviour is undefined for an empty tree.
  */
-const smallest = (tree) => 0;
+const smallest = (tree, value = undefined) => {
+ if (!tree) return value;
+ const newValue = tree.value < value || !value ? tree.value : value;
+ const left = tree.left ? smallest(tree.left, newValue) : newValue;
+ const right = tree.right ? smallest(tree.right , newValue) : newValue;
+ if (left === undefined || right === undefined) return undefined; 
+ return left <= right ? left : right;
+};
 
 /*
  * Traversal API
