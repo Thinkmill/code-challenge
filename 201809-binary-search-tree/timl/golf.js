@@ -1,0 +1,17 @@
+M=Math
+f=(t,s)=>{t.v=s.v;t.l=s.l;t.r=s.r}
+y=t=>t.v=a('r')(t.l)
+s=t=>t.r.l?s(t.r):f(t,t.l)
+j=(t,v)=>t.l?j(v>t.v?t.r:t.l,v):f(t,{v,l:{},r:{}})
+z=(t,v)=>t.l&&(t.v==v?t.l.l==t.r.l?f(t,{}):t.l.l&&t.r.l?(y(t),t.l.l.l==t.l.r.l?t.l={}:t.l.r.l?s(t.l.r):f(t.l,t.l.l)):f(t,t.l.l?t.l:t.r):z(v>t.v?t.r:t.l,v))
+k=(t,v)=>!!t&&(t.v==v||k(v>t.v?t.r:t.l,v))
+d=(t,v)=>t.v==v?0:d(v>t.v?t.r:t.l,v)+1
+h=t=>t?M.max(h(t.l),h(t.r))+1:-1
+c=t=>t?c(t.l)+c(t.r)+1:-.5
+b=t=>!t||b(t.l)&&b(t.r)&&M.abs(h(t.l)-h(t.r))<=1
+a=x=>t=>t[x].l?a(x)(t[x]):t.v
+i=t=>t.l?[...i(t.l),t.v,...i(t.r)]:[]
+p=t=>t.l?[t.v,...p(t.l),...p(t.r)]:[]
+q=t=>t.l?[...q(t.l),...q(t.r),t.v]:[]
+m=g=>+g<1?[]:[g[0].v,...m([...g.splice(1),g[0].l,g[0].r].filter(i=>i.l))]
+module.exports={newTree:_=>({}),insert:j,remove:z,find:k,depth:(t,v)=>k(t,v)?d(t,v):-1,height:h,count:c,balanced:b,biggest:a('r'),smallest:a('l'),inOrder:i,preOrder:p,postOrder:q,breadthFirst:t=>t.l?m([t]):[]}
