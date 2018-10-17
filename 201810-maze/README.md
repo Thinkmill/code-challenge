@@ -26,6 +26,13 @@ You have 3000 steps to get there.
 
 The game comes with a simple "example" bot that just randomizes it's movements.
 
+To run the game for a bot `cd` into the challenge `201810-maze` folder.
+To play the game run:
+
+```sh
+yarn play path/to/bot.js
+```
+
 ```sh
 .
 ├── bot1
@@ -42,13 +49,6 @@ The game comes with a simple "example" bot that just randomizes it's movements.
 └── test.js
 ```
 
-To run the game for a bot `cd` into the challenge `201810-maze` folder.
-To play the game run:
-
-```sh
-yarn play path/to/bot.js
-```
-
 So in the example above to run the game for bot2 you must run:
 
 ```sh
@@ -56,7 +56,7 @@ yarn play bot2/index.js
 ```
 
 Once the game runs you can use the key `q` to quit the game any time.
-You can also use the arrow functions `←` and `→` to step through each set your bot has taken.
+You can also use the arrow functions `←` and `→` to step through each step your bot has taken.
 Go back in history and analyses where your bot went wrong etc.
 
 ## How do I build a bot?
@@ -65,6 +65,21 @@ Go back in history and analyses where your bot went wrong etc.
 - Include a javascript file that exports below class
 
 ### Class to export
+
+The example bot looks as simple as this:
+
+```js
+class BOT {
+	constructor({ size, start, finish }) {}
+
+	Move({ MAP }) {
+		const actions = ['up', 'right', 'down', 'left'];
+		return actions[ Math.floor( Math.random() * actions.length ) ];
+	}
+}
+
+module.exports = exports = BOT;
+```
 
 The class you have to export from your bot needs to include the below method:
 
@@ -96,18 +111,18 @@ MAP = [
 This would visualize as:
 
 ```sh
-░▓░░░
-░░░░▓
-░░▓░░
-▓░░▓░
-░░░▓░
+░ ▓ ░ ░ ░
+░ ░ ░ ░ ▓
+░ ░ ▓ ░ ░
+▓ ░ ░ ▓ ░
+░ ░ ░ ▓ ░
 ```
 
 Your constructor of your BOT will also get three parameters:
 
-- `size` = `{ width: <Number>, height: <Number> }`
-- `start` = `[ <Number>, <Number> ]` _(The first number is the row, the second the column)_
-- `finish` = `[ <Number>, <Number> ]` _(The first number is the row, the second the column)_
+- `size` = `{ width: <Number>, height: <Number> }` - The size of your board
+- `start` = `[ <Number>, <Number> ]` - The position you're starting at _(The first number is the row, the second the column)_
+- `finish` = `[ <Number>, <Number> ]` - The position you want to go to _(The first number is the row, the second the column)_
 
 ## How does the engine work?
 
