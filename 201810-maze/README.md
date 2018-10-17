@@ -105,9 +105,9 @@ This would visualize as:
 
 Your constructor of your BOT will also get three parameters:
 
-`size` = `{ width: <Number>, height: <Number> }`
-`start` = `[ <Number>, <Number> ]` _(The first number is the row, the second the column)_
-`finish` = `[ <Number>, <Number> ]` _(The first number is the row, the second the column)_
+- `size` = `{ width: <Number>, height: <Number> }`
+- `start` = `[ <Number>, <Number> ]` _(The first number is the row, the second the column)_
+- `finish` = `[ <Number>, <Number> ]` _(The first number is the row, the second the column)_
 
 ## How does the engine work?
 
