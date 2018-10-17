@@ -17,10 +17,13 @@ We will have three levels, level > 1 will be announced soon.
 1. Do not output to `stdout`
 1. At the beginning of each round you add PRs to the repo (we only merge on the day the round begins)
 
-## Level 1
+## Levels
 
-Solve the maze by going to the green cross.
-You have 3000 steps to get there.
+- **LEVEL 1**
+	Solve the maze by going to the green cross.
+	You have 3000 steps to get there.
+- **LEVEL 2**
+	TBA
 
 ## How to run the game?
 
