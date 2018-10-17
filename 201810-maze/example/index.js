@@ -4,7 +4,7 @@ class BOT {
 	constructor({ size, start, finish }) {}
 
 	Move({ MAP }) {
-		const actions = ['right', 'down'];
+		const actions = ['up', 'right', 'down', 'left'];
 		return actions[ Math.floor( Math.random() * actions.length ) ];
 	}
 }
