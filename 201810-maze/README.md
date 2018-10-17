@@ -24,7 +24,7 @@ You have 3000 steps to get there.
 
 ## How to run the game?
 
-The game comes with a simple "example" bot that just randomizes it's movements.
+The game comes with a small "example" bot that just randomizes it's movements.
 
 To run the game for a bot `cd` into the challenge `201810-maze` folder.
 To play the game run:
@@ -66,7 +66,7 @@ Go back in history and analyses where your bot went wrong etc.
 
 ### Class to export
 
-The example bot looks as simple as this:
+The example bot is structured like this:
 
 ```js
 class BOT {
