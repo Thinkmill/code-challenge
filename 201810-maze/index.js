@@ -5,12 +5,12 @@ const Writable = require('stream').Writable;
 const LEVELS = require('./levels.json');
 const Readline = require('readline');
 const CliSize = require('cli-size');
+const Path = require('path');
 const Fs = require('fs');
 
 
 class MAZE {
-	constructor({ level = 1, debug = false }) {
-		this.debug = debug;
+	constructor({ level = 1, userPath }) {
 		this.muted = true;
 		this.level = level;
 		this.position = LEVELS[ this.level ].start;
@@ -18,12 +18,28 @@ class MAZE {
 		this.map = LEVELS[ this.level ].map;
 		this.width = LEVELS[ this.level ].width;
 		this.height = LEVELS[ this.level ].height;
+		this.maxSteps = this.width * this.height;
+		this.history = [ this.position ];
+		this.step = 0;
+		this.stepTime = 500;
 
 		this.block = Style.white('▓');
 		this.shadow = Style.gray('░');
 		this.shadowBlock = Style.white('░');
 		this.hero = Style.magenta('Φ');
 		this.goal = Style.green('x');
+
+		try {
+			const BOT = require(`./${ userPath }`);
+			this.BOT = new BOT({
+				size: { width: this.width, height: this.height },
+				start: this.position,
+				end: this.end,
+			});
+		}
+		catch( error ) {
+			console.error( Style.red( error ) );
+		}
 
 		const CustomStdout = new Writable({
 			write: ( chunk, encoding, callback ) => {
@@ -54,20 +70,17 @@ class MAZE {
 			this.Board();
 		});
 
-		process.stdin.on('keypress', (chunk, key) => { //redraw frame and board on terminal resize
+		process.stdin.on('keypress', (chunk, key) => { // redraw frame and board on terminal resize
 			this.RL.clearLine();
 
 			if( key.name === 'right' ) {
-				//
+				clearTimeout( this.timeout );
+				this.Play();
 			}
 			else if( key.name === 'left' ) {
-				//
-			}
-			else if( key.name === 'up' ) {
-				//
-			}
-			else if( key.name === 'down' ) {
-				//
+				clearTimeout( this.timeout );
+				this.step -= 2;
+				this.Play();
 			}
 			else if( key.name === 'q' ) {
 				process.exit( 0 );
@@ -78,17 +91,106 @@ class MAZE {
 		});
 	}
 
-	Play() {
+	Start() {
 		this.Frame();
 		this.Board();
-
-		const n = 5;
-		const start = [ 0, 0 ];
-		const end = [ n-1, n-1 ];
-		// console.log( this.generateMap( 15, 0.3, start, end ) );
+		this.Record();
 	}
 
-	CheckSize( width = this.frameWidth, height = this.frameHeight ) {
+	Record() {
+		const newPos = this.GetCoord( this.BOT.Move({ MAP: this.GetMap() }) );
+		this.position = this.GetPos( newPos[ 0 ], newPos[ 1 ] ) ? newPos : this.position;
+		this.history.push( this.position );
+
+		if( this.position[0] === this.end[0] && this.position[1] === this.end[1] ) {
+			this.Message(`Press ${ Style.yellow('q') } to end`);
+			this.Play();
+		}
+		else {
+			if( this.history.length < this.maxSteps ) {
+				process.nextTick(() => this.Record());
+			}
+			else {
+				this.muted = false;
+				this.Message(`Press ${ Style.yellow('q') } to end`);
+				this.muted = true;
+				this.Play();
+			}
+		}
+	}
+
+	Play() {
+		this.step ++;
+		this.Board();
+
+		this.position = this.history[ this.step ];
+		this.Board();
+		this.Score( this.step );
+
+		if( this.step < this.maxSteps ) {
+			this.timeout = setTimeout( () => this.Play( this.step ), this.stepTime );
+		}
+		else {
+			this.muted = false;
+			this.Message(`Game ended ${ Style.red(`unsuccessfully`) } after ${ Style.yellow( this.history.length) } steps`);
+			process.exit( 0 );
+		}
+	}
+
+	GetMap( position = this.position ) {
+		return [
+			[
+				this.GetPos( position[ 0 ] - 2, position[ 1 ] - 2 ),
+				this.GetPos( position[ 0 ] - 2, position[ 1 ] - 1 ),
+				this.GetPos( position[ 0 ] - 2, position[ 1 ] - 0 ),
+				this.GetPos( position[ 0 ] - 2, position[ 1 ] + 1 ),
+				this.GetPos( position[ 0 ] - 2, position[ 1 ] + 2 ),
+			],
+			[
+				this.GetPos( position[ 0 ] - 1, position[ 1 ] - 2 ),
+				this.GetPos( position[ 0 ] - 1, position[ 1 ] - 1 ),
+				this.GetPos( position[ 0 ] - 1, position[ 1 ] - 0 ),
+				this.GetPos( position[ 0 ] - 1, position[ 1 ] + 1 ),
+				this.GetPos( position[ 0 ] - 1, position[ 1 ] + 2 ),
+			],
+			[
+				this.GetPos( position[ 0 ] - 0, position[ 1 ] - 2 ),
+				this.GetPos( position[ 0 ] - 0, position[ 1 ] - 1 ),
+				this.GetPos( position[ 0 ] - 0, position[ 1 ] - 0 ),
+				this.GetPos( position[ 0 ] - 0, position[ 1 ] + 1 ),
+				this.GetPos( position[ 0 ] - 0, position[ 1 ] + 2 ),
+			],
+			[
+				this.GetPos( position[ 0 ] + 1, position[ 1 ] - 2 ),
+				this.GetPos( position[ 0 ] + 1, position[ 1 ] - 1 ),
+				this.GetPos( position[ 0 ] + 1, position[ 1 ] - 0 ),
+				this.GetPos( position[ 0 ] + 1, position[ 1 ] + 1 ),
+				this.GetPos( position[ 0 ] + 1, position[ 1 ] + 2 ),
+			],
+			[
+				this.GetPos( position[ 0 ] + 2, position[ 1 ] - 2 ),
+				this.GetPos( position[ 0 ] + 2, position[ 1 ] - 1 ),
+				this.GetPos( position[ 0 ] + 2, position[ 1 ] - 0 ),
+				this.GetPos( position[ 0 ] + 2, position[ 1 ] + 1 ),
+				this.GetPos( position[ 0 ] + 2, position[ 1 ] + 2 ),
+			],
+		];
+	}
+
+	GetPos( x, y ) {
+		if( !this.map[ x ] ) return false;
+		return !!this.map[ x ][ y ];
+	}
+
+	GetCoord( movement, position = this.position ) {
+		if( movement === 'up' ) return [ position[ 0 ] - 1, position[ 1 ] ];
+		else if( movement === 'right' ) return [ position[ 0 ], position[ 1 ] + 1 ];
+		else if( movement === 'down' ) return [ position[ 0 ] + 1, position[ 1 ] ];
+		else if( movement === 'left' ) return [ position[ 0 ], position[ 1 ] - 1 ];
+		else return position;
+	}
+
+	CheckSize( width = this.frameWidth, height = this.frameHeight + 2 ) {
 		let error = false;
 
 		if( CliSize().columns < width ) {
@@ -132,7 +234,7 @@ class MAZE {
 			Readline.cursorTo( this.RL, 0, 0 );
 			Readline.clearScreenDown( this.RL );
 
-			const spaceLeft = ' '.repeat( this.GetSpaceLeft( this.frameWidth ) );
+			const spaceLeft = ''.padStart( this.GetSpaceLeft( this.frameWidth ), ' ' );
 			const spaceTop = '\n'.repeat( this.GetSpaceTop( this.frameHeight ) );
 
 			this.RL.write( spaceTop );
@@ -152,36 +254,60 @@ class MAZE {
 		this.muted = false;
 		let left = this.GetSpaceLeft( this.frameWidth ) + 1;
 		let top = this.GetSpaceTop( this.frameHeight ) + 3;
+		let output = '';
 
 		for( let h = 0; h < this.height; h++ ) {
-			Readline.cursorTo( this.RL, left, ( top + h ) );
+			output += Style.gray( '│'.padStart( left, ' ' ) );
 
 			for( let w = 0; w < this.width; w++ ) {
-				if( w === this.position[ 0 ] && h === this.position[ 1 ] ) {
-					this.RL.write( this.hero );
+				if( h === this.position[ 0 ] && w === this.position[ 1 ] ) {
+					output += this.hero;
 				}
-				else if( w === this.end[ 0 ] && h === this.end[ 1 ] ) {
-					this.RL.write( this.goal );
+				else if( h === this.end[ 0 ] && w === this.end[ 1 ] ) {
+					output += this.goal;
 				}
 				else {
 					let block = this.shadowBlock;
 					let space = this.shadow;
 
 					if(
-						w >= this.position[ 0 ] - 2 &&
-						w <= this.position[ 0 ] + 2 &&
-						h >= this.position[ 1 ] - 2 &&
-						h <= this.position[ 1 ] + 2
+						h >= this.position[ 0 ] - 2 &&
+						h <= this.position[ 0 ] + 2 &&
+						w >= this.position[ 1 ] - 2 &&
+						w <= this.position[ 1 ] + 2
 					) {
 						block = this.block;
 						space = ' ';
 					}
 
-					this.RL.write( this.map[ h ][ w ] ? space : block );
+					output += this.map[ h ][ w ] ? space : block;
 				}
 			}
+			output += '\n';
 		}
 
+		Readline.cursorTo( this.RL, 0, top );
+		this.RL.write( output );
+
+		Readline.cursorTo( this.RL, 0, ( CliSize().rows - 1 ) );
+		this.muted = true;
+	}
+
+	Message( msg ) {
+		this.muted = false;
+		Readline.cursorTo( this.RL, 0, ( CliSize().rows - 1 ) );
+		this.RL.write( msg );
+		this.muted = true;
+	}
+
+	Score( step ) {
+		this.muted = false;
+		Readline.cursorTo( this.RL, 0, 1 );
+		this.RL.write(`Total steps: ${ this.history.length } | Current: ${ step } | Outcome: ${
+			this.history.length === this.maxSteps
+				? Style.red('loss')
+				: Style.green('win')
+		}`);
 		Readline.cursorTo( this.RL, 0, ( CliSize().rows - 1 ) );
 		this.muted = true;
 	}
