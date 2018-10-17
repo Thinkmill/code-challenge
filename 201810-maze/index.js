@@ -18,7 +18,7 @@ class MAZE {
 		this.map = LEVELS[ this.level ].map;
 		this.width = LEVELS[ this.level ].width;
 		this.height = LEVELS[ this.level ].height;
-		this.maxSteps = this.width * this.height;
+		this.maxSteps = this.width * this.height * 4;
 		this.history = [ this.position ];
 		this.step = 0;
 		this.stepTime = 500;
@@ -80,6 +80,7 @@ class MAZE {
 			else if( key.name === 'left' ) {
 				clearTimeout( this.timeout );
 				this.step -= 2;
+				if( this.step < 0 ) this.step = 0;
 				this.Play();
 			}
 			else if( key.name === 'q' ) {
@@ -120,20 +121,27 @@ class MAZE {
 	}
 
 	Play() {
-		this.step ++;
 		this.Board();
 
-		this.position = this.history[ this.step ];
+		const nextStep = this.history[ this.step ];
+		if( nextStep ) {
+			this.position = nextStep;
+			this.step ++;
+		}
+
 		this.Board();
 		this.Score( this.step );
 
-		if( this.step < this.maxSteps ) {
-			this.timeout = setTimeout( () => this.Play( this.step ), this.stepTime );
+		if( this.position[0] === this.end[0] && this.position[1] === this.end[1] ) {
+			this.Banner('  you won!  ');
 		}
 		else {
-			this.muted = false;
-			this.Message(`Game ended ${ Style.red(`unsuccessfully`) } after ${ Style.yellow( this.history.length) } steps`);
-			process.exit( 0 );
+			if( this.step < this.maxSteps ) {
+				this.timeout = setTimeout( () => this.Play( this.step ), this.stepTime );
+			}
+			else {
+				this.Banner('  you lost!  ');
+			}
 		}
 	}
 
@@ -289,6 +297,20 @@ class MAZE {
 		Readline.cursorTo( this.RL, 0, top );
 		this.RL.write( output );
 
+		Readline.cursorTo( this.RL, 0, ( CliSize().rows - 1 ) );
+		this.muted = true;
+	}
+
+	Banner( msg ) {
+		this.muted = false;
+		const left = Math.floor(( CliSize().columns / 2 ) - ( msg.length / 2 ));
+		const top = Math.floor( CliSize().rows / 2 );
+		Readline.cursorTo( this.RL, left, (top - 1) );
+		this.RL.write( ''.padStart( msg.length, ' ' ) );
+		Readline.cursorTo( this.RL, left, top );
+		this.RL.write( msg );
+		Readline.cursorTo( this.RL, left, (top + 1) );
+		this.RL.write( ''.padStart( msg.length, ' ' ) );
 		Readline.cursorTo( this.RL, 0, ( CliSize().rows - 1 ) );
 		this.muted = true;
 	}

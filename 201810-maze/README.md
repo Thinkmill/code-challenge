@@ -20,7 +20,7 @@ We will have three levels, level > 1 will be announced soon.
 ## Level 1
 
 Solve the maze by going to the green cross.
-You have 750 steps to get there.
+You have 3000 steps to get there.
 
 ## How to run the game?
 
@@ -72,8 +72,10 @@ The class you have to export from your bot needs to include the below method:
 	- Called when it is your turn to decide where to go
 	- parameters: `{ MAP }`
 	- return: `'up' | 'right' | 'down' | 'left'`
+- `constructor` of your class
+	- parameters: `size`, `start`, `finish`
 
-### The MAP parameter
+### The parameters
 
 `MAP` is an array of arrays and tells you in a grid of 5x5 around you where blocks are.
 
@@ -100,6 +102,12 @@ This would visualize as:
 ▓░░▓░
 ░░░▓░
 ```
+
+Your constructor of your BOT will also get three parameters:
+
+`size` = `{ width: <Number>, height: <Number> }`
+`start` = `[ <Number>, <Number> ]` _(The first number is the row, the second the column)_
+`finish` = `[ <Number>, <Number> ]` _(The first number is the row, the second the column)_
 
 ## How does the engine work?
 
