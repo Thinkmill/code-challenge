@@ -261,7 +261,7 @@ class MAZE {
 	Board() {
 		this.muted = false;
 		let left = this.GetSpaceLeft( this.frameWidth ) + 1;
-		let top = this.GetSpaceTop( this.frameHeight ) + 3;
+		let top = this.GetSpaceTop( this.frameHeight - 7 );
 		let output = '';
 
 		for( let h = 0; h < this.height; h++ ) {
