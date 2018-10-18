@@ -1,0 +1,21 @@
+{
+	"name": "code-challenge-201810-path-finder",
+	"version": "1.0.0",
+	"description": "October 2018 code challenge",
+	"main": "index.js",
+	"scripts": {
+		"play": "node maze.js play"
+	},
+	"bin": {
+		"maze": "./maze.js"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"prettier": "^1.13.7"
+	},
+	"dependencies": {
+		"cli-size": "^1.0.9"
+	}
+}
