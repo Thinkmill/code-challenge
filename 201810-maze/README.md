@@ -4,7 +4,7 @@ October 2018 challenge
 This months challenge consists of you writing a bot to solve a maze.
 We will have three levels, level > 1 will be announced soon.
 
-Level 1: **DUE 31st Nov**
+Level 1: **DUE 31st Oct**
 
 ## RULEZ
 
@@ -24,7 +24,7 @@ Level 1: **DUE 31st Nov**
 - **LEVEL 1**
 	Solve the maze by going to the green cross.
 	You have 3000 steps to get there.
-	Due 31st Nov
+	Due 31st Oct
 - **LEVEL 2**
 	TBA
 
