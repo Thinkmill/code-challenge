@@ -1,7 +1,7 @@
 'use strict';
 
 class BOT {
-	constructor({ size, start, finish }) {}
+	constructor({ size, start, end }) {}
 
 	Move({ MAP }) {
 		const actions = ['up', 'right', 'down', 'left'];
