@@ -4,6 +4,8 @@ October 2018 challenge
 This months challenge consists of you writing a bot to solve a maze.
 We will have three levels, level > 1 will be announced soon.
 
+![Maze](https://raw.githubusercontent.com/Thinkmill/code-challenge/master/201810-maze/maze.gif)
+
 Level 1: **DUE 31st Oct**
 
 ## RULEZ
@@ -76,7 +78,7 @@ The example bot is structured like this:
 
 ```js
 class BOT {
-	constructor({ size, start, finish }) {}
+	constructor({ size, start, end }) {}
 
 	Move({ MAP }) {
 		const actions = ['up', 'right', 'down', 'left'];
@@ -94,7 +96,7 @@ The class you have to export from your bot needs to include the below method:
 	- parameters: `{ MAP }`
 	- return: `'up' | 'right' | 'down' | 'left'`
 - `constructor` of your class
-	- parameters: `size`, `start`, `finish`
+	- parameters: `size`, `start`, `end`
 
 ### The parameters
 
@@ -128,7 +130,7 @@ Your constructor of your BOT will also get three parameters:
 
 - `size` = `{ width: <Number>, height: <Number> }` - The size of your board
 - `start` = `[ <Number>, <Number> ]` - The position you're starting at _(The first number is the row, the second the column)_
-- `finish` = `[ <Number>, <Number> ]` - The position you want to go to _(The first number is the row, the second the column)_
+- `end` = `[ <Number>, <Number> ]` - The position you want to go to _(The first number is the row, the second the column)_
 
 ## How does the engine work?
 
