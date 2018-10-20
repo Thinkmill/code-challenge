@@ -112,9 +112,6 @@ class MAZE {
 				process.nextTick(() => this.Record());
 			}
 			else {
-				this.muted = false;
-				this.Message(`Press ${ Style.yellow('q') } to end`);
-				this.muted = true;
 				this.Play();
 			}
 		}
@@ -198,7 +195,7 @@ class MAZE {
 		else return position;
 	}
 
-	CheckSize( width = this.frameWidth, height = this.frameHeight + 2 ) {
+	CheckSize( width = this.frameWidth, height = this.frameHeight + 4 ) {
 		let error = false;
 
 		if( CliSize().columns < width ) {
@@ -225,10 +222,13 @@ class MAZE {
 	}
 
 	Frame() {
+		const logoLeft = ''.padStart( this.GetSpaceLeft( 43 ), ' ' );
 		const logo = [
-			`${ Style.green(` ╔╦╗ ╔═╗ ╔═╗ ╔═╗`) }`,
-			`${ Style.cyan (` ║║║ ╠═╣ ╔═╝ ║╣`) }`,
-			`${ Style.white(` ╩ ╩ ╩ ╩ ╚═╝ ╚═╝`) }\n`,
+			`${ logoLeft }${ Style.green('_|      _|    _|_|    _|_|_|_|_|  _|_|_|_|') }`,
+			`${ logoLeft }${ Style.green('_|_|  _|_|  _|    _|        _|    _|') }`,
+			`${ logoLeft }${ Style.green('_|  _|  _|  _|_|_|_|      _|      _|_|_|') }`,
+			`${ logoLeft }${ Style.red('_|      _|  _|    _|    _|        _|') }`,
+			`${ logoLeft }${ Style.red('_|      _|  _|    _|  _|_|_|_|_|  _|_|_|_|') } ${ Style.gray('v1') }\n`,
 		];
 		this.frameWidth = this.width + 2;
 		this.frameHeight = this.height + 4 + logo.length;
@@ -246,13 +246,14 @@ class MAZE {
 			const spaceTop = '\n'.repeat( this.GetSpaceTop( this.frameHeight ) );
 
 			this.RL.write( spaceTop );
-			this.RL.write( spaceLeft + logo.join(`\n${ spaceLeft }`) );
+			this.RL.write( logo.join('\n') );
 
 			this.RL.write(`${ spaceLeft }${ Style.gray(`┌${ '─'.repeat( this.width ) }┐`) }\n`);
 			this.RL.write(`${ spaceLeft }${ Style.gray(`│${ ' '.repeat( this.width ) }│`) }\n`.repeat( this.height ));
 			this.RL.write(`${ spaceLeft }${ Style.gray(`└${ '─'.repeat( this.width ) }┘`) }\n\n`);
 
 			this.RL.write( spaceTop );
+			this.Message(` Press ${ Style.yellow('q') } to end`);
 		}
 
 		this.muted = true;
@@ -261,7 +262,7 @@ class MAZE {
 	Board() {
 		this.muted = false;
 		let left = this.GetSpaceLeft( this.frameWidth ) + 1;
-		let top = this.GetSpaceTop( this.frameHeight - 7 );
+		let top = this.GetSpaceTop( this.frameHeight - 11 );
 		let output = '';
 
 		for( let h = 0; h < this.height; h++ ) {
