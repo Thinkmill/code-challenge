@@ -43,7 +43,7 @@ To play the game run:
 yarn play path/to/bot.js --level 1
 ```
 
-_(💡  Tip: shortcut for `--level` flag is `-l`)_
+_(💡  Tip: shortcut for `--level` flag is `-l` and the level defaults to `1`)_
 
 ```sh
 .
