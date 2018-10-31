@@ -1,0 +1,24 @@
+{
+	"name": "code-challenge-201808-coup",
+	"version": "1.0.0",
+	"description": "August 2018 code challenge",
+	"main": "index.js",
+	"scripts": {
+		"test:format": "npm run format:config -- --list-different \"**/*.js\"",
+		"test:code": "node test.js",
+		"test": "npm run test:code && npm run test:format",
+		"format:config": "prettier --single-quote --trailing-comma es5 --use-tabs --arrow-parens always",
+		"format": "npm run format:config -- --write \"**/*.js\"",
+		"play": "node coup.js play",
+		"loop": "node coup.js loop"
+	},
+	"bin": {
+		"coup": "./coup.js"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"prettier": "^1.13.7"
+	}
+}

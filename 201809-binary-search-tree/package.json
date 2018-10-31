@@ -1,0 +1,14 @@
+{
+	"name": "code-challenge-201809-binary-search-tree",
+	"version": "1.0.0",
+	"description": "Binary Search Tree Code Challenge",
+	"main": "tree.js",
+	"scripts": {
+		"test": "jest",
+		"lint": "eslint *.js --ignore-pattern tree.example.js"
+	},
+	"dependencies": {
+		"eslint": "^5.4.0",
+		"jest": "^23.5.0"
+	}
+}
