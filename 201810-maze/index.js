@@ -12,6 +12,11 @@ const Fs = require('fs');
 class MAZE {
 	constructor({ level = 1, userPath }) {
 		this.muted = true;
+
+		if( !LEVELS[ level ] ) {
+			console.error(`${ Style.red(`Level ${ level } does not exist! We only got `) }${ Style.yellow( Object.keys( LEVELS ).join(', ') ) }`);
+			process.exit( 1 );
+		}
 		this.level = level;
 		this.position = LEVELS[ this.level ].start;
 		this.end = LEVELS[ this.level ].end;
@@ -228,7 +233,7 @@ class MAZE {
 			`${ logoLeft }${ Style.green('_|_|  _|_|  _|    _|        _|    _|') }`,
 			`${ logoLeft }${ Style.green('_|  _|  _|  _|_|_|_|      _|      _|_|_|') }`,
 			`${ logoLeft }${ Style.red('_|      _|  _|    _|    _|        _|') }`,
-			`${ logoLeft }${ Style.red('_|      _|  _|    _|  _|_|_|_|_|  _|_|_|_|') } ${ Style.gray('v1') }\n`,
+			`${ logoLeft }${ Style.red('_|      _|  _|    _|  _|_|_|_|_|  _|_|_|_|') } ${ Style.gray(`level${ this.level }`) }\n`,
 		];
 		this.frameWidth = this.width + 2;
 		this.frameHeight = this.height + 4 + logo.length;
