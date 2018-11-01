@@ -28,7 +28,9 @@ Level 1: **DUE 31st Oct**
 	You have 3000 steps to get there.
 	Due 31st Oct
 - **LEVEL 2**
-	TBA
+	Solve both levels with the same bot.
+	You have 6000 steps to get there.
+	Due 14th Nov
 
 ## How to run the game?
 
@@ -38,8 +40,10 @@ To run the game for a bot `cd` into the challenge `201810-maze` folder.
 To play the game run:
 
 ```sh
-yarn play path/to/bot.js
+yarn play path/to/bot.js --level 1
 ```
+
+_(💡  Tip: shortcut for `--level` flag is `-l` and the level defaults to `1`)_
 
 ```sh
 .

@@ -14,8 +14,18 @@ if( !Fs.existsSync( userPath ) ) {
 
 
 if( process.argv.includes('play') ) {
+	let level = 1;
+	let levelIndex = process.argv.indexOf('-l');
+	if( levelIndex === -1 ) {
+		levelIndex = process.argv.indexOf('--level');
+	}
+
+	if( levelIndex !== -1 && process.argv[( levelIndex + 1 )] ) {
+		level = process.argv[( levelIndex + 1 )];
+	}
+
 	new MAZE({
-		level: 1,
+		level,
 		userPath,
 	}).Start();
 }
