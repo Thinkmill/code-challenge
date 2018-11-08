@@ -3,117 +3,97 @@ class BOT {
 		this.position = start;
 		this.size = size;
 		this.end = end;
-        this.direction = "down";
-        this.actionSequence = []
+		this.direction = "down";
+		this.actionSequence = [];
 		this.history = [];
 	}
 
-	avoidBumping(actions, { MAP }) {
-		let actions2 = actions;
+	avoidBumping(direction, { MAP }) {
+		const amOnTopEdge    = this.position[0] == 0;
+		const amOnBottomEdge = this.position[0] == this.size[0] - 1;
+		const amOnLeftEdge   = this.position[1] == 0;
+		const amOnRightEdge  = this.position[1] == this.size[1] - 1;
 
-		if (MAP[1][2] == false || this.position[0] == 0) {
-			actions2 = actions2.filter(action => action != "up");
+		const cantGo = {
+			up:    !MAP[1][2] || amOnTopEdge,
+			down:  !MAP[3][2] || amOnBottomEdge,
+			left:  !MAP[2][1] || amOnLeftEdge,
+			right: !MAP[2][3] || amOnRightEdge
+		};
+
+		if(!cantGo[direction]){
+			return direction;
+		}else{
+			let actions = ["up", "right", "down", "left"];
+			if (cantGo.up) {actions = actions.filter(action => action != "up")}
+			if (cantGo.down) {actions = actions.filter(action => action != "down")}
+			if (cantGo.left) {actions = actions.filter(action => action != "left")}
+			if (cantGo.right) {actions = actions.filter(action => action != "right")}
+
+			return actions[Math.floor(Math.random() * actions.length)];
 		}
-
-		if (MAP[3][2] == false || this.position[0] == this.size[0] - 1) {
-			actions2 = actions2.filter(action => action != "down");
-		}
-
-		if (MAP[2][1] == false || this.position[1] == 0) {
-			actions2 = actions2.filter(action => action != "left");
-		}
-
-		if (MAP[2][3] == false) {
-			actions2 = actions2.filter(action => action != "right");
-		}
-
-		return actions2;
 	}
 
 	updateGPS(action) {
-		if (action == "down") {
-			this.position[0]++;
-		}
-		if (action == "up") {
-			this.position[0]--;
-		}
-		if (action == "left") {
-			this.position[1]--;
-		}
-		if (action == "right") {
-			this.position[1]++;
-		}
+		if (action == "down")  { this.position[0]++ }
+		if (action == "up")    { this.position[0]-- }
+		if (action == "left")  { this.position[1]-- }
+		if (action == "right") { this.position[1]++ }
+
 		this.history.unshift(action);
 		this.history = this.history.slice(0, 9);
-    }
+	}
 
-    backUp(){
-        if(this.direction == 'down'){
-            this.actionSequence.push('up');
-        }else{
-            this.actionSequence.push('left');
-        }
-    }
-
-    changeDirection(){
-        if(this.direction == 'down'){
-            this.direction = 'right'
-        }else{
-            this.direction = 'down'
-        }
-    }
+	changeDirection() {
+		if (this.direction == "down") {
+			this.direction = "right";
+		} else {
+			this.direction = "down";
+		}
+	}
 
 	Move({ MAP }) {
-
-        // const amOnTopEdge = this.position[0] == 0;
-        // const amOnBottomEdge = this.position[0] == this.size[0]-1;
-
-        // const amOnLeftEdge = this.position[1] == 0;
-        // const amOnRightEdge = this.position[1] == this.size[1]-1;
+		const amOnTopEdge    = this.position[0] == 0;
+		const amOnBottomEdge = this.position[0] == this.size[0] - 1;
+		const amOnLeftEdge   = this.position[1] == 0;
+		const amOnRightEdge  = this.position[1] == this.size[1] - 1;
 
 		const somethingIs = {
 			toTheLeft: {
-				right: (!MAP[1][2] || this.position[0] == 0),
-				down: !MAP[2][3],
+				up:    !MAP[2][1] || amOnLeftEdge,
+				down:  !MAP[2][3] || amOnRightEdge,
+				left:  !MAP[3][2] || amOnBottomEdge,
+				right: !MAP[1][2] || amOnTopEdge
 			},
 			toTheRight: {
-				right: !MAP[3][2],
-				down: (!MAP[2][1] || this.position[0] == 0),
+				up:    !MAP[2][3] || amOnRightEdge,
+				down:  !MAP[2][1] || amOnLeftEdge,
+				left:  !MAP[1][2] || amOnTopEdge,
+				right: !MAP[3][2] || amOnBottomEdge
 			},
 			inFront: {
-				right: !MAP[2][3],
-				down: !MAP[3][2],
+				up:    !MAP[1][2] || amOnTopEdge,
+				down:  !MAP[3][2] || amOnBottomEdge,
+				left:  !MAP[2][1] || amOnLeftEdge,
+				right: !MAP[2][3] || amOnRightEdge
 			},
 			behind: {
-				right: !MAP[2][1],
-				down: (!MAP[1][2] || this.position[0] == 0),
+				up:    !MAP[3][2] || amOnBottomEdge,
+				down:  !MAP[1][2] || amOnTopEdge,
+				left:  !MAP[2][3] || amOnRightEdge,
+				right: !MAP[2][1] || amOnLeftEdge
 			}
-        };
+		};
 
+		if (somethingIs.inFront[this.direction]) {
+			this.changeDirection();
+		}
 
-        if(somethingIs.inFront[this.direction]){
-            //check if I can't change direction
-            if(
-                (this.direction == 'right' && somethingIs.toTheLeft[this.direction]) ||
-                (this.direction == 'down' && somethingIs.toTheLeft[this.direction])
-            ){
-                //back it up!
-                //this.actionSequence.push('up');
-                this.backUp()
-                this.changeDirection();
-            }else{
-                this.changeDirection();
-            }
-        }
+		let action = this.avoidBumping(this.direction,{ MAP });
 
-		let actions = ["up", "right", "down", "left"];
-		actions = this.avoidBumping(actions, { MAP });
-
-        let action = this.direction;
-
-        if(this.actionSequence.length > 0){
-            action = this.actionSequence.shift();
-        }
+		if (this.actionSequence.length > 0) {
+			action = this.actionSequence.shift();
+		}
 
 		this.updateGPS(action);
 
