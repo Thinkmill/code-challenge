@@ -329,12 +329,14 @@ class MAZE {
 	}
 
 	Score( step ) {
+		const total = this.history.length;
+		const totalLength = total.toString().length;
 		this.muted = false;
 		Readline.cursorTo( this.RL, 0, 1 );
-		this.RL.write(`Total steps: ${ this.history.length } | Current: ${ step } | Outcome: ${
+		this.RL.write(`Total steps: ${ total } | Current: ${ step } | Outcome: ${
 			this.history.length === this.maxSteps
-				? Style.red('loss')
-				: Style.green('win')
+				? Style.red( 'loss'.padEnd( totalLength + 4 ) )
+				: Style.green( 'win'.padEnd( totalLength + 3 ) )
 		}`);
 		Readline.cursorTo( this.RL, 0, ( CliSize().rows - 1 ) );
 		this.muted = true;
