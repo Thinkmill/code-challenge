@@ -10,7 +10,7 @@ const Fs = require('fs');
 
 
 class MAZE {
-	constructor({ level = 1, userPath }) {
+	constructor({ level = 1, userPath, stepTime = 500 }) {
 		this.muted = true;
 
 		if( !LEVELS[ level ] ) {
@@ -26,7 +26,7 @@ class MAZE {
 		this.maxSteps = this.width * this.height * 4;
 		this.history = [ this.position ];
 		this.step = 0;
-		this.stepTime = 500;
+		this.stepTime = stepTime;
 
 		this.block = Style.white('▓');
 		this.shadow = Style.gray('░');
