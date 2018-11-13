@@ -21,18 +21,30 @@ const getSurrounds = ([height, width]) => {
 const distancesAround = (position, goal, grid) => {
 	let { up, down, left, right } = getSurrounds(position);
 	return [
-		{ direction: "up", distance: getDistance(up, goal, grid) },
-		{ direction: "down", distance: getDistance(down, goal, grid) },
-		{ direction: "left", distance: getDistance(left, goal, grid) },
-		{ direction: "right", distance: getDistance(right, goal, grid) }
+		{ direction: "up", distance: getDistance(up, goal, grid), position: up },
+		{
+			direction: "down",
+			distance: getDistance(down, goal, grid),
+			position: down
+		},
+		{
+			direction: "left",
+			distance: getDistance(left, goal, grid),
+			position: left
+		},
+		{
+			direction: "right",
+			distance: getDistance(right, goal, grid),
+			position: right
+		}
 	];
 };
 
-const getSortedDistances = (position, goal, grid) => {
+const getBestDistance = (position, goal, grid) => {
 	let distances = distancesAround(position, goal, grid);
 	return distances
 		.filter(a => a.distance < 100000000)
-		.sort((a, b) => a.distance - b.distance);
+		.sort((a, b) => a.distance - b.distance)[0];
 };
 
 const updateMap = (topLeft, map, newInfo) => {
@@ -62,33 +74,34 @@ class BOT {
 			[...Array(size.width)].map(() => null)
 		);
 		this.end = end;
-		this.backtracking = false;
 	}
 
 	Move({ MAP }) {
 		let [column, row] = this.currentPosition;
-
-		// console.log(this.currentPosition);
-
 		this.fakeGrid = updateMap([column - 2, row - 2], this.fakeGrid, MAP);
-		let directions = getSortedDistances(
+		let newPosition = getBestDistance(
 			this.currentPosition,
 			this.end,
 			this.fakeGrid
 		);
-		let [bestDistance, secondBest] = directions;
-		let newPosition = getSurrounds(this.currentPosition)[
-			bestDistance.direction
-		];
 
-		if (directions.length < 2) {
-			this.fakeGrid[this.currentPosition[0]][this.currentPosition[1]] = false;
+		if (!newPosition) {
+			// backtrack function
+			let prior = this.stack.pop();
+			let [backCol, backRow] = prior;
+			this.currentPosition = [backCol, backRow];
+			if (column < backCol) return "down";
+			if (column > backCol) return "up";
+			if (row < backRow) return "right";
+			if (row > backRow) return "left";
 		}
 
-		this.currentPosition = newPosition;
+		this.fakeGrid[newPosition.position[0]][newPosition.position[1]] = false;
 
-		this.stack.push(this.currentPosition);
-		return bestDistance.direction;
+		this.currentPosition = newPosition.position;
+
+		this.stack.push([column, row]);
+		return newPosition.direction;
 	}
 }
 
