@@ -37,7 +37,7 @@ if( process.argv.includes('play') ) {
 	new MAZE({
 		level,
 		userPath,
-    stepTime: speed,
+		stepTime: speed,
 	}).Start();
 }
 
