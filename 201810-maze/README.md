@@ -43,7 +43,7 @@ To play the game run:
 yarn play example/index.js --level 1
 ```
 
-_(💡  Tip: shortcut for `--level` flag is `-l` and the level defaults to `1`)_
+_(💡  Tip: `--level` & `--speed` are optional. See [CLI Options](#cli-options) below.)_
 
 ```sh
 .
@@ -70,6 +70,13 @@ yarn play bot2/index.js
 Once the game runs you can use the key `q` to quit the game any time.
 You can also use the arrow functions `←` and `→` to step through each step your bot has taken.
 Go back in history and analyses where your bot went wrong etc.
+
+### CLI Options
+
+```
+--level|-l  Set the level to run (Default: 1)
+--speed|-s  Set the time in milliseconds between each step (Default: 500)
+```
 
 ## How do I build a bot?
 

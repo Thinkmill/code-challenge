@@ -24,9 +24,20 @@ if( process.argv.includes('play') ) {
 		level = process.argv[( levelIndex + 1 )];
 	}
 
+	let speed;
+	let speedIndex = process.argv.indexOf('-s');
+	if( speedIndex === -1 ) {
+		speedIndex = process.argv.indexOf('--speed');
+	}
+
+	if( speedIndex !== -1 && process.argv[( speedIndex + 1 )] ) {
+		speed = process.argv[( speedIndex + 1 )];
+	}
+
 	new MAZE({
 		level,
 		userPath,
+		stepTime: speed,
 	}).Start();
 }
 
