@@ -88,28 +88,30 @@ function createAstar(map, { width, height }) {
       // Initially, only the start node is known.
       const openSet = [[startX, startY]];
 
-      // For each node, which node it can most efficiently be reached from.
-      // If a node can be reached from many nodes, cameFrom will eventually contain the
-      // most efficient previous step.
-      const cameFrom = map.map(row => row.map(() => null));
+      const nodeMap = map.map(row => row.map(() => ({
+        // For each node, which node it can most efficiently be reached from.
+        // If a node can be reached from many nodes, cameFrom will eventually contain the
+        // most efficient previous step.
+        cameFrom: null,
 
-      // For each node, the cost of getting from the start node to that node.
-      const gScore = map.map(row => row.map(() => Infinity));
+        // For each node, the cost of getting from the start node to that node.
+        gScore: Infinity,
+
+        // For each node, the total cost of getting from the start node to the goal
+        // by passing by that node. That value is partly known, partly heuristic.
+        fScore: Infinity,
+      })));
 
       // The cost of going from start to start is zero.
-      gScore[startY][startX] = 0;
-
-      // For each node, the total cost of getting from the start node to the goal
-      // by passing by that node. That value is partly known, partly heuristic.
-      const fScore = map.map(row => row.map(() => Infinity));
+      nodeMap[startY][startX].gScore = 0;
 
       // For the first node, that value is completely heuristic.
-      fScore[startY][startX] = heuristic([startX, startY], [endX, endY]);
+      nodeMap[startY][startX].fScore = heuristic([startX, startY], [endX, endY]);
 
       while (openSet.length) {
-        const [currentX, currentY] = popLowestFScoreFromOpen(openSet, fScore);
+        const [currentX, currentY] = popLowestFScoreFromOpen(openSet, nodeMap);
         if (currentX === endX && currentY === endY) {
-          return reconstructPath([startX, startY], [endX, endY], cameFrom);
+          return reconstructPath([startX, startY], [endX, endY], nodeMap);
         }
 
         closedSet.push([currentX, currentY]);
@@ -119,20 +121,20 @@ function createAstar(map, { width, height }) {
             return;
           }
 
-          const currentGScore = gScore[currentY][currentX] + getCostBetween([currentX, currentY], [neighbourX, neighbourY])
+          const currentGScore = nodeMap[currentY][currentX].gScore + getCostBetween([currentX, currentY], [neighbourX, neighbourY])
 
           if (!openSet.find(([openX, openY]) => neighbourX === openX && neighbourY === openY)) {
             // New node discovered
             openSet.push([neighbourX, neighbourY]);
-          } else if (currentGScore >= gScore[neighbourY][neighbourX]) {
+          } else if (currentGScore >= nodeMap[neighbourY][neighbourX].gScore) {
             // This is not a better path
             return;
           }
 
           // This is the best path so far, so we record it
-          cameFrom[neighbourY][neighbourX] = [currentX, currentY];
-          gScore[neighbourY][neighbourX] = currentGScore;
-          fScore[neighbourY][neighbourX] = gScore[neighbourY][neighbourX] + heuristic([neighbourX, neighbourY], [endX, endY]);
+          nodeMap[neighbourY][neighbourX].cameFrom = [currentX, currentY];
+          nodeMap[neighbourY][neighbourX].gScore = currentGScore;
+          nodeMap[neighbourY][neighbourX].fScore = nodeMap[neighbourY][neighbourX].gScore + heuristic([neighbourX, neighbourY], [endX, endY]);
         });
 
 
@@ -168,26 +170,26 @@ function createAstar(map, { width, height }) {
   }
 
   // Return the best path (inclusive of the starting position)
-  function reconstructPath([startX, startY], [endX, endY], cameFrom) {
+  function reconstructPath([startX, startY], [endX, endY], nodeMap) {
     const path = [[endX, endY]];
 
     let currentX = endX;
     let currentY = endY;
 
     while (currentX !== startX || currentY !== startY) {
-      [currentX, currentY] = cameFrom[currentY][currentX];
+      [currentX, currentY] = nodeMap[currentY][currentX].cameFrom;
       path.unshift([currentX, currentY]);
     }
 
     return path;
   }
 
-  function popLowestFScoreFromOpen(openSet, fScore) {
+  function popLowestFScoreFromOpen(openSet, nodeMap) {
     let lowestScore = Infinity;
     let lowestIndex = -1;
     openSet.forEach(([x, y], index) => {
-      if (fScore[y][x] < lowestScore) {
-        lowestScore = fScore[y][x];
+      if (nodeMap[y][x].fScore < lowestScore) {
+        lowestScore = nodeMap[y][x].fScore;
         lowestIndex = index;
       }
     });
