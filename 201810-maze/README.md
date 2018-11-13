@@ -19,7 +19,7 @@ Level 1: **DUE 31st Oct**
 1. No js prototype changing
 1. Your code has to stay inside your bots folder
 1. Do not output to `stdout`
-1. At the beginning of each round you add PRs to the repo (we only merge on the day the round begins)
+1. At the beginning of each round, add your bot to a new folder then open a PR to this repo (we only merge on the day the round begins)
 
 ## Levels
 
@@ -40,7 +40,7 @@ To run the game for a bot `cd` into the challenge `201810-maze` folder.
 To play the game run:
 
 ```sh
-yarn play path/to/bot.js --level 1 --speed 500
+yarn play example/index.js --level 1
 ```
 
 _(💡  Tip: `--level` & `--speed` are optional. See [CLI Options](#cli-options) below.)_
