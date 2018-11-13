@@ -78,7 +78,7 @@ function createPriorityQueue(comparator) {
   };
 }
 
-function createAstar(map) {
+function createAstar(map, { width, height }) {
   return {
     computeShortestPath([startX, startY], [endX, endY]) {
       // The set of nodes already evaluated
@@ -109,7 +109,7 @@ function createAstar(map) {
       while (openSet.length) {
         const [currentX, currentY] = popLowestFScoreFromOpen(openSet, fScore);
         if (currentX === endX && currentY === endY) {
-          return reconstructPath([endX, endY]);
+          return reconstructPath([startX, startY], [endX, endY], cameFrom);
         }
 
         closedSet.push([currentX, currentY]);
@@ -119,7 +119,7 @@ function createAstar(map) {
             return;
           }
 
-          const currentGScore = gScore[currentX][currentY] + getCostBetween([currentX, currentY], [neighbourX, neighbourY])
+          const currentGScore = gScore[currentY][currentX] + getCostBetween([currentX, currentY], [neighbourX, neighbourY])
 
           if (!openSet.find(([openX, openY]) => neighbourX === openX && neighbourY === openY)) {
             // New node discovered
@@ -156,19 +156,19 @@ function createAstar(map) {
       result.push([x, y - 1]);
     }
 
-    if (x < map[y].length - 1 && map[y][x + 1]) {
+    if (x < width - 1 && map[y][x + 1]) {
       result.push([x + 1, y]);
     }
 
-    if (y < map.length - 1 && map[y + 1][x]) {
+    if (y < height - 1 && map[y + 1][x]) {
       result.push([x, y + 1]);
     }
 
     return result;
   }
 
-  // Return the best path (not inclusive of the starting position)
-  function reconstructPath([endX, endY]) {
+  // Return the best path (inclusive of the starting position)
+  function reconstructPath([startX, startY], [endX, endY], cameFrom) {
     const path = [[endX, endY]];
 
     let currentX = endX;
@@ -334,9 +334,10 @@ class BOT {
   // start = [0, 0]
   // end = [14, 49]
   constructor({ size, start, end }) {
-    this.start = start;
+    // The coordinates come in as [y, x], so we swap them for usage internally
+    this.start = [start[1], start[0]];
+    this.end = [end[1], end[0]];
     this.position = [...this.start];
-    this.end = end;
     this.size = {...size};
 
     this.map = Array(size.height).fill(null).map(() =>
@@ -344,7 +345,7 @@ class BOT {
       Array(size.width).fill(IS_TRAVERSIBLE)
     );
 
-    this.astar = createAstar(this.map);
+    this.astar = createAstar(this.map, this.size);
 
     this.Move = this.Move.bind(this);
     this.mergeVisibleRangeIntoMap = this.mergeVisibleRangeIntoMap.bind(this);
@@ -376,7 +377,16 @@ class BOT {
 
   Move({ MAP }) {
     this.mergeVisibleRangeIntoMap(MAP);
-    const [nextX, nextY] = this.astar.computeShortestPath(this.position, this.end)[0];
+    const path = this.astar.computeShortestPath(this.position, this.end);
+
+    // Drop the 'current position' from the start
+    path.shift();
+
+    if (!path.length) {
+      throw new Error('No path found');
+    }
+
+    const [nextX, nextY] = path[0];
 
     let action;
 
