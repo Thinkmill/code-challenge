@@ -13,6 +13,13 @@ class MAZE {
 	constructor({ level = 1, userPath, stepTime = 500 }) {
 		this.muted = true;
 
+		const width = 80;
+		const height = 20;
+		const start = [5, 5];
+		const end = [74, 14];
+		const map = this.generateMap(width, height, 0.2, start, end);
+		LEVELS[3] = { width, height, start: [start[1], start[0]], end: [end[1], end[0]], map };
+
 		if( !LEVELS[ level ] ) {
 			console.error(`${ Style.red(`Level ${ level } does not exist! We only got `) }${ Style.yellow( Object.keys( LEVELS ).join(', ') ) }`);
 			process.exit( 1 );
@@ -347,17 +354,18 @@ class MAZE {
 	}
 
 	_solveable( map, s, e ) {
-		if (!map[s[0]][s[1]]) return false;
-		const n=map.length;
-		const ns=map.reduce((acc, row, i) => ({...acc, ...row.reduce((o, c, j) => ({...o, [i*n + j]: c}), {})}) ,{});
+		if (!map[s[1]][s[0]]) return false;
+		const ny=map.length;
+		const nx=map[0].length;
+		const ns=map.reduce((acc, row, i) => ({...acc, ...row.reduce((o, c, j) => ({...o, [i*nx + j]: c}), {})}) ,{});
 		const v=Object.keys(ns).reduce((o, k) => ({...o, [k]: false}), {});
-		let cn=s[1]*n+s[0]
+		let cn=s[1]*nx+s[0]
 		const cs=[cn];
 		v[cn]=true;
-		while (cn!==e[1]*n+e[0] && cn !== undefined) {
-			const x=cn%n;
-			const y=(cn-cn%n)/n;
-			const nn=[[x,y+1],[x+1,y],[x,y-1],[x-1,y]].filter(p=>p.every(z=>z>=0&&z<n)).map(([xx,yy])=>yy*n+xx).find(q=>!v[q]&&ns[q]);
+		while (cn!==e[1]*nx + e[0] && cn !== undefined) {
+			const x=cn%ny;
+			const y=(cn-x)/nx;
+			const nn=[[x,y+1],[x+1,y],[x,y-1],[x-1,y]].filter(([xx,yy])=>xx>=0&&xx<nx&&yy>=0&&yy<ny).map(([xx,yy])=>yy*nx+xx).find(q=>!v[q]&&ns[q]);
 			if (nn===undefined) {
 				cs.pop();
 			} else {
@@ -366,18 +374,18 @@ class MAZE {
 			}
 			cn=cs.slice(-1)[0];
 		}
-		return cn===e[1]*n+e[0];
+		return cn === e[1]*nx+e[0];
 	}
 
-	generateMap( n, difficulty, start, end ) {
+	generateMap( nx, ny, difficulty, start, end ) {
 		let attempts = 0;
 		while (attempts < 1000) {
-			const map = Array(n).fill().map(_ => Array(n).fill(true));
+			const map = Array(ny).fill().map(_ => Array(nx).fill(true));
 
-			let blocks = n * n * difficulty;
+			let blocks = nx * ny * difficulty;
 
 			while (blocks > 0) {
-				map[this._randInt(n)][this._randInt(n)] = false;
+				map[this._randInt(ny)][this._randInt(nx)] = false;
 				blocks--;
 			}
 
