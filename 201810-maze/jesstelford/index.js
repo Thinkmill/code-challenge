@@ -148,19 +148,19 @@ function createAstar(map, { width, height }) {
   function getNeighbours(x, y) {
     const result = [];
 
-    if (x > 0 && map[y][x - 1]) {
+    if (x > 0 && map[y][x - 1] === IS_TRAVERSIBLE) {
       result.push([x - 1, y]);
     }
 
-    if (y > 0 && map[y - 1][x]) {
+    if (y > 0 && map[y - 1][x] === IS_TRAVERSIBLE) {
       result.push([x, y - 1]);
     }
 
-    if (x < width - 1 && map[y][x + 1]) {
+    if (x < width - 1 && map[y][x + 1] === IS_TRAVERSIBLE) {
       result.push([x + 1, y]);
     }
 
-    if (y < height - 1 && map[y + 1][x]) {
+    if (y < height - 1 && map[y + 1][x] === IS_TRAVERSIBLE) {
       result.push([x, y + 1]);
     }
 
@@ -208,124 +208,6 @@ function createAstar(map, { width, height }) {
     // NOTE: No diagonal movements, so the diagonal is not an accurate heuristic
     // Instead we use the straight edge distances
     return Math.abs(endX - fromX) + Math.abs(endY - fromY);
-  }
-}
-
-// For much wow, see: https://en.wikipedia.org/wiki/Lifelong_Planning_A*
-function createLifelongPlanningAstar([startX, startY], [endX, endY], map) {
-
-  const comparator = (prioLeft, prioRight) => {
-    if (prioLeft[0] < prioRight[0]) {
-      return -1;
-    }
-    if (prioLeft[0] > prioRight[0]) {
-      return 1;
-    }
-    if (prioLeft[1] < prioRight[1]) {
-      return -1;
-    }
-    if (prioLeft[1] > prioRight[1]) {
-      return 1;
-    }
-    return 0;
-
-  }
-
-  const queue = createPriorityQueue(comparator);
-
-  const nodeMap = map.map((row, rowIndex) => row.map((colIndex) => ({
-    g: Infinity,
-    rhs: Infinity,
-    traversible: true,
-    x: colIndex,
-    y: rowIndex,
-  })));
-
-  nodeMap[startY][startX].rhs = 0;
-
-  queue.insert(nodeMap[startY][startX], calculateKey(startX, startY));
-
-  return {
-    updateNodes(nodes) {
-      nodes.forEach(({ x, y, traversible }) => {
-        // TODO: More?
-        nodeMap[y][x].traversible = traversible;
-      });
-    },
-
-    /** Expands the nodes in the priority queue. */
-    computeShortestPath() {
-      const goalNode = nodeMap[endY][endX];
-
-      while ((goalNode.rhs != goalNode.g) || comparator(queue.topKey(), calculateKey(endX, endY))) {
-        const node = queue.pop();
-        if (node.g > node.rhs) {
-          node.g = node.rhs;
-        } else {
-          node.g = Infinity;
-          updateNode(node.x, node.y);
-        }
-
-        getSuccessors(node.x, node.y).forEach(([x, y]) => {
-          updateNode(x, y);
-        });
-      }
-    }
-  };
-
-  function heuristic([fromX, fromY]) {
-    // NOTE: No diagonal movements, so the diagonal is not an accurate heuristic
-    // Instead we use the straight edge distances
-    return Math.abs(endX - fromX) + Math.abs(endY - fromY);
-  }
-
-  function calculateKey(x, y) {
-    const node = nodeMap[y][x];
-    return [min(node.g, node.rhs) + heuristic([x, y]), min(node.g, node.rhs)];
-  }
-
-  function getPredecessors(x, y) {
-    // TODO: Get the adjacent x/y coords?
-
-  }
-
-  function getSuccessors(x, y) {
-    // TODO: Get the adjacent x/y coords?
-
-  }
-
-  function getCostBetween(from, to) {
-    if (!to.traversible) {
-      return Infinity;
-    }
-
-    // NOTE: No diagonal movements
-    return 1;
-  }
-
-  /* Recalculates rhs for a node and removes it from the queue.
-   * If the node has become locally inconsistent, it is (re-)inserted into the queue with its new key.
-   */
-  function updateNode(x, y) {
-    if (x === startX && y === startY) {
-      return;
-    }
-
-    const node = nodeMap[y][x];
-    node.rhs = Infinity;
-
-    getPredecessors(x, y).forEach(([preX, preY]) => {
-      const predecessor = nodeMap[preY][preX];
-      node.rhs = Math.min(node.rhs, predecessor.g + getCostBetween(predecessor, node));
-    });
-
-    if (queue.contains(node)) {
-      queue.remove(node);
-    }
-
-    if (node.g != node.rhs) {
-      queue.insert(node, calculateKey(x, y));
-    }
   }
 }
 
