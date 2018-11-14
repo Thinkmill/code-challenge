@@ -1,58 +1,107 @@
-const myPosition = map => map[2][2];
-const justLeft = map => (map[2][1] ? "left" : false);
-const justRight = map => (map[2][3] ? "right" : false);
-const justUp = map => (map[1][2] ? "up" : false);
-const justDown = map => (map[3][2] ? "down" : false);
+const NUMBER = 100000000;
+
+const getDistance = (position, goal, grid) => {
+	let [posHeight, posWidth] = position;
+	if (!grid[posHeight] || !grid[posHeight][posWidth]) return NUMBER;
+	let [goalHeight, goalWidth] = goal;
+
+	let distance =
+		Math.abs(posHeight - goalHeight) + Math.abs(posWidth - goalWidth);
+	return distance;
+};
+
+const getSurrounds = ([height, width]) => {
+	let down = [height + 1, width];
+	let up = [height - 1, width];
+	let left = [height, width - 1];
+	let right = [height, width + 1];
+	return { up, down, left, right };
+};
+
+const distancesAround = (position, goal, grid) => {
+	let { up, down, left, right } = getSurrounds(position);
+	return [
+		{ direction: "up", distance: getDistance(up, goal, grid), position: up },
+		{
+			direction: "down",
+			distance: getDistance(down, goal, grid),
+			position: down
+		},
+		{
+			direction: "left",
+			distance: getDistance(left, goal, grid),
+			position: left
+		},
+		{
+			direction: "right",
+			distance: getDistance(right, goal, grid),
+			position: right
+		}
+	];
+};
+
+const getBestDistance = (position, goal, grid) => {
+	let distances = distancesAround(position, goal, grid);
+	return distances
+		.filter(a => a.distance < 100000000)
+		.sort((a, b) => a.distance - b.distance)[0];
+};
+
+const updateMap = (topLeft, map, newInfo) => {
+	let [colOffset, rowOffset] = topLeft;
+
+	newInfo.forEach((row, colIndex) => {
+		let modifiedColIndex = colIndex + colOffset;
+		row.forEach((square, rowIndex) => {
+			let modifiedRowIndex = rowIndex + rowOffset;
+			if (
+				map[modifiedColIndex] &&
+				map[modifiedColIndex][modifiedRowIndex] === null
+			) {
+				map[modifiedColIndex][modifiedRowIndex] = square;
+			}
+		});
+	});
+	return map;
+};
 
 class BOT {
 	constructor({ size, start, end }) {
 		this.size = size;
-		this.start = start;
+		this.stack = [start];
+		this.currentPosition = start;
+		this.fakeGrid = [...Array(size.height)].map(() =>
+			[...Array(size.width)].map(() => null)
+		);
 		this.end = end;
-		this.rowsToTravel = start[0] - end[0];
-		this.columnsToTravel = start[1] - end[1];
 	}
 
 	Move({ MAP }) {
-		// let preferColumn =
-		// 	Math.abs(this.rowsToTravel) > Math.abs(this.columnsToTravel);
-		// if (preferColumn) {
-		// 	if (this.columnsToTravel < 0) {
-		// 		if (justLeft(MAP)) {
-		// 			this.columnsToTravel++;
-		// 			return "left";
-		// 		} else {
-		// 			// try move closer in rows instead
-		// 		}
-		// 	} else {
-		// 		if (justRight(MAP)) {
-		// 			this.columnsToTravel--;
-		// 			return "right";
-		// 		} else {
-		// 			// try to move closer in rows instead
-		// 		}
-		// 	}
-		// } else {
-		// 	if (this.rowsToTravel < 0) {
-		// 		if (justUp(MAP)) {
-		// 			this.rowsToTravel++;
-		// 			return "up";
-		// 		}
-		// 	} else {
-		// 		if (justDown(MAP)) {
-		// 			this.rowsToTravel--;
-		// 			return "down";
-		// 		}
-		// 	}
-		// }
+		let [column, row] = this.currentPosition;
+		this.fakeGrid = updateMap([column - 2, row - 2], this.fakeGrid, MAP);
+		let newPosition = getBestDistance(
+			this.currentPosition,
+			this.end,
+			this.fakeGrid
+		);
 
-		if (!justLeft(MAP) && justDown(MAP)) return "down";
-		if (!justDown(MAP) && justRight(MAP)) return "right";
-		if (!justRight(MAP) && justUp(MAP)) return "up";
-		if (!justUp(MAP)) return "left";
+		if (!newPosition) {
+			// backtrack function
+			let prior = this.stack.pop();
+			let [backCol, backRow] = prior;
+			this.currentPosition = [backCol, backRow];
+			if (column < backCol) return "down";
+			if (column > backCol) return "up";
+			if (row < backRow) return "right";
+			if (row > backRow) return "left";
+		}
 
-		if (justRight(MAP)) return "right";
-		else return "down";
+		this.fakeGrid[newPosition.position[0]][newPosition.position[1]] = false;
+
+		this.currentPosition = newPosition.position;
+
+		this.stack.push([column, row]);
+		return newPosition.direction;
 	}
 }
 
