@@ -7,6 +7,8 @@ We will have three levels, level > 1 will be announced soon.
 ![Maze](https://raw.githubusercontent.com/Thinkmill/code-challenge/master/201810-maze/maze.gif)
 
 Level 1: **DUE 31st Oct**
+Level 2: **DUE 14th Nov**
+Level 3: **DUE 23rd Jan**
 
 ## RULEZ
 
@@ -25,12 +27,19 @@ Level 1: **DUE 31st Oct**
 
 - **LEVEL 1**
 	Solve the maze by going to the green cross.
-	You have 3000 steps to get there.
+	You have 3000 steps to solve the first level.
 	Due 31st Oct
 - **LEVEL 2**
 	Solve both levels with the same bot.
-	You have 6000 steps to get there.
+	You have 3000 steps to solve the first level.
+	You have 6000 steps to solve the first level.
 	Due 14th Nov
+- **LEVEL 3**
+	Solve all three levels with the same bot.
+	You have 3000 steps to solve the first level.
+	You have 6000 steps to solve the first level.
+	You have 9120 steps to solve the last level.
+	Due 23rd Jan
 
 ## How to run the game?
 
