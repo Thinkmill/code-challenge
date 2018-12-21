@@ -21,7 +21,7 @@ Level 3: **DUE 23rd Jan**
 1. No js prototype changing
 1. Your code has to stay inside your bots folder
 1. Do not output to `stdout`
-1. At the beginning of each round you add PRs to the repo (we only merge on the day the round begins)
+1. At the beginning of each round, add your bot to a new folder then open a PR to this repo (we only merge on the day the round begins)
 
 ## Levels
 
@@ -49,10 +49,10 @@ To run the game for a bot `cd` into the challenge `201810-maze` folder.
 To play the game run:
 
 ```sh
-yarn play path/to/bot.js --level 1
+yarn play example/index.js --level 1
 ```
 
-_(💡  Tip: shortcut for `--level` flag is `-l` and the level defaults to `1`)_
+_(💡  Tip: `--level` & `--speed` are optional. See [CLI Options](#cli-options) below.)_
 
 ```sh
 .
@@ -79,6 +79,13 @@ yarn play bot2/index.js
 Once the game runs you can use the key `q` to quit the game any time.
 You can also use the arrow functions `←` and `→` to step through each step your bot has taken.
 Go back in history and analyses where your bot went wrong etc.
+
+### CLI Options
+
+```
+--level|-l  Set the level to run (Default: 1)
+--speed|-s  Set the time in milliseconds between each step (Default: 500)
+```
 
 ## How do I build a bot?
 

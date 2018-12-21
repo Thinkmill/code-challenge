@@ -67,7 +67,7 @@ class BOT {
 
     // To remedy this, when Step 2 occurs, we set a reminder to ban repeating the action on our next step
     // This will break down for deeper dead end geometry - but it's a simple solution for now
-    if(!canMove.right && !canMove.down && canMove.up) {
+    if((!canMove.right || this.bannedAction === 'right') && !canMove.down && canMove.up) {
       // we got stuck, lets remember not to return to this position
       this.bannedAction = 'down';
       nextAction = 'up'
