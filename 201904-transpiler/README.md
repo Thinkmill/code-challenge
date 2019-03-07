@@ -49,7 +49,7 @@ tokens have values, which are a string, and hold some information from the sourc
 would be taking the code snippet:
 
 ```js
-a = 7
+a = 7;
 ```
 
 And transforming it into the list of tokens:
@@ -72,7 +72,7 @@ This can be seen from something such as this variable declaration in an AST:
 if you start with the code
 
 ```js
-let a = 7
+let a = 7;
 ```
 
 You would get the tokens
@@ -150,7 +150,7 @@ In the generation step, you need to convert an AST into code. For example, you c
 into the code:
 
 ```js
-let A = 7
+let A = 7;
 ```
 
 ## Challenge 1 - initial set of tokens
@@ -158,16 +158,16 @@ let A = 7
 For the first challenge, our goal is to remove unused variables. For example, in the statement:
 
 ```js
-let a = 5
-let b = a
+let a = 5;
+let b = a;
 export default a;
 ```
 
 The variable b is never used and could be removed, leaving us with the code:
 
 ```js
-let a = 5
-export default a
+let a = 5;
+export default a;
 ```
 
 An unused variable is defined as a variable not used in the code after its declaration.
@@ -177,7 +177,6 @@ For this first part we are using a very reduced set of javascript that includes:
 - `let` as the only variable type
 - `numbers` and `identifiers` (variable names) as the only values/data types
 - Basic math operators (`+`, `-`, `*`) as the only kinds of operation (no functions yet)
-
 
 ## Formal grammar definition
 
