@@ -9,7 +9,6 @@ const getDistance = (position, goal, grid) => {
 		Math.abs(posHeight - goalHeight) + Math.abs(posWidth - goalWidth);
 	return distance;
 };
-
 const getSurrounds = ([height, width]) => {
 	let down = [height + 1, width];
 	let up = [height - 1, width];
@@ -17,7 +16,6 @@ const getSurrounds = ([height, width]) => {
 	let right = [height, width + 1];
 	return { up, down, left, right };
 };
-
 const distancesAround = (position, goal, grid) => {
 	let { up, down, left, right } = getSurrounds(position);
 	return [
@@ -39,14 +37,12 @@ const distancesAround = (position, goal, grid) => {
 		}
 	];
 };
-
 const getBestDistance = (position, goal, grid) => {
 	let distances = distancesAround(position, goal, grid);
 	return distances
-		.filter(a => a.distance < 100000000)
+		.filter(a => a.distance < NUMBER)
 		.sort((a, b) => a.distance - b.distance)[0];
 };
-
 const updateMap = (topLeft, map, newInfo) => {
 	let [colOffset, rowOffset] = topLeft;
 
