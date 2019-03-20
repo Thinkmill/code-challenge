@@ -15,7 +15,7 @@ let possibleTokens = {
 		pattern: /^let$/
 	},
 	Identifier: {
-		pattern: /^(?!export|default|let)[a-zA-Z]+$/,
+		pattern: /^[a-zA-Z]+$/,
 		includeValue: true
 	},
 	Number: {
@@ -50,6 +50,8 @@ function tryThing(buffer) {
 	return null;
 }
 
+let keywordPattern = /export|default|let/;
+
 const tokenizer = (
 	code /*: string */
 ) /*: Array<{ type: string, value?: string }>*/ => {
@@ -73,7 +75,17 @@ const tokenizer = (
 				innerStr += chars[innerI];
 				val = tryThing(innerStr);
 			}
+
 			i += innerStr.length - buffer.length;
+			if (
+				lastVal.type === "Identifier" &&
+				// $FlowFixMe
+				keywordPattern.test(lastVal.value)
+			) {
+				i++;
+				buffer = innerStr;
+				continue Char;
+			}
 			buffer = "";
 			tokens.push(lastVal);
 			continue Char;
