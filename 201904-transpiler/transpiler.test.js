@@ -2,7 +2,7 @@ const generate = require("./transpiler.example");
 const { tokenizer, parser, transformer, generator } = generate;
 
 describe.only("tokenizer", () => {
-	it("should tokenize an empty string", () => {
+	it.only("should tokenize an empty string", () => {
 		expect(tokenizer("")).toEqual([]);
 	});
 	it.only("should tokenize a simple assignment", () => {
@@ -13,7 +13,7 @@ describe.only("tokenizer", () => {
 			{ type: "Number", value: "3" }
 		]);
 	});
-	it("should tokenize a more complicated assignment", () => {
+	it.only("should tokenize a more complicated assignment", () => {
 		expect(tokenizer("let a = 33 + 44")).toEqual([
 			{ type: "VariableDeclarator" },
 			{ type: "Identifier", value: "a" },
@@ -23,14 +23,14 @@ describe.only("tokenizer", () => {
 			{ type: "Number", value: "44" }
 		]);
 	});
-	it("should tokenize a simple equals expresion", () => {
+	it.only("should tokenize a simple equals expresion", () => {
 		expect(tokenizer("5 + 3 ")).toEqual([
 			{ type: "Number", value: "5" },
 			{ type: "BinaryOperator", value: "+" },
 			{ type: "Number", value: "3" }
 		]);
 	});
-	it("should tokenize a two line statement", () => {
+	it.only("should tokenize a two line statement", () => {
 		const token = `let a = 5
 		let b = a`;
 		expect(tokenizer(token)).toEqual([

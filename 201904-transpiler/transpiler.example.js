@@ -37,11 +37,12 @@ function tryThing(buffer) {
 	for (let [type, { pattern, includeValue }] of Object.entries(
 		possibleTokens
 	)) {
-		if (pattern.test(buffer.trim())) {
+		let value = buffer.replace(/ +$/, "").replace(/^ +/, "");
+		if (pattern.test(value)) {
 			return includeValue
 				? {
 						type,
-						value: buffer.trim()
+						value
 				  }
 				: { type };
 		}
