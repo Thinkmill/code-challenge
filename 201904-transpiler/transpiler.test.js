@@ -1,7 +1,7 @@
 const generate = require("./transpiler.example");
 const { tokenizer, parser, transformer, generator } = generate;
 
-describe.only("tokenizer", () => {
+describe("tokenizer", () => {
 	it("should tokenize an empty string", () => {
 		expect(tokenizer("")).toEqual([]);
 	});
@@ -137,7 +137,7 @@ describe.only("tokenizer", () => {
 	});
 });
 
-describe("parser", () => {
+describe.only("parser", () => {
 	it("should create an empty ast from no tokens", () => {
 		expect(parser([])).toEqual({ type: "Program", statements: [] });
 	});
@@ -247,7 +247,7 @@ describe("parser", () => {
 			]
 		});
 	});
-	it("should handle variable multiple expressions", () => {
+	it.only("should handle variable multiple expressions", () => {
 		const tokens = [
 			{ type: "VariableDeclarator" },
 			{ type: "Identifier", value: "a" },

@@ -95,9 +95,58 @@ const tokenizer = (
 	return tokens;
 };
 
+// Program:: StatementWithLineBreak* [Statement]
+// StatementWithLineBreak:: [Statement] : LineBreak
+// Statement:: AssignmentExpression | OperationalExpression
+// AssignmentExpression:: DefaultExportExpression | VariableDeclaration | VariableAssignment
+// OperationalExpression:: Value | BinaryExpression
+// DefaultExportExpression:: DefaultExport : OperationalExpression
+// VariableDeclaration:: VariableDeclarator : Identifier : VariableAssignmentOperator : OperationalExpression
+// VariableAssignment:: Identifer : VariableAssignmentOperator : OperationalExpression
+// Value:: Number | Identifier
+// BinaryExpression:: Value : BinaryOperator : OperationalExpression
+
 const parser = tokens => {
+	let statements = [];
+	let i = 0;
+	function walk() {
+		console.log(i, tokens);
+		let token = tokens[i];
+		if (token.type === "Number" || token.type === "Identifier") {
+			i++;
+			if (tokens[i] && tokens[i].type === "BinaryOperator") {
+				i++;
+				return {
+					type: "BinaryExpression",
+					operator: tokens[i - 1].value,
+					left: token,
+					right: walk()
+				};
+			}
+
+			return token;
+		}
+
+		if (token.type === "VariableDeclarator") {
+			i += 3;
+			return {
+				type: "VariableDeclaration",
+				id: tokens[i - 2],
+				value: walk()
+			};
+		}
+		if (token.type === "LineBreak") {
+			i++;
+
+			return walk();
+		}
+		throw new Error("Unknown Thing: " + token.type);
+	}
+	while (i < tokens.length) {
+		statements.push(walk());
+	}
 	/* ... */
-	return {}; // an object which is our AST - we can actually refer back to the tree traversal stuff we did
+	return { type: "Program", statements }; // an object which is our AST - we can actually refer back to the tree traversal stuff we did
 };
 
 const transformer = AST => {
