@@ -74,11 +74,7 @@ const tokenizer = code => {
 			}
 
 			i += innerStr.length - buffer.length;
-			if (
-				lastVal.type === "Identifier" &&
-				// $FlowFixMe
-				keywordPattern.test(lastVal.value)
-			) {
+			if (lastVal.type === "Identifier" && keywordPattern.test(lastVal.value)) {
 				i++;
 				buffer = innerStr;
 				continue Char;
