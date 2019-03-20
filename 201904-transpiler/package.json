@@ -1,0 +1,11 @@
+{
+  "name": "@noviny/tm-code-challenge",
+  "version": "1.0.0",
+  "description": "Nope",
+  "main": "index.js",
+  "author": "Ben Conolly",
+  "license": "MIT",
+  "dependencies": {
+    "jest": "^24.3.1"
+  }
+}
