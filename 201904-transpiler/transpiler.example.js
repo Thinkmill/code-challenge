@@ -1,3 +1,4 @@
+// @flow
 // DefaultExport:: "export default"
 // VariableDeclarator:: "let"
 // Identifier:: /[a-zA-Z]+/
@@ -34,12 +35,11 @@ let possibleTokens = {
 };
 
 function tryThing(buffer) {
-	for (let [type, { pattern, includeValue }] of Object.entries(
-		possibleTokens
-	)) {
-		let value = buffer.replace(/ +$/, "").replace(/^ +/, "");
-		if (pattern.test(value)) {
-			return includeValue
+	for (let type of Object.keys(possibleTokens)) {
+		let thing = possibleTokens[type];
+		let value = buffer.replace(/(\t| )+$/g, "").replace(/^(\t| )+/g, "");
+		if (thing.pattern.test(value)) {
+			return thing.includeValue
 				? {
 						type,
 						value
@@ -50,7 +50,9 @@ function tryThing(buffer) {
 	return null;
 }
 
-const tokenizer = code => {
+const tokenizer = (
+	code /*: string */
+) /*: Array<{ type: string, value?: string }>*/ => {
 	let tokens = [];
 
 	let buffer = "";
@@ -65,8 +67,7 @@ const tokenizer = code => {
 			let innerStr = buffer;
 			let innerI = i;
 
-			while (val !== null && i < chars.length) {
-				console.log(innerStr);
+			while (val !== null && innerI < chars.length) {
 				lastVal = val;
 				innerI++;
 				innerStr += chars[innerI];
@@ -97,7 +98,7 @@ const generator = AST => {
 	return ``; // a string that is code
 };
 
-const generate = code => {
+const generate = (code /*:string*/) => {
 	const tokens = tokenizer(code);
 	const AST = parser(tokens);
 	const transformedAST = transformer(AST);

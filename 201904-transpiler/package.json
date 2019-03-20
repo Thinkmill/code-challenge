@@ -6,6 +6,7 @@
   "author": "Ben Conolly",
   "license": "MIT",
   "dependencies": {
+    "flow-bin": "^0.95.1",
     "jest": "^24.3.1"
   }
 }
