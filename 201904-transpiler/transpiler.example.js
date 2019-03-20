@@ -1,4 +1,3 @@
-// @flow
 // DefaultExport:: "export default"
 // VariableDeclarator:: "let"
 // Identifier:: /[a-zA-Z]+/
@@ -52,9 +51,7 @@ function tryThing(buffer) {
 
 let keywordPattern = /export|default|let/;
 
-const tokenizer = (
-	code /*: string */
-) /*: Array<{ type: string, value?: string }>*/ => {
+const tokenizer = code => {
 	let tokens = [];
 
 	let buffer = "";
@@ -169,17 +166,113 @@ const parser = tokens => {
 	return { type: "Program", statements: statements.filter(x => x) }; // an object which is our AST - we can actually refer back to the tree traversal stuff we did
 };
 
-const transformer = AST => {
+function traverser(ast, visitor) {
+	function traverseNode(node) {
+		let enter = visitor[node.type];
+		if (enter) {
+			enter(node);
+		}
+
+		switch (node.type) {
+			case "Program": {
+				node.statements.forEach(
+					statementButItsNotReallyTechnicallyAStatementButWhatever => {
+						traverseNode(
+							statementButItsNotReallyTechnicallyAStatementButWhatever
+						);
+					}
+				);
+				break;
+			}
+			case "VariableAssignment":
+			case "VariableDeclaration": {
+				traverseNode(node.id);
+				traverseNode(node.value);
+				break;
+			}
+
+			case "BinaryExpression": {
+				traverseNode(node.left);
+				traverseNode(node.right);
+				break;
+			}
+			case "DefaultExportExpression": {
+				traverseNode(node.value);
+				break;
+			}
+
+			case "Identifier":
+			case "Number":
+				break;
+
+			default:
+				throw new Error("Unknown Thing: " + node.type);
+		}
+	}
+
+	traverseNode(ast);
+}
+
+const transformer = ast => {
+	let declarations = ast.statements.filter(
+		x => x.type === "VariableDeclaration"
+	);
+
+	let usedDeclarations = new Set();
+
+	traverser(ast, {
+		Identifier(node) {
+			// we're assuming that all identifiers are defined
+			let decl = declarations.find(x => x.id.value === node.value);
+			if (node !== decl.id) {
+				usedDeclarations.add(decl);
+			}
+		}
+	});
+
+	let newAst = {
+		type: "Program",
+		statements: ast.statements.filter(statement => {
+			return !(
+				statement.type === "VariableDeclaration" &&
+				!usedDeclarations.has(statement)
+			);
+		})
+	};
 	/* ... */
-	return {}; // a modified AST
+	return newAst;
+};
+function stringifyNode(node) {
+	switch (node.type) {
+		case "Number":
+		case "Identifier": {
+			return node.value;
+		}
+		case "VariableDeclaration": {
+			return `let ${stringifyNode(node.id)} = ${stringifyNode(node.value)}`;
+		}
+		case "VariableAssignment": {
+			return `${stringifyNode(node.id)} = ${stringifyNode(node.value)}`;
+		}
+		case "DefaultExportExpression": {
+			return `export default ${stringifyNode(node.value)}`;
+		}
+		case "BinaryExpression": {
+			return `${stringifyNode(node.left)} ${node.operator} ${stringifyNode(
+				node.right
+			)}`;
+		}
+		case "Program": {
+			return node.statements.map(stringifyNode).join("\n");
+		}
+	}
+}
+
+const generator = ast => {
+	return stringifyNode(ast);
 };
 
-const generator = AST => {
-	/* ... */
-	return ``; // a string that is code
-};
-
-const generate = (code /*:string*/) => {
+const generate = code => {
 	const tokens = tokenizer(code);
 	const AST = parser(tokens);
 	const transformedAST = transformer(AST);

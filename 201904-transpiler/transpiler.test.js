@@ -137,7 +137,7 @@ describe("tokenizer", () => {
 	});
 });
 
-describe.only("parser", () => {
+describe("parser", () => {
 	it("should create an empty ast from no tokens", () => {
 		expect(parser([])).toEqual({ type: "Program", statements: [] });
 	});
