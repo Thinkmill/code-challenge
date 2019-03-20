@@ -222,9 +222,8 @@ const transformer = ast => {
 
 	traverser(ast, {
 		Identifier(node) {
-			// we're assuming that all identifiers are defined
 			let decl = declarations.find(x => x.id.value === node.value);
-			if (node !== decl.id) {
+			if (decl && node !== decl.id) {
 				usedDeclarations.add(decl);
 			}
 		}
