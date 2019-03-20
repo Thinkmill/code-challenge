@@ -185,23 +185,23 @@ Note that while all these exist as concepts, not all directly translate to a tok
 an AST node type.
 
 ```
-`Program`:: [Statement]
-`Statement`:: Expression
-`Expression`:: AssignmentExpression | OperationalExpression
-`AssignmentExpression`:: DefaultExportExpression | VariableDeclaration | VariableAssignment
-`OperationalExpression`:: Value | BinaryExpression
-`DefaultExportExpression`:: DefaultExport : OperationalExpression
-`VariableDeclaration`:: VariableDeclarator : Identifier : OperationalExpression
-`VariableAssignment`:: Identifer : VariableAssignmentOperator : OperationalExpression
-`Value`:: Number | Identifier
-`BinaryExpression`:: OperationalExpression : BinaryOperator : Value
-`DefaultExport`:: "export default"
-`VariableDeclarator`:: "let"
-`Identifier`:: alphabetic characters
-`Number`:: numeric characters
-`VariableAssignmentOperator`:: "="
-`BinaryOperator`:: "+" | "-" | "*"
-`LineBreak`:: "\n"
+Program:: [Statement]
+Statement:: Expression
+Expression:: AssignmentExpression | OperationalExpression
+AssignmentExpression:: DefaultExportExpression | VariableDeclaration | VariableAssignment
+OperationalExpression:: Value | BinaryExpression
+DefaultExportExpression:: DefaultExport : OperationalExpression
+VariableDeclaration:: VariableDeclarator : Identifier : OperationalExpression
+VariableAssignment:: Identifer : VariableAssignmentOperator : OperationalExpression
+Value:: Number | Identifier
+BinaryExpression:: OperationalExpression : BinaryOperator : Value
+DefaultExport:: "export default"
+VariableDeclarator:: "let"
+Identifier:: alphabetic characters
+Number:: numeric characters
+VariableAssignmentOperator:: "="
+BinaryOperator:: "+" | "-" | "*"
+LineBreak:: "\n"
 ```
 
 ## Other Resources
