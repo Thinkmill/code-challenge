@@ -181,27 +181,47 @@ For this first part we are using a very reduced set of javascript that includes:
 
 ## Formal grammar definition
 
-Note that while all these exist as concepts, not all directly translate to a token type or
-an AST node type.
+This is a formal grammar that defines what a valid syntax is in the subset of javascript which we are using.
 
 ```
-Program:: [Statement]
-Statement:: Expression
-Expression:: AssignmentExpression | OperationalExpression
+Program:: StatementWithLineBreak* [Statement]
+StatementWithLineBreak:: [Statement] : LineBreak
+Statement:: AssignmentExpression | OperationalExpression
 AssignmentExpression:: DefaultExportExpression | VariableDeclaration | VariableAssignment
 OperationalExpression:: Value | BinaryExpression
 DefaultExportExpression:: DefaultExport : OperationalExpression
-VariableDeclaration:: VariableDeclarator : Identifier : OperationalExpression
+VariableDeclaration:: VariableDeclarator : Identifier : VariableAssignmentOperator : OperationalExpression
 VariableAssignment:: Identifer : VariableAssignmentOperator : OperationalExpression
 Value:: Number | Identifier
-BinaryExpression:: OperationalExpression : BinaryOperator : Value
+BinaryExpression:: Value : BinaryOperator : OperationalExpression
+
+# tokens
+
 DefaultExport:: "export default"
 VariableDeclarator:: "let"
-Identifier:: alphabetic characters
-Number:: numeric characters
+Identifier:: /[a-zA-Z]+/
+Number:: /[0-9]+/
 VariableAssignmentOperator:: "="
 BinaryOperator:: "+" | "-" | "*"
 LineBreak:: "\n"
+
+
+# Reading this grammar
+# A definition is:
+# DefinitionName:: Definition
+# A definition may combine multiple other definitions
+
+# How to indicate optional part of definition
+# [ThisInBracketsIsOptional]
+
+# Indicate a definition is repeated
+# RepeatingBit*
+
+# How to indicate one definition followed by another
+# PartA : PartB
+
+# How to indicate it is one or the other
+# ThisOne | OrThisOne
 ```
 
 ## Other Resources
