@@ -1,11 +1,11 @@
 const generate = require("./transpiler.example");
 const { tokenizer, parser, transformer, generator } = generate;
 
-describe("tokenizer", () => {
+describe.only("tokenizer", () => {
 	it("should tokenize an empty string", () => {
 		expect(tokenizer("")).toEqual([]);
 	});
-	it("should tokenize a simple assignment", () => {
+	it.only("should tokenize a simple assignment", () => {
 		expect(tokenizer("let a = 3")).toEqual([
 			{ type: "VariableDeclarator" },
 			{ type: "Identifier", value: "a" },
