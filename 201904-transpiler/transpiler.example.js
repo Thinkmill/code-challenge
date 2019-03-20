@@ -57,35 +57,24 @@ const tokenizer = code => {
 	let chars = code.split("");
 	Char: for (let i = 0; i < chars.length; ) {
 		buffer += chars[i];
-		console.log(buffer.trim());
-		PossibleTokens: for (let [
-			type,
-			{ pattern, includeValue }
-		] of Object.entries(possibleTokens)) {
-			if (pattern.test(buffer.trim())) {
-				let val = includeValue
-					? {
-							type,
-							value: buffer.trim()
-					  }
-					: { type };
-				console.log(val);
-				let lastVal = val;
-				let innerStr = buffer;
-				let innerI = i;
+		let thing = tryThing(buffer);
+		if (thing !== null) {
+			let val = thing;
+			let lastVal = val;
+			let innerStr = buffer;
+			let innerI = i;
 
-				while (val !== null && i < chars.length) {
-					console.log(innerStr);
-					lastVal = val;
-					innerI++;
-					innerStr += chars[innerI];
-					val = tryThing(innerStr);
-				}
-				i += innerStr.length - buffer.length;
-				buffer = "";
-				tokens.push(lastVal);
-				continue Char;
+			while (val !== null && i < chars.length) {
+				console.log(innerStr);
+				lastVal = val;
+				innerI++;
+				innerStr += chars[innerI];
+				val = tryThing(innerStr);
 			}
+			i += innerStr.length - buffer.length;
+			buffer = "";
+			tokens.push(lastVal);
+			continue Char;
 		}
 		i++;
 	}
