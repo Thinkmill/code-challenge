@@ -110,8 +110,19 @@ const parser = tokens => {
 	let statements = [];
 	let i = 0;
 	function walk() {
-		console.log(i, tokens);
 		let token = tokens[i];
+		if (
+			token.type === "Identifier" &&
+			tokens[i + 1] &&
+			tokens[i + 1].type === "VariableAssignmentOperator"
+		) {
+			i += 2;
+			return {
+				type: "VariableAssignment",
+				id: token,
+				value: walk()
+			};
+		}
 		if (token.type === "Number" || token.type === "Identifier") {
 			i++;
 			if (tokens[i] && tokens[i].type === "BinaryOperator") {
@@ -126,6 +137,13 @@ const parser = tokens => {
 
 			return token;
 		}
+		if (token.type === "DefaultExport") {
+			i++;
+			return {
+				type: "DefaultExportExpression",
+				value: walk()
+			};
+		}
 
 		if (token.type === "VariableDeclarator") {
 			i += 3;
@@ -137,7 +155,9 @@ const parser = tokens => {
 		}
 		if (token.type === "LineBreak") {
 			i++;
-
+			if (tokens.length === i) {
+				return null;
+			}
 			return walk();
 		}
 		throw new Error("Unknown Thing: " + token.type);
@@ -146,7 +166,7 @@ const parser = tokens => {
 		statements.push(walk());
 	}
 	/* ... */
-	return { type: "Program", statements }; // an object which is our AST - we can actually refer back to the tree traversal stuff we did
+	return { type: "Program", statements: statements.filter(x => x) }; // an object which is our AST - we can actually refer back to the tree traversal stuff we did
 };
 
 const transformer = AST => {

@@ -247,7 +247,7 @@ describe.only("parser", () => {
 			]
 		});
 	});
-	it.only("should handle variable multiple expressions", () => {
+	it("should handle variable multiple expressions", () => {
 		const tokens = [
 			{ type: "VariableDeclarator" },
 			{ type: "Identifier", value: "a" },
