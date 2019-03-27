@@ -1,4 +1,4 @@
-const generate = require("./transpiler.example");
+const generate = require("./cheats");
 const { tokenizer, parser, transformer, generator } = generate;
 
 describe("tokenizer", () => {
@@ -1464,4 +1464,64 @@ describe("Integrationish Tests", () => {
 			});
 		})
 	);
+});
+
+describe.only("part 2", () => {
+	describe("tokenizer", () => {
+		describe("string tokens", () => {
+			it("should tokenize an empty string", () => {
+				expect(tokenizer("''")).toEqual([{ type: "String", value: "" }]);
+			});
+			it("should tokenize a string value", () => {
+				expect(tokenizer("'aye'")).toEqual([{ type: "String", value: "aye" }]);
+			});
+
+			it("should tokenize a string with spaces", () => {
+				expect(tokenizer("'aye yes of course'")).toEqual([
+					{ type: "String", value: "aye yes of course" }
+				]);
+			});
+			it("should tokenize a string with numeric characters", () => {
+				expect(tokenizer("'aye 2 be sure'")).toEqual([
+					{ type: "String", value: "aye 2 be sure" }
+				]);
+			});
+			it("should tokenize a string with punctuation", () => {
+				expect(tokenizer("'aye, to be sure'")).toEqual([
+					{ type: "String", value: "aye, to be sure" }
+				]);
+			});
+			it.skip("should tokenize a string with escaped single quotes", () => {
+				expect(tokenizer(`'\'aye, to be sure\`, said the captain'`)).toEqual([
+					{ type: "String", value: "'aye, to be sure`, said the captain" }
+				]);
+			});
+		});
+		describe("function declarations", () => {
+			it("should tokenize an empty function declaration", () => {
+				expect(tokenizer("function a() {}")).toEqual([]);
+			});
+			it("should understand an argument", () => {
+				expect(tokenizer("function a(b) {}")).toEqual([]);
+			});
+			it("should understand arguments", () => {
+				expect(
+					tokenizer("function collectivistNonsense(b, cauliflower, d) {}")
+				).toEqual([]);
+			});
+		});
+		describe("function expressions", () => {
+			it("should have a function call", () => {
+				expect(tokenizer("a()")).toEqual([]);
+			});
+			it("should have a function call with an argument", () => {
+				expect(tokenizer("a(b)")).toEqual([]);
+			});
+			it("should have a function call with an argument", () => {
+				expect(tokenizer("collectivistNonsense(b, cauliflower, d)")).toEqual(
+					[]
+				);
+			});
+		});
+	});
 });

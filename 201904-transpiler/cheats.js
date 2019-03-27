@@ -15,6 +15,11 @@ const tokenShapes = [
 		getValue: code => code
 	},
 	{
+		type: "String",
+		matchPattern: "'[^']*'",
+		getValue: code => code.match(/'([^']*)'/)[1]
+	},
+	{
 		type: "VariableAssignmentOperator",
 		matchPattern: "="
 	},
