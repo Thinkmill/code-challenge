@@ -10,14 +10,17 @@ const tokenShapes = [
 		matchPattern: "let[^a-zA-Z0-9]"
 	},
 	{
+		type: "FunctionDeclarator",
+		matchPattern: "function"
+	},
+	{
+		type: "Return",
+		matchPattern: "return"
+	},
+	{
 		type: "Identifier",
 		matchPattern: "[A-Za-z]+",
 		getValue: code => code
-	},
-	{
-		type: "String",
-		matchPattern: "'[^']*'",
-		getValue: code => code.match(/'([^']*)'/)[1]
 	},
 	{
 		type: "VariableAssignmentOperator",
@@ -25,10 +28,20 @@ const tokenShapes = [
 	},
 	{ type: "Number", matchPattern: `\\d+`, getValue: code => code },
 	{
+		type: "String",
+		matchPattern: "'[^']*'",
+		getValue: code => code.match(/'([^']*)'/)[1]
+	},
+	{ type: "OpenParens", matchPattern: `\\(` },
+	{ type: "CloseParens", matchPattern: `\\)` },
+	{ type: "OpenSquigglyParens", matchPattern: `\\{` },
+	{ type: "CloseSquigglyParens", matchPattern: `\\}` },
+	{
 		type: "BinaryOperator",
 		matchPattern: `(\\+|-|\\*)`,
 		getValue: code => code
 	},
+	{ type: "Comma", matchPattern: "," },
 	{ type: "LineBreak", matchPattern: `\\n+` }
 ];
 
@@ -90,6 +103,10 @@ const parseExpression = tokens => {
 	}
 };
 
+const parseArgs = tokens => {
+	return tokens.filter(t => t.type === "Identifier");
+};
+
 const getTokensBeforeBreak = tokens => {
 	let expressionTokens = [];
 	while (tokens[0] && tokens[0].type !== "LineBreak") {
@@ -98,26 +115,29 @@ const getTokensBeforeBreak = tokens => {
 	return expressionTokens;
 };
 
-const parser = tokensArray => {
+const getTokensBeforeType = (tokens, type) => {
+	let expressionTokens = [];
+	while (tokens[0] && tokens[0].type !== type) {
+		expressionTokens.push(tokens.shift());
+	}
+	return expressionTokens;
+};
+
+const parseStatements = tokens => {
+	let statements = [];
 	let count = 0;
-	const AST = {
-		type: "Program",
-		statements: []
-	};
 
-	let statement;
-
-	while (tokensArray.length && count < 1000) {
+	while (tokens.length && count < 1000) {
 		count++;
-		let token = tokensArray.shift();
+		let token = tokens.shift();
 		switch (token.type) {
 			case "VariableDeclarator": {
-				const id = tokensArray.shift();
+				const id = tokens.shift();
 				// remove our dumb variableAssignment token
-				tokensArray.shift();
-				let expressionTokens = getTokensBeforeBreak(tokensArray);
+				tokens.shift();
+				let expressionTokens = getTokensBeforeType(tokens, "LineBreak");
 				const value = parseExpression(expressionTokens);
-				AST.statements.push({
+				statements.push({
 					type: "VariableDeclaration",
 					id,
 					value
@@ -125,35 +145,35 @@ const parser = tokensArray => {
 				break;
 			}
 			case "BinaryOperator": {
-				let expressionTokens = getTokensBeforeBreak(tokensArray);
-				AST.statements.push(parseExpression(expressionTokens));
+				let expressionTokens = getTokensBeforeType(tokens, "LineBreak");
+				statements.push(parseExpression(expressionTokens));
 				break;
 			}
 			case "Number": {
-				if (tokensArray[0] && tokensArray[0].type === "BinaryOperator") {
-					let expressionTokens = getTokensBeforeBreak(tokensArray);
-					AST.statements.push(parseExpression([token, ...expressionTokens]));
+				if (tokens[0] && tokens[0].type === "BinaryOperator") {
+					let expressionTokens = getTokensBeforeType(tokens, "LineBreak");
+					statements.push(parseExpression([token, ...expressionTokens]));
 				} else {
-					AST.statements.push(token);
+					statements.push(token);
 				}
 				break;
 			}
 			case "Identifier": {
 				if (
-					tokensArray[0] &&
-					(tokensArray[0].type === "BinaryOperator" ||
-						tokensArray[0].type === "VariableAssignmentOperator")
+					tokens[0] &&
+					(tokens[0].type === "BinaryOperator" ||
+						tokens[0].type === "VariableAssignmentOperator")
 				) {
-					let expressionTokens = getTokensBeforeBreak(tokensArray);
-					AST.statements.push(parseExpression([token, ...expressionTokens]));
+					let expressionTokens = getTokensBeforeType(tokens, "LineBreak");
+					statements.push(parseExpression([token, ...expressionTokens]));
 				} else {
-					AST.statements.push(token);
+					statements.push(token);
 				}
 				break;
 			}
 			case "DefaultExport": {
-				let expressionTokens = getTokensBeforeBreak(tokensArray);
-				AST.statements.push({
+				let expressionTokens = getTokensBeforeType(tokens, "LineBreak");
+				statements.push({
 					type: "DefaultExportExpression",
 					value: parseExpression(expressionTokens)
 				});
@@ -162,10 +182,45 @@ const parser = tokensArray => {
 			case "LineBreak": {
 				break;
 			}
+			case "Return": {
+				let expressionTokens = getTokensBeforeType(tokens, "LineBreak");
+
+				statements.push({
+					type: "ReturnStatement",
+					value: parseExpression(expressionTokens)
+				});
+				break;
+			}
+			case "FunctionDeclarator": {
+				const id = tokens.shift();
+				tokens.shift();
+				const args = getTokensBeforeType(tokens, "CloseParens");
+				tokens.shift();
+				tokens.shift();
+				const body = getTokensBeforeType(tokens, "CloseSquigglyParens");
+				tokens.shift();
+
+				statements.push({
+					type: "FunctionDeclaration",
+					identifier: id,
+					arguments: parseArgs(args),
+					body: parseStatements(body)
+				});
+				break;
+			}
 			default:
 				throw new Error(`unexpected token ${JSON.stringify(token)}`);
 		}
 	}
+	return statements;
+};
+
+const parser = tokens => {
+	const AST = {
+		type: "Program",
+		statements: parseStatements(tokens)
+	};
+
 	/* ... */
 	return AST; // an object which is our AST - we can actually refer back to the tree traversal stuff we did
 };

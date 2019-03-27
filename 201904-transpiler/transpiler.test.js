@@ -1499,28 +1499,212 @@ describe.only("part 2", () => {
 		});
 		describe("function declarations", () => {
 			it("should tokenize an empty function declaration", () => {
-				expect(tokenizer("function a() {}")).toEqual([]);
+				expect(tokenizer("function a() {}")).toEqual([
+					{ type: "FunctionDeclarator" },
+					{ type: "Identifier", value: "a" },
+					{ type: "OpenParens" },
+					{ type: "CloseParens" },
+					{ type: "OpenSquigglyParens" },
+					{ type: "CloseSquigglyParens" }
+				]);
 			});
 			it("should understand an argument", () => {
-				expect(tokenizer("function a(b) {}")).toEqual([]);
+				expect(tokenizer("function a(b) {}")).toEqual([
+					{ type: "FunctionDeclarator" },
+					{ type: "Identifier", value: "a" },
+					{ type: "OpenParens" },
+					{ type: "Identifier", value: "b" },
+					{ type: "CloseParens" },
+					{ type: "OpenSquigglyParens" },
+					{ type: "CloseSquigglyParens" }
+				]);
 			});
 			it("should understand arguments", () => {
 				expect(
 					tokenizer("function collectivistNonsense(b, cauliflower, d) {}")
-				).toEqual([]);
+				).toEqual([
+					{ type: "FunctionDeclarator" },
+					{ type: "Identifier", value: "collectivistNonsense" },
+					{ type: "OpenParens" },
+					{ type: "Identifier", value: "b" },
+					{ type: "Comma" },
+					{ type: "Identifier", value: "cauliflower" },
+					{ type: "Comma" },
+					{ type: "Identifier", value: "d" },
+					{ type: "CloseParens" },
+					{ type: "OpenSquigglyParens" },
+					{ type: "CloseSquigglyParens" }
+				]);
+			});
+			it("should parse a body", () => {
+				expect(
+					tokenizer(`function addOne(num) {
+	return num + 1
+}`)
+				).toEqual([
+					{ type: "FunctionDeclarator" },
+					{ type: "Identifier", value: "addOne" },
+					{ type: "OpenParens" },
+					{ type: "Identifier", value: "num" },
+					{ type: "CloseParens" },
+					{ type: "OpenSquigglyParens" },
+					{ type: "LineBreak" },
+					{ type: "Return" },
+					{ type: "Identifier", value: "num" },
+					{ type: "BinaryOperator", value: "+" },
+					{ type: "Number", value: "1" },
+					{ type: "LineBreak" },
+					{ type: "CloseSquigglyParens" }
+				]);
 			});
 		});
 		describe("function expressions", () => {
 			it("should have a function call", () => {
-				expect(tokenizer("a()")).toEqual([]);
+				expect(tokenizer("a()")).toEqual([
+					{ type: "Identifier", value: "a" },
+					{ type: "OpenParens" },
+					{ type: "CloseParens" }
+				]);
 			});
 			it("should have a function call with an argument", () => {
-				expect(tokenizer("a(b)")).toEqual([]);
+				expect(tokenizer("a(b)")).toEqual([
+					{ type: "Identifier", value: "a" },
+					{ type: "OpenParens" },
+					{ type: "Identifier", value: "b" },
+					{ type: "CloseParens" }
+				]);
 			});
 			it("should have a function call with an argument", () => {
-				expect(tokenizer("collectivistNonsense(b, cauliflower, d)")).toEqual(
-					[]
-				);
+				expect(tokenizer("collectivistNonsense(b, cauliflower, d)")).toEqual([
+					{ type: "Identifier", value: "collectivistNonsense" },
+					{ type: "OpenParens" },
+					{ type: "Identifier", value: "b" },
+					{ type: "Comma" },
+					{ type: "Identifier", value: "cauliflower" },
+					{ type: "Comma" },
+					{ type: "Identifier", value: "d" },
+					{ type: "CloseParens" }
+				]);
+			});
+		});
+	});
+	describe("parser", () => {
+		describe("functions", () => {
+			it("should parse function a() {}", () => {
+				expect(
+					parser([
+						{ type: "FunctionDeclarator" },
+						{ type: "Identifier", value: "a" },
+						{ type: "OpenParens" },
+						{ type: "CloseParens" },
+						{ type: "OpenSquigglyParens" },
+						{ type: "CloseSquigglyParens" }
+					])
+				).toEqual({
+					type: "Program",
+					statements: [
+						{
+							type: "FunctionDeclaration",
+							identifier: { type: "Identifier", value: "a" },
+							arguments: [],
+							body: []
+						}
+					]
+				});
+			});
+			it("should parse function a(b) {}", () => {
+				expect(
+					parser([
+						{ type: "FunctionDeclarator" },
+						{ type: "Identifier", value: "a" },
+						{ type: "OpenParens" },
+						{ type: "Identifier", value: "b" },
+						{ type: "CloseParens" },
+						{ type: "OpenSquigglyParens" },
+						{ type: "CloseSquigglyParens" }
+					])
+				).toEqual({
+					type: "Program",
+					statements: [
+						{
+							type: "FunctionDeclaration",
+							identifier: { type: "Identifier", value: "a" },
+							arguments: [{ type: "Identifier", value: "b" }],
+							body: []
+						}
+					]
+				});
+			});
+			it("should parse function a(b, c, d) {}", () => {
+				expect(
+					parser([
+						{ type: "FunctionDeclarator" },
+						{ type: "Identifier", value: "a" },
+						{ type: "OpenParens" },
+						{ type: "Identifier", value: "b" },
+						{ type: "Comma" },
+						{ type: "Identifier", value: "c" },
+						{ type: "Comma" },
+						{ type: "Identifier", value: "d" },
+						{ type: "Comma" },
+						{ type: "CloseParens" },
+						{ type: "OpenSquigglyParens" },
+						{ type: "CloseSquigglyParens" }
+					])
+				).toEqual({
+					type: "Program",
+					statements: [
+						{
+							type: "FunctionDeclaration",
+							identifier: { type: "Identifier", value: "a" },
+							arguments: [
+								{ type: "Identifier", value: "b" },
+								{ type: "Identifier", value: "c" },
+								{ type: "Identifier", value: "d" }
+							],
+							body: []
+						}
+					]
+				});
+			});
+			it("should parse a function with a body", () => {
+				expect(
+					parser([
+						{ type: "FunctionDeclarator" },
+						{ type: "Identifier", value: "addOne" },
+						{ type: "OpenParens" },
+						{ type: "Identifier", value: "num" },
+						{ type: "CloseParens" },
+						{ type: "OpenSquigglyParens" },
+						{ type: "LineBreak" },
+						{ type: "Return" },
+						{ type: "Identifier", value: "num" },
+						{ type: "BinaryOperator", value: "+" },
+						{ type: "Number", value: "1" },
+						{ type: "LineBreak" },
+						{ type: "CloseSquigglyParens" }
+					])
+				).toEqual({
+					type: "Program",
+					statements: [
+						{
+							type: "FunctionDeclaration",
+							identifier: { type: "Identifier", value: "addOne" },
+							arguments: [{ type: "Identifier", value: "num" }],
+							body: [
+								{
+									type: "ReturnStatement",
+									value: {
+										type: "BinaryExpression",
+										operator: "+",
+										left: { type: "Identifier", value: "num" },
+										right: { type: "Number", value: "1" }
+									}
+								}
+							]
+						}
+					]
+				});
 			});
 		});
 	});
