@@ -153,6 +153,95 @@ into the code:
 let A = 7;
 ```
 
+## Challenge 2 - adding functions
+
+For the second challenge, we are going to expand on our existing token set and add functions in to the mix, and then more aggressively remove unused variables. We will be checking whether a variable is used within its scope.
+
+This adds the following to our formal grammar:
+
+```
+FunctionDeclaration:: FunctionDeclarator : OpenParens : Arguments : CloseParens : OpenSquigglyParens : FunctionBody : CloseSquigglyParens
+Arguments:: [[IdentifierWithComma*] : Identifier]
+FunctionBody:: [Statement*] : [ReturnStatement]
+IdentifierWithComma:: Identifier : Comma
+ReturnStatement:: Return : OperationalExpression
+FunctionExpression:: Identifier : OpenParens : CallArguments : CloseParens
+CallArguments:: [[OperationalExpressionWithComma*] : OperationalExpression]
+OperationalExpressionWithComma:: OperationalExpression : Comma
+
+# tokens
+FunctionDeclarator:: "function"
+OpenParens:: "("
+CloseParens:: ")"
+OpenSquigglyParens:: "{"
+CloseSquigglyParens:: "}"
+Comma:: ","
+Return:: "return"
+String:: Any set of characters bound by "'" and "'". Internal uses of "'" must be preceded by "\", where the "\" is ignored
+```
+
+There are also some changes to the previous grammar to handle new Values. Here is the complete grammar with new or changed elements indicated:
+
+```
+Program:: StatementWithLineBreak* [Statement]
+StatementWithLineBreak:: [Statement] : LineBreak
+Statement:: AssignmentExpression | OperationalExpression
+> AssignmentExpression:: DefaultExportExpression | VariableDeclaration | VariableAssignment | FunctionDeclaration
+OperationalExpression:: Value | BinaryExpression | FunctionExpression
+DefaultExportExpression:: DefaultExport : OperationalExpression
+VariableDeclaration:: VariableDeclarator : Identifier : VariableAssignmentOperator : OperationalExpression
+VariableAssignment:: Identifer : VariableAssignmentOperator : OperationalExpression
+> FunctionDeclaration:: FunctionDeclarator : OpenParens : Arguments : CloseParens : OpenSquigglyParens : FunctionBody : CloseSquigglyParens
+Value:: Number | Identifier | String
+BinaryExpression:: Value : BinaryOperator : OperationalExpression
+> FunctionExpression:: Identifier : OpenParens : CallArguments : CloseParens
+> Arguments:: [[IdentifierWithComma*] : Identifier]
+> FunctionBody:: [Statement*] : ReturnStatement
+> IdentifierWithComma:: Identifier : Comma
+> ReturnStatement:: Return : OperationalExpression
+> CallArguments:: [[OperationalExpressionWithComma*] : OperationalExpression]
+> OperationalExpressionWithComma:: OperationalExpression : Comma
+
+# tokens
+
+DefaultExport:: "export default"
+VariableDeclarator:: "let"
+Identifier:: /[a-zA-Z]+/
+Number:: /[0-9]+/
+VariableAssignmentOperator:: "="
+BinaryOperator:: "+" | "-" | "*"
+LineBreak:: "\n"
+> FunctionDeclarator:: "function"
+> OpenParens:: "("
+> CloseParens:: ")"
+> OpenSquigglyParens:: "{"
+> CloseSquigglyParens:: "}"
+> Comma:: ","
+> Return:: "return"
+> String:: Any set of characters bound by "'" and "'". Internal uses of "'" must be preceded by "\", where the "\" is ignored
+
+# Reading this grammar
+# A definition is:
+# DefinitionName:: Definition
+# A definition may combine multiple other definitions
+
+# How to indicate optional part of definition
+# [ThisInBracketsIsOptional]
+
+# Indicate a definition is repeated
+# RepeatingBit*
+
+# How to indicate one definition followed by another
+# PartA : PartB
+
+# How to indicate it is one or the other
+# ThisOne | OrThisOne
+
+# A new addition is indicated by:
+# > NewAddition
+```
+
+
 ## Challenge 1 - initial set of tokens
 
 For the first challenge, our goal is to remove unused variables. For example, in the statement:

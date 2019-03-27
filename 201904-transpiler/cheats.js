@@ -83,10 +83,15 @@ const tokenizer = code => {
 };
 
 const parseExpression = tokens => {
+	if (tokens.length === 0) throw new Error("found it!");
 	if (tokens.length === 1) return tokens.shift();
 
+	// TODO: For obvious hardcoded silly reasons, this only
+	// handles BINARY expressions. We have some other expressions
+	// now. We need to handle them too...
 	const left = tokens.shift();
 	const operator = tokens.shift();
+	if (tokens.length < 1) console.log("in itself?");
 	const right = parseExpression(tokens);
 	if (operator.type === "BinaryOperator") {
 		return { type: "BinaryExpression", operator: operator.value, left, right };
@@ -136,6 +141,8 @@ const parseStatements = tokens => {
 				// remove our dumb variableAssignment token
 				tokens.shift();
 				let expressionTokens = getTokensBeforeType(tokens, "LineBreak");
+				if (expressionTokens.length < 1) console.log("in variabledeclarator");
+
 				const value = parseExpression(expressionTokens);
 				statements.push({
 					type: "VariableDeclaration",
@@ -146,6 +153,8 @@ const parseStatements = tokens => {
 			}
 			case "BinaryOperator": {
 				let expressionTokens = getTokensBeforeType(tokens, "LineBreak");
+				if (expressionTokens.length < 1) console.log("in BinaryOperator");
+
 				statements.push(parseExpression(expressionTokens));
 				break;
 			}
@@ -165,6 +174,7 @@ const parseStatements = tokens => {
 						tokens[0].type === "VariableAssignmentOperator")
 				) {
 					let expressionTokens = getTokensBeforeType(tokens, "LineBreak");
+					if (expressionTokens.length < 1) console.log("in Identifier");
 					statements.push(parseExpression([token, ...expressionTokens]));
 				} else {
 					statements.push(token);
@@ -173,6 +183,7 @@ const parseStatements = tokens => {
 			}
 			case "DefaultExport": {
 				let expressionTokens = getTokensBeforeType(tokens, "LineBreak");
+				if (expressionTokens.length < 1) console.log("in DefaultExport");
 				statements.push({
 					type: "DefaultExportExpression",
 					value: parseExpression(expressionTokens)
@@ -184,7 +195,7 @@ const parseStatements = tokens => {
 			}
 			case "Return": {
 				let expressionTokens = getTokensBeforeType(tokens, "LineBreak");
-
+				if (expressionTokens.length < 1) console.log("in Return");
 				statements.push({
 					type: "ReturnStatement",
 					value: parseExpression(expressionTokens)
@@ -216,9 +227,11 @@ const parseStatements = tokens => {
 };
 
 const parser = tokens => {
+	const newTokens = [...tokens];
+
 	const AST = {
 		type: "Program",
-		statements: parseStatements(tokens)
+		statements: parseStatements(newTokens)
 	};
 
 	/* ... */
@@ -282,20 +295,12 @@ const transformer = AST => {
 	return { ...AST, statements: convertedStatements }; // a modified AST
 };
 
-const generateExpression = expression => {
-	switch (expression.type) {
-		case "Number": {
-			return expression.value;
-		}
-		case "BinaryExpression": {
-			return "";
-		}
-		default: {
-			throw new Error(
-				`unknown expression type in generation ${expression.type}`
-			);
-		}
-	}
+const generateBody = body => {
+	if (body.length < 1) return `{}`;
+
+	return `{
+	${body.map(generateStatement).join(`\n	`)}
+}`;
 };
 
 const generateStatement = statement => {
@@ -319,10 +324,20 @@ const generateStatement = statement => {
 		case "DefaultExportExpression": {
 			return `export default ${generateStatement(statement.value)}`;
 		}
+		case "ReturnStatement": {
+			return `return ${generateStatement(statement.value)}`;
+		}
 		case "VariableAssignment": {
 			return `${generateStatement(statement.id)} = ${generateStatement(
 				statement.value
 			)}`;
+		}
+		case "FunctionDeclaration": {
+			return `function ${generateStatement(
+				statement.identifier
+			)}(${statement.arguments
+				.map(generateStatement)
+				.join(", ")}) ${generateBody(statement.body)}`;
 		}
 		default: {
 			throw new Error(`unknown statement type in generation ${statement.type}`);

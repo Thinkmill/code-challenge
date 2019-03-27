@@ -1441,32 +1441,35 @@ export default z`
 	}
 ];
 
-describe("Integrationish Tests", () => {
-	fullTransformSnippets.map(testCase =>
-		describe(testCase.name, () => {
-			it("tokenizer", () => {
-				const tokens = tokenizer(testCase.code);
+const getIntegrationTests = (fullStuff, name) => {
+	describe(`Integrationish Tests - ${name}`, () => {
+		fullStuff.map(testCase =>
+			describe(testCase.name, () => {
+				it("tokenizer", () => {
+					const tokens = tokenizer(testCase.code);
 
-				expect(tokens).toEqual(testCase.tokens);
-			});
-			it("parser", () => {
-				const AST = parser(testCase.tokens);
+					expect(tokens).toEqual(testCase.tokens);
+				});
+				it("parser", () => {
+					const AST = parser(testCase.tokens);
+					expect(AST).toEqual(testCase.AST);
+				});
+				it("transformer", () => {
+					const AST = transformer(testCase.AST);
+					expect(AST).toEqual(testCase.transformedAST);
+				});
+				it("generator", () => {
+					const code = generator(testCase.transformedAST);
+					expect(code).toEqual(testCase.generatedCode);
+				});
+			})
+		);
+	});
+};
 
-				expect(AST).toEqual(testCase.AST);
-			});
-			it("transformer", () => {
-				const AST = transformer(testCase.AST);
-				expect(AST).toEqual(testCase.transformedAST);
-			});
-			it("generator", () => {
-				const code = generator(testCase.transformedAST);
-				expect(code).toEqual(testCase.generatedCode);
-			});
-		})
-	);
-});
+getIntegrationTests(fullTransformSnippets, "part 1");
 
-describe.only("part 2", () => {
+describe("part 2", () => {
 	describe("tokenizer", () => {
 		describe("string tokens", () => {
 			it("should tokenize an empty string", () => {
@@ -1708,4 +1711,133 @@ describe.only("part 2", () => {
 			});
 		});
 	});
+	describe("generator", () => {
+		it("should generate an empty function", () => {
+			const AST = {
+				type: "Program",
+				statements: [
+					{
+						type: "FunctionDeclaration",
+						identifier: { type: "Identifier", value: "a" },
+						arguments: [],
+						body: []
+					}
+				]
+			};
+			expect(generator(AST)).toEqual("function a() {}");
+		});
+		it("should generate an empty function with 3 arguments", () => {
+			const AST = {
+				type: "Program",
+				statements: [
+					{
+						type: "FunctionDeclaration",
+						identifier: { type: "Identifier", value: "a" },
+						arguments: [
+							{ type: "Identifier", value: "b" },
+							{ type: "Identifier", value: "c" },
+							{ type: "Identifier", value: "d" }
+						],
+						body: []
+					}
+				]
+			};
+			expect(generator(AST)).toEqual("function a(b, c, d) {}");
+		});
+		it("should generate add", () => {
+			const AST = {
+				type: "Program",
+				statements: [
+					{
+						type: "FunctionDeclaration",
+						identifier: { type: "Identifier", value: "addOne" },
+						arguments: [{ type: "Identifier", value: "num" }],
+						body: [
+							{
+								type: "ReturnStatement",
+								value: {
+									type: "BinaryExpression",
+									operator: "+",
+									left: { type: "Identifier", value: "num" },
+									right: { type: "Number", value: "1" }
+								}
+							}
+						]
+					}
+				]
+			};
+			expect(generator(AST)).toEqual(`function addOne(num) {
+	return num + 1
+}`);
+		});
+	});
 });
+
+const fullTransformPart2 = [
+	{
+		name: "declare and call addOne",
+		code: `function addOne(numba) {
+	return numba + 1
+}
+export default addOne(1)`,
+		tokens: [
+			{ type: "FunctionDeclarator" },
+			{ type: "Identifier", value: "addOne" },
+			{ type: "OpenParens" },
+			{ type: "Identifier", value: "numba" },
+			{ type: "CloseParens" },
+			{ type: "OpenSquigglyParens" },
+			{ type: "LineBreak" },
+			{ type: "Return" },
+			{ type: "Identifier", value: "numba" },
+			{ type: "BinaryOperator", value: "+" },
+			{ type: "Number", value: "1" },
+			{ type: "LineBreak" },
+			{ type: "CloseSquigglyParens" },
+			{ type: "LineBreak" },
+			{ type: "DefaultExport" },
+			{ type: "Identifier", value: "addOne" },
+			{ type: "OpenParens" },
+			{ type: "Number", value: "1" },
+			{ type: "CloseParens" }
+		],
+		AST: {
+			type: "Program",
+			statements: []
+		}
+	}
+	// 	{
+	// 		name: "declare and set addOne value to variable",
+	// 		code: `function addOne(num) {
+	// 	return num + 1
+	// }
+	// let two = addOne(1)
+	// export default two`
+	// 	},
+	// 	{
+	// 		name: "declare and set addOne(addOne) value to variable",
+	// 		code: `function addOne(num) {
+	// 	return num + 1
+	// }
+	// let three = addOne(addOne(1))
+	// export default three`
+	// 	},
+	// 	{
+	// 		name: "use AddOne in a binaryExpression",
+	// 		code: `function addOne(num) {
+	// 	return num + 1
+	// }
+	// let three = 5 - addOne(1)
+	// export default three`
+	// 	},
+	// 	{
+	// 		name: "declare and call addTogether",
+	// 		code: `function addTogether(numOne, numTwo) {
+	// 	return numOne + numTwo
+	// }
+	// let three = addTogether(3, 0)
+	// export default three`
+	// 	}
+];
+
+getIntegrationTests(fullTransformPart2, "part 2");
