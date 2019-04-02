@@ -137,7 +137,7 @@ describe("tokenizer", () => {
 	});
 });
 
-describe("parser", () => {
+describe.skip("parser", () => {
 	it("should create an empty ast from no tokens", () => {
 		expect(parser([])).toEqual({ type: "Program", statements: [] });
 	});
@@ -369,7 +369,7 @@ describe("parser", () => {
 	});
 });
 
-describe("transformer", () => {
+describe.skip("transformer", () => {
 	it("should remove an unused variable", () => {
 		const AST = {
 			type: "Program",
@@ -560,7 +560,7 @@ describe("transformer", () => {
 	});
 });
 
-describe("generator", () => {
+describe.skip("generator", () => {
 	it("should convert an empty program", () => {
 		const AST = {
 			type: "Program",
@@ -1441,7 +1441,7 @@ export default z`
 	}
 ];
 
-describe("Integrationish Tests", () => {
+describe.skip("Integrationish Tests", () => {
 	fullTransformSnippets.map(testCase =>
 		describe(testCase.name, () => {
 			it("tokenizer", () => {
