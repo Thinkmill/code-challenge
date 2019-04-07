@@ -20,7 +20,6 @@ const cleanCode = code => {
 			const a = curr.substring(0, linebreakIndex);
 			const b = curr.substring(linebreakIndex, linebreakIndex + 1);
 			const c = curr.substring(linebreakIndex + 1, code.length);
-			console.log('HELLO', a, b, c)
 			acc = acc.concat([a,b,c]);
 		} else if (curr.match('default')) {
 			acc[acc.length - 1] = `${acc[acc.length - 1]} default`;
@@ -73,8 +72,109 @@ const convertToToken = code => {
 }
 const parser = tokens => {
 	/* ... */
-	return {}; // an object which is our AST - we can actually refer back to the tree traversal stuff we did
+	return {
+		type: "Program",
+		statements: parseStatements(tokens),
+	}; // an object which is our AST - we can actually refer back to the tree traversal stuff we did
 };
+
+const performSyntacticAnalysis = tokens => {
+	const token = tokens[0];
+	const lookahead = tokens[1];
+	switch (tokens[0].type) {
+		case "DefaultExport": {
+			return parseDefaultExport(tokens);
+		}
+		case "VariableDeclarator": {
+			return parseVariableDeclaration(tokens);
+		}
+		case "Identifier": {
+			if (lookahead && lookahead.type === "VariableAssignmentOperator") {
+				return parseVariableAssigment(tokens);
+			}
+		}
+		case "String":
+		case "Number":  {
+			if (lookahead && lookahead.type === 'BinaryOperator') {
+				return parseBinaryExpression(tokens);
+			}
+			return tokens.shift();
+		}
+		default: {
+			tokens.shift();
+		}
+	}
+}
+
+const parseDefaultExport = tokens => {
+	tokens.shift();
+	return {
+		type: 'DefaultExportExpression',
+		value: performSyntacticAnalysis(tokens),
+	}
+}
+
+const parseVariableAssigment = tokens => {
+	let id = tokens.shift();
+	tokens.shift() //remove operator;
+	let value = performSyntacticAnalysis(tokens);
+
+	const expression = {
+		type: 'VariableAssignment',
+		id,
+		value,
+	}
+	console.log(expression);
+	return expression;
+}
+
+const parseStatements = tokens => {
+	const statements = [];
+	while (tokens.length > 0) {
+		console.log('TOKENS', tokens);
+		statements.push(performSyntacticAnalysis(tokens));
+	}
+	console.log(statements.filter(i => i));
+	return statements.filter(i=>i);
+}
+
+const parseBinaryExpression = tokens => {
+	let left = tokens.shift();
+	let operator = tokens.shift().value;
+	let right = performSyntacticAnalysis(tokens);
+
+	const expression = {
+		type: 'BinaryExpression',
+		left,
+		operator,	
+		right,
+	}
+	console.log(expression);
+	return expression;
+}
+
+
+const parseValue = tokens => {
+	tokens.shift(); 
+	const value = tokens[0];
+	const lookahead = tokens[1]
+	if (tokens[0].value && !lookahead || lookahead.type === 'LineBreak' ) {
+		return tokens.shift();
+	} else if (lookahead.type === 'BinaryOperator') {
+		return parseBinaryExpression(tokens);
+	}
+}
+
+const parseVariableDeclaration = tokens => {
+	tokens.shift(); 
+	let id = tokens.shift();
+	let value = parseValue(tokens);
+	return {
+		type: "VariableDeclaration",
+		id,
+		value,
+	}
+}
 
 const transformer = AST => {
 	/* ... */

@@ -1,7 +1,7 @@
 const generate = require("./transpiler.example");
 const { tokenizer, parser, transformer, generator } = generate;
 
-describe("tokenizer", () => {
+describe.skip("tokenizer", () => {
 	it("should tokenize an empty string", () => {
 		expect(tokenizer("")).toEqual([]);
 	});
@@ -137,7 +137,7 @@ describe("tokenizer", () => {
 	});
 });
 
-describe.skip("parser", () => {
+describe("parser", () => {
 	it("should create an empty ast from no tokens", () => {
 		expect(parser([])).toEqual({ type: "Program", statements: [] });
 	});
