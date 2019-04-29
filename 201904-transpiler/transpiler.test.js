@@ -137,7 +137,7 @@ describe.skip("tokenizer", () => {
 	});
 });
 
-describe("parser", () => {
+describe.skip("parser", () => {
 	it("should create an empty ast from no tokens", () => {
 		expect(parser([])).toEqual({ type: "Program", statements: [] });
 	});
@@ -369,8 +369,8 @@ describe("parser", () => {
 	});
 });
 
-describe.skip("transformer", () => {
-	it("should remove an unused variable", () => {
+describe("transformer", () => {
+	it.only("should remove an unused variable", () => {
 		const AST = {
 			type: "Program",
 			statements: [

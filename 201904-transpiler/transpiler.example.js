@@ -1,13 +1,13 @@
+/*
+	### TOKENIZING ###
+*/
 const tokenizer = code => {
 	/* ... */
 	if (!code) return [];
 	const truncatedCode = truncate(code);
-	console.log('truncate', truncatedCode);
 	const splitCode = truncatedCode.split(' ').filter(v => v !== '');
-	console.log('SPLITCODE', splitCode);
 	const cleanedCode = cleanCode(splitCode);
 	const tokens = cleanedCode.filter(v => v).map(convertToToken);
-	console.log('TOKENS', tokens);
 	return tokens; // an array of tokens in processed order
 };
 
@@ -29,8 +29,8 @@ const cleanCode = code => {
 		return acc;
 	}, [])
 }
-const convertToToken = code => {
-	console.log('convertToToken',code, Number(code));
+
+const convertToToken = (code) => {
 	if (code.match(/\n/gi)) {
 		return {
 			type: 'LineBreak',
@@ -46,7 +46,7 @@ const convertToToken = code => {
 			type: 'Number',
 			value: code,
 		}
-	} 
+	}
 	if (code.match('let')) {
 		return {
 			type: 'VariableDeclarator',
@@ -65,11 +65,16 @@ const convertToToken = code => {
 	}
 	if (!code.includes('"')) {
 		return {
-			type: 'Identifier', 
+			type: 'Identifier',
 			value: code,
 		}
 	}
-}
+};
+
+/*
+	### PARSING ###
+*/
+
 const parser = tokens => {
 	/* ... */
 	return {
@@ -131,10 +136,8 @@ const parseVariableAssigment = tokens => {
 const parseStatements = tokens => {
 	const statements = [];
 	while (tokens.length > 0) {
-		console.log('TOKENS', tokens);
 		statements.push(performSyntacticAnalysis(tokens));
 	}
-	console.log(statements.filter(i => i));
 	return statements.filter(i=>i);
 }
 
@@ -146,16 +149,15 @@ const parseBinaryExpression = tokens => {
 	const expression = {
 		type: 'BinaryExpression',
 		left,
-		operator,	
+		operator,
 		right,
 	}
-	console.log(expression);
 	return expression;
 }
 
 
 const parseValue = tokens => {
-	tokens.shift(); 
+	tokens.shift();
 	const value = tokens[0];
 	const lookahead = tokens[1]
 	if (tokens[0].value && !lookahead || lookahead.type === 'LineBreak' ) {
@@ -166,7 +168,7 @@ const parseValue = tokens => {
 }
 
 const parseVariableDeclaration = tokens => {
-	tokens.shift(); 
+	tokens.shift();
 	let id = tokens.shift();
 	let value = parseValue(tokens);
 	return {
@@ -176,10 +178,54 @@ const parseVariableDeclaration = tokens => {
 	}
 }
 
+/*
+	## TRANSFORMATION ##
+*/
+
 const transformer = AST => {
 	/* ... */
-	return {}; // a modified AST
+
+	return traverse(AST); // a modified AST
 };
+
+const traverse = (AST) => {
+	let traverser = traversers[AST.type];
+	if (!traverser) {
+		console.error(`Traverser does not exist for this type: ${AST.type}`);
+		return;
+	}
+	return traverser(AST);
+}
+
+const traversers = {
+	Program: (AST) => {
+		return {
+			type: AST.type,
+			statements: AST.statements.map(traverse),
+		}
+	},
+	VariableDeclaration: AST => {
+		return {
+			type: AST.type,
+			id: traverse(AST.id),
+			value: traverse(AST.value)
+		}
+	},
+	Identifier: AST => ({
+		type: AST.type,
+		value: AST.value,
+	}),
+	Number: AST => ({
+		type: AST.type,
+		value: AST.value,
+	}),
+	DefaultExportExpression: AST => {
+		return {
+			type: AST.type,
+			value: traverse(AST.value),
+		}
+	}
+}
 
 const generator = AST => {
 	/* ... */
