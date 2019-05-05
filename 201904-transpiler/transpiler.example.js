@@ -181,56 +181,124 @@ const parseVariableDeclaration = tokens => {
 /*
 	## TRANSFORMATION ##
 */
-
+const constructWithReferences = AST => AST;
 const transformer = AST => {
 	/* ... */
-
-	return traverse(AST); // a modified AST
+	const unusedVars = AST.statements.reduce((acc, curr) => {
+		if (curr.type === 'VariableDeclaration') {
+			acc.push({ name: curr.id.value, used: false });
+			visit(curr.value, acc);
+			return acc;
+		}
+		visit(curr, acc);
+		return acc;
+	}, []).map(u =>  !u.used ? u.name : undefined);
+	return traverse(AST, unusedVars); // a modified AST
 };
 
-const traverse = (AST) => {
+const visit = (AST, declaredVars) => {
+	if (!AST || typeof AST !== "object") return;
+	if (AST.type === 'Identifier') {
+		const foundVariable = declaredVars.find(v => v.name === AST.value);
+		if (foundVariable) {
+			foundVariable.used = true;
+		}
+	}
+	const keys = Object.keys(AST);
+	keys.forEach(k => visit(AST[k], declaredVars));
+}
+
+const traverse = (AST, unusedVars) => {
 	let traverser = traversers[AST.type];
 	if (!traverser) {
 		console.error(`Traverser does not exist for this type: ${AST.type}`);
 		return;
 	}
-	return traverser(AST);
+	return traverser(AST, unusedVars);
 }
 
 const traversers = {
-	Program: (AST) => {
+	Program: (AST, unusedVars) => {
 		return {
 			type: AST.type,
-			statements: AST.statements.map(traverse),
+			statements: AST.statements.map(s => traverse(s, unusedVars)).filter(i=>i),
 		}
 	},
-	VariableDeclaration: AST => {
+	VariableAssignment: (AST, unusedVars) => {
 		return {
 			type: AST.type,
-			id: traverse(AST.id),
-			value: traverse(AST.value)
+			id: traverse(AST.id, unusedVars),
+			value: traverse(AST.value, unusedVars),
 		}
 	},
-	Identifier: AST => ({
+	VariableDeclaration: (AST, unusedVars) => {
+		const { value } = traverse(AST.id);
+		if (unusedVars && unusedVars.includes(value)) return;
+		return {
+			type: AST.type,
+			id: traverse(AST.id, unusedVars),
+			value: traverse(AST.value, unusedVars)
+		}
+	},
+	Identifier: (AST, unusedVars) => ({
 		type: AST.type,
 		value: AST.value,
 	}),
-	Number: AST => ({
+	Number: (AST, unusedVars) => ({
 		type: AST.type,
 		value: AST.value,
 	}),
-	DefaultExportExpression: AST => {
+	BinaryExpression: (AST, unusedVars) => ({
+		type: AST.type,
+		left: traverse(AST.left, unusedVars),
+		operator: AST.operator,
+		right: traverse(AST.right, unusedVars)
+	}),
+	DefaultExportExpression: (AST, unusedVars) => {
 		return {
 			type: AST.type,
-			value: traverse(AST.value),
+			value: traverse(AST.value, unusedVars),
 		}
 	}
 }
 
 const generator = AST => {
 	/* ... */
-	return ``; // a string that is code
+	return convertToString(AST)
 };
+
+const convertToString = AST => {
+	const generator = generators[AST.type];
+	if (!generator) {
+		console.error(`generator does not exist for this type: ${AST.type}`);
+		return;
+	}
+	return generator(AST);
+}
+
+const generators = {
+	DefaultExportExpression: AST => `export default ${convertToString(AST.value)}`,
+	Program: AST => {
+		if (!AST.statements) return '';
+		const code = AST.statements.map(convertToString).join('\n');
+		return code;
+	},
+	BinaryExpression: AST => {
+		return `${convertToString(AST.left)} ${AST.operator} ${convertToString(AST.right)}`
+	},
+	VariableAssignment: AST => {
+		return `${convertToString(AST.id)} = ${convertToString(AST.value)}`;
+	},
+	VariableDeclaration: (AST) => {
+		return `let ${convertToString(AST.id)} = ${convertToString(AST.value)}`;
+	},
+	Identifier: (AST) => {
+		return AST.value;
+	},
+	Number: (AST) => {
+		return AST.value;
+	}
+}
 
 const generate = code => {
 	const tokens = tokenizer(code);

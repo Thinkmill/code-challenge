@@ -369,8 +369,8 @@ describe.skip("parser", () => {
 	});
 });
 
-describe("transformer", () => {
-	it.only("should remove an unused variable", () => {
+describe.skip("transformer", () => {
+	it("should remove an unused variable", () => {
 		const AST = {
 			type: "Program",
 			statements: [
@@ -560,7 +560,7 @@ describe("transformer", () => {
 	});
 });
 
-describe.skip("generator", () => {
+describe("generator", () => {
 	it("should convert an empty program", () => {
 		const AST = {
 			type: "Program",
