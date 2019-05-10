@@ -84,6 +84,8 @@ const parser = tokens => {
 };
 
 const performSyntacticAnalysis = tokens => {
+       // LL(1) here, because its easy. 
+       // with added time, would interrogate LR or LL(k)
 	const token = tokens[0];
 	const lookahead = tokens[1];
 	switch (tokens[0].type) {
